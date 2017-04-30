@@ -10,7 +10,7 @@ class Config:
     @classmethod
     def initialize(cls):
         if cls.settings is None:
-            location = os.path.join(os.path.dirname("__file__"), cls.CONFIG_FILE)
+            location = os.path.join(os.path.dirname(__file__), cls.CONFIG_FILE)
             with open(location, "r") as f:
                 cls.settings = json.load(f)
 
