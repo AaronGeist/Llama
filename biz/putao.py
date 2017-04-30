@@ -4,7 +4,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 from core.db import Cache
-from core.email import EmailSender
+from core.emailSender import EmailSender
 from core.login import Login
 from core.monitor import Monitor
 from model.seed import SeedInfo
