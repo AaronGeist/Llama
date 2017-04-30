@@ -1,27 +1,20 @@
 # -*- coding:utf-8 -*-
-
 import re
+import sys
 from concurrent.futures import ThreadPoolExecutor
 
 from core.db import Cache
 from core.email import EmailSender
 from core.login import Login
+from core.monitor import Monitor
 from model.seed import SeedInfo
 from model.site import Site
 from util.config import Config
 from util.utils import HttpUtils
 
 
-class FreeFeedAlert:
-    cache = None
-
-    @classmethod
-    def init(cls):
-        if cls.cache is None:
-            cls.cache = Cache()
-
-    @classmethod
-    def generate_site(cls):
+class FreeFeedAlert(Login):
+    def generate_site(self):
         site = Site()
         site.home_page = "https://pt.sjtu.edu.cn/torrents.php"
         site.login_page = "https://pt.sjtu.edu.cn/takelogin.php"
@@ -41,16 +34,22 @@ class FreeFeedAlert:
 
         return site
 
-    @classmethod
-    def crawl(cls):
-        site = cls.generate_site()
-        assert Login.login(site)
+    def build_post_data(self, site):
+        data = dict()
+        data['username'] = site.login_username
+        data['password'] = site.login_password
+        data['checkcode'] = "XxXx"
+
+        return data
+
+    def crawl(self):
+        site = self.generate_site()
+        assert self.login(site)
 
         soup_obj = HttpUtils.get(site.home_page)
-        return cls.parse(soup_obj)
+        return self.parse(soup_obj)
 
-    @classmethod
-    def parse(cls, soup_obj):
+    def parse(self, soup_obj):
         assert soup_obj is not None
 
         tr_list = soup_obj.select("table.torrents tr")
@@ -74,18 +73,18 @@ class FreeFeedAlert:
             seed.free = len(td_list[1].select("table font.free")) > 0
             seed.hot = len(td_list[1].select("table font.hot")) > 0
             seed.since = HttpUtils.get_content(td_list[3], "span")
-            seed.size = float(cls.parse_size(td_list[4]))
-            seed.upload_num = int(cls.clean_tag(td_list[5]))
-            seed.download_num = int(cls.clean_tag(td_list[6]))
-            seed.finish_num = int(cls.clean_tag(td_list[7]))
-            seed.id = cls.parse_id(seed.url)
+            seed.size = float(self.parse_size(td_list[4]))
+            seed.upload_num = int(self.clean_tag(td_list[5]))
+            seed.download_num = int(self.clean_tag(td_list[6]))
+            seed.finish_num = int(self.clean_tag(td_list[7]))
+            seed.id = self.parse_id(seed.url)
 
             seeds.append(seed)
 
         return seeds
 
-    @classmethod
-    def parse_size(cls, soup_obj):
+    @staticmethod
+    def parse_size(soup_obj):
         assert soup_obj is not None
         assert len(soup_obj.contents) == 3
 
@@ -99,8 +98,8 @@ class FreeFeedAlert:
         if size_unit == "KB":
             return 0.01
 
-    @classmethod
-    def clean_tag(cls, soup_obj):
+    @staticmethod
+    def clean_tag(soup_obj):
         assert soup_obj is not None
         html = str(soup_obj.contents[0])
         html = html.replace(',', '')
@@ -111,26 +110,24 @@ class FreeFeedAlert:
             ret = html
         return ret
 
-    @classmethod
-    def parse_id(cls, url):
+    @staticmethod
+    def parse_id(url):
         m = re.search("id=(\d+)&", url)
         assert m is not None
         return m.group(1)
 
-    @classmethod
-    def filter(cls, data):
+    def filter(self, data):
         # strategies:
         # 1. free seed
         # 2. hasn't been found before
-        filtered_seeds = list(filter(lambda x: x.free and cls.cache.get(x.id) is None, data))
+        filtered_seeds = list(filter(lambda x: x.free and Cache().get(x.id) is None, data))
         for seed in filtered_seeds:
             # keep in cache for 2 days
-            cls.cache.set_with_expire(seed.id, str(seed), 172800)
+            Cache().set_with_expire(seed.id, str(seed), 172800)
 
         return filtered_seeds
 
-    @classmethod
-    def notify(cls, data):
+    def notify(self, data):
         if len(data) == 0:
             return
 
@@ -140,21 +137,19 @@ class FreeFeedAlert:
 
         EmailSender.send(u"种子", msg)
 
-    @classmethod
-    def check(cls):
-        cls.init()
-        cls.notify(cls.filter(cls.crawl()))
+    def check(self):
+        self.notify(self.filter(self.crawl()))
 
 
-class MagicPointChecker(FreeFeedAlert):
-    @classmethod
-    def generate_site(cls):
+class MagicPointChecker(FreeFeedAlert, Monitor):
+    bucket = "putao_mp"
+
+    def generate_site(self):
         site = super().generate_site()
         site.home_page = "https://pt.sjtu.edu.cn/mybonus.php"
         return site
 
-    @classmethod
-    def parse(cls, soup_obj):
+    def parse(self, soup_obj):
         assert soup_obj is not None
 
         div_list = soup_obj.select("table.mainouter tr td table tr td div[align='center']")
@@ -165,31 +160,29 @@ class MagicPointChecker(FreeFeedAlert):
         assert m
         return float(m.group(1))
 
-    @classmethod
-    def filter(cls, data):
+    def filter(self, data):
         if data <= Config.get("putao_mp_threshold"):
             return data
         else:
             return None
 
-    @classmethod
-    def notify(cls, data):
+    def generate_data(self):
+        return self.crawl()
+
+    def notify(self, data):
         if data is not None:
             EmailSender.send("魔力值警告: " + str(data), "")
 
 
 class Exchanger(FreeFeedAlert):
-    @classmethod
-    def generate_site(cls):
+    def generate_site(self):
         site = super().generate_site()
         site.home_page = "https://pt.sjtu.edu.cn/mybonus.php"
         return site
 
-    @classmethod
-    def exchange_mp(cls, times=1):
-        site = cls.generate_site()
-        is_login = Login.login(site)
-        assert is_login
+    def exchange_mp(self, times=1):
+        site = self.generate_site()
+        assert self.login(site)
 
         data = dict()
         data['option'] = 3  # 1=1GB 2=5GB 3=10GB
@@ -202,6 +195,15 @@ class Exchanger(FreeFeedAlert):
 
 
 if __name__ == "__main__":
-    FreeFeedAlert.check()
-    # MagicPointChecker.check()
-    # Exchanger.exchange_mp()
+    if len(sys.argv) >= 2:
+        target = sys.argv[1]
+        if target == "feed_check":
+            FreeFeedAlert().check()
+        elif target == "mp_check":
+            MagicPointChecker().check()
+        elif target == "mp_monitor":
+            MagicPointChecker().monitor()
+
+            # FreeFeedAlert().check()
+            # MagicPointChecker().check()
+            # Exchanger().exchange_mp()

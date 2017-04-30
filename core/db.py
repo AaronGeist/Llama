@@ -1,14 +1,16 @@
 import redis
 
+from core.singleton import singleton
 
+
+@singleton
 class Cache:
     instance = None
     MAX_SIZE = 2000
 
     def __init__(self):
-        if self.instance is None:
-            pool = redis.ConnectionPool(host='127.0.0.1', port=6379)
-            self.instance = redis.StrictRedis(connection_pool=pool)
+        pool = redis.ConnectionPool(host='127.0.0.1', port=6379)
+        self.instance = redis.StrictRedis(connection_pool=pool)
 
     def append(self, bucket_name, value):
         if self.instance.llen(bucket_name) >= self.MAX_SIZE * 2:

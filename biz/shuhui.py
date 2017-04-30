@@ -128,7 +128,7 @@ class Crawler(Login):
         return site
 
     @classmethod
-    def build_post_data(cls, site):
+    def build_post_data(self, site):
         data = dict()
         data['name'] = site.login_username
         data['password'] = site.login_password
@@ -136,7 +136,7 @@ class Crawler(Login):
         return data
 
     @classmethod
-    def check_login(cls, site):
+    def check_login(self, site):
         resp = HttpUtils.post(site.home_page, data={}, returnRaw=True)
         jsonValue = json.loads(resp)
         if jsonValue['errNo'] == 0:

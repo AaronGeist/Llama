@@ -51,6 +51,7 @@ class HttpUtils:
     @classmethod
     def post(cls, url, session=None, data=None, headers=None, proxy=None, returnRaw=False):
         if cls.session is None:
+            print("create session")
             cls.session = cls.create_session()
 
         try:
