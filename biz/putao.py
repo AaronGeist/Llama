@@ -195,15 +195,15 @@ class Exchanger(FreeFeedAlert):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 2:
-        target = sys.argv[1]
-        if target == "feed_check":
-            FreeFeedAlert().check()
-        elif target == "mp_check":
-            MagicPointChecker().check()
-        elif target == "mp_monitor":
-            MagicPointChecker().monitor()
+    # if len(sys.argv) >= 2:
+    #     target = sys.argv[1]
+    #     if target == "feed_check":
+    #         FreeFeedAlert().check()
+    #     elif target == "mp_check":
+    #         MagicPointChecker().check()
+    #     elif target == "mp_monitor":
+    #         MagicPointChecker().monitor()
 
-            # FreeFeedAlert().check()
-            # MagicPointChecker().check()
-            # Exchanger().exchange_mp()
+    FreeFeedAlert().check()
+    # MagicPointChecker().check()
+    # Exchanger().exchange_mp()

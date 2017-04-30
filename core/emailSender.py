@@ -44,3 +44,6 @@ class EmailSender:
         server.login(email.from_addr, email.password)
         server.sendmail(email.from_addr, email.to_addr, msg.as_string())
         server.quit()
+
+if __name__ == "__main__":
+    EmailSender.send("test", "test")

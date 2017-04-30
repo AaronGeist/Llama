@@ -24,4 +24,4 @@ class SeedInfo:
         msg.append(self.since)
         msg.append(str(int(self.size / 1024)))
 
-        return "|".join(msg) + '\n'
+        return ("|".join(msg) + '\n').encode("utf-8")

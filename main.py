@@ -1,6 +1,7 @@
 import sys
 
 from biz.putao import FreeFeedAlert, MagicPointChecker
+from core.emailSender import EmailSender
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
