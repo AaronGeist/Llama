@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import re
-import sys
 from concurrent.futures import ThreadPoolExecutor
 
 from core.db import Cache
@@ -174,6 +173,16 @@ class MagicPointChecker(FreeFeedAlert, Monitor):
             EmailSender.send("魔力值警告: " + str(data), "")
 
 
+class UploadMonitor(MagicPointChecker):
+    bucket = "putao_upload"
+
+    def parse(self, soup_obj):
+        assert soup_obj is not None
+
+        span_list = soup_obj.select("#usermsglink span")
+        return span_list[1].contents[2].replace("TB", "").strip()
+
+
 class Exchanger(FreeFeedAlert):
     def generate_site(self):
         site = super().generate_site()
@@ -204,6 +213,8 @@ if __name__ == "__main__":
     #     elif target == "mp_monitor":
     #         MagicPointChecker().monitor()
 
-    FreeFeedAlert().check()
+    # FreeFeedAlert().check()
     # MagicPointChecker().check()
     # Exchanger().exchange_mp()
+    UploadMonitor().crawl()
+
