@@ -1,0 +1,12 @@
+<!doctype html>
+{% block head %}
+<title>{% block title %}Welcome{% endblock %} | Why so serious </title>
+<meta charset=utf-8>
+<script type=text/javascript
+  src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+{% endblock %}
+<div class=box>
+  {% block body_title %}
+  {% endblock %}
+  {% block body %}{% endblock %}
+</div>

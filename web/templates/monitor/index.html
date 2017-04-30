@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block head %}
+{{ super() }}
+<script type=text/javascript
+        src="{{ url_for('static', filename='highcharts.js') }}"></script>
+<script language="Javascript">
+
+    function genOptions(containerId, title, minValue, yTitle, xTitle) {
+        return {
+            chart: {
+                renderTo: containerId,
+                type: 'line'
+            },
+            title:{
+                text: title
+            },
+            yAxis: {
+                min: minValue,
+                title: {
+                    text: yTitle
+                }
+            },
+		    xAxis: {
+                categories: [],
+                title: {
+                    text: xTitle
+                }
+            },
+		    series: []
+        };
+    }
+
+    function createCharts(path, options) {
+        var chart;
+        $.getJSON(
+	        "/monitor/" + path,
+            function(data) {
+		        options.series.push({"data": data.data})
+		        options.xAxis.categories = data.title
+                chart = new Highcharts.Chart(options);
+	        }
+	    );
+
+        setInterval(function(){
+            $.ajax({
+                type: "POST",
+                url: "/monitor/" + path + "/1",
+                async: false,
+                success: function(data) {
+                    chart.xAxis[0].categories.push(data.title)
+                    chart.series[0].addPoint([data.title, data.data], true, true)
+                }
+            });
+            }, 5000);
+
+        return chart;
+    }
+
+    $(document).ready(function() {
+        var cpuTempOp = genOptions("cpuTempContainer", "Cpu temperature", 40, "temperature(℃)", "time");
+        createCharts("cpu/temperature", cpuTempOp);
+
+        var memoryOp = genOptions("memoryContainer", "Memory Usage", 0, "memory(MB)", "time");
+        createCharts("memory/usage", memoryOp);
+});
+
+
+
+
+</script>
+{% endblock %}
+{% block body_title %}
+{{ super() }}
+
+<div id="cpuTempContainer"></div>
+<div id="memoryContainer"></div>
+
+{% endblock %}
+{% block body %}
+{% endblock %}
+
