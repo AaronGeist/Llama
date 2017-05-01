@@ -14,7 +14,7 @@ class Monitor(object):
         data = list()
         title = list()
         for single in Cache().get_by_range(self.get_bucket(), start=0, end=self.LIMIT):
-            item = single.split(self.DELIMITER)
+            item = single.decode("utf-8").split(self.DELIMITER)
             title.append(item[0])
             data.append(float(item[1]))
         data.reverse()
