@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+{% block head %}
+{{ super() }}
+
+<script language="Javascript">
+
+    var face_detect = false;
+    function trigger_face_detect() {
+        if (face_detect) {
+            $("#face_detect").attr("src", "{{ url_for('static', filename='circle_select.png')}}");
+        } else {
+            $("#face_detect").attr("src", "{{ url_for('static', filename='circle_unselect.png')}}");
+        }
+    }
+
+    function showBrightness(delta) {
+        value = $("#brightness").html();
+        if (value == "") {
+            value = 0;
+        }
+        $("#brightness").html(parseInt(value) + parseInt(delta));
+    }
+
+    $(document).ready(function() {
+        $.ajax({
+                type: "GET",
+                url: "/monitor/camera/face/",
+                async: false,
+                success: function(data) {
+                        if (data == "True") {
+                            face_detect = true;
+                        } else {
+                            face_detect = false;
+                        }
+                        trigger_face_detect();
+                }
+        });
+
+        $.ajax({
+                type: "GET",
+                url: "/monitor/camera/brightness/get/",
+                async: false,
+                success: function(data) {
+                        console.log("get brightness " + data);
+                        showBrightness(data);
+                }
+        });
+
+    	$("#left").click(function() {
+    		$.ajax({
+                    	type: "POST",
+    	                url: "/monitor/camera/servo/",
+                        data: {"direction": "left"},
+                    	async: true
+            })
+        });
+
+    	$("#right").click(function() {
+    		$.ajax({
+                    type: "POST",
+                    url: "/monitor/camera/servo/",
+                    data: {"direction": "right"},
+                    async: true
+            })
+    	});
+
+    	$("#incBrightness").click(function() {
+    		$.ajax({
+                    type: "POST",
+                    url: "/monitor/camera/brightness/set/",
+                    data: {"delta": 5},
+                    async: true
+            })
+            showBrightness(5);
+    	});
+
+    	$("#desBrightness").click(function() {
+    		$.ajax({
+                    type: "POST",
+                    url: "/monitor/camera/brightness/set/",
+                    data: {"delta": -5},
+                    async: true
+            })
+            showBrightness(-5);
+    	});
+
+        $("#face_detect").click(function() {
+            face_detect = !face_detect;
+            $.ajax({
+                type: "POST",
+                url: "/monitor/camera/face/set/",
+                data: {"enable": face_detect},
+                async: false
+            });
+            trigger_face_detect();
+        });
+    });
+
+</script>
+{% endblock %}
+{% block body_title %}
+{{ super() }}
+{% endblock %}
+{% block body %}
+    <div>
+        <img src="{{ url_for('camera') }}">
+    </div>
+    <div>
+            <span>Position</span>&nbsp;<img src="{{ url_for('static', filename='arrow_left.png') }}" id="left"/>&nbsp;&nbsp;<img src="{{ url_for('static', filename='arrow_right.png') }}" id="right"/>
+    </div>
+    <div>
+            <span>Brightness</span>&nbsp;<img src="{{ url_for('static', filename='arrow_left.png') }}" id="desBrightness"/>&nbsp;<span id="brightness"></span>&nbsp;<img src="{{ url_for('static', filename='arrow_right.png') }}" id="incBrightness"/>
+    </div>
+    <div>
+        Enable/disable face detect <img src="{{ url_for('static', filename='circle_unselect.png')}}" id="face_detect" />
+    </div>
+{% endblock %}
