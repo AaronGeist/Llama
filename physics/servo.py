@@ -19,11 +19,15 @@ class Servo:
             if Cache().get(Servo.V_DB_KEY) is None:
                 Cache().set(Servo.V_DB_KEY, 7.5)
 
-            # horizontal servo
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(17, GPIO.OUT, initial=False)
-            Servo.hPin = GPIO.PWM(17, 50)  # 50HZ
-            Servo.hPin.start(0)
+            try:
+                # horizontal servo
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setup(17, GPIO.OUT, initial=False)
+                Servo.hPin = GPIO.PWM(17, 50)  # 50HZ
+                Servo.hPin.start(0)
+            except Exception as e:
+                print(e)
+
 
             # vertical servo
             GPIO.setup(19, GPIO.OUT, initial=False)
@@ -36,8 +40,8 @@ class Servo:
         if vDelta != 0:
             duty_cycle = float(Cache().get(Servo.V_DB_KEY))
             duty_cycle += vDelta
-            duty_cycle = max(duty_cycle, 2.5)
-            duty_cycle = min(duty_cycle, 12.5)
+            if duty_cycle < 2.5 or duty_cycle > 12.5:
+                return
             print(duty_cycle)
             Cache().set(Servo.V_DB_KEY, duty_cycle)
             Servo.vPin.ChangeDutyCycle(duty_cycle)
@@ -48,8 +52,8 @@ class Servo:
         if hDelta != 0:
             duty_cycle = float(Cache().get(Servo.H_DB_KEY))
             duty_cycle += hDelta
-            duty_cycle = max(duty_cycle, 2.5)
-            duty_cycle = min(duty_cycle, 12.5)
+            if duty_cycle < 2.5 or duty_cycle > 12.5:
+                return
             print(duty_cycle)
             Cache().set(Servo.H_DB_KEY, duty_cycle)
             Servo.hPin.ChangeDutyCycle(duty_cycle)

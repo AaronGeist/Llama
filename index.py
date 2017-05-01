@@ -58,7 +58,7 @@ def monitor_magicpoint_single():
 
 def gen(camera):
     while True:
-        # print("take snapshot")
+        #print("take snapshot")
         frame = camera.snapshot()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')

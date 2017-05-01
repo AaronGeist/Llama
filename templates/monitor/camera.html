@@ -22,6 +22,8 @@
     }
 
     $(document).ready(function() {
+        $("#camera").attr("src", "{{ url_for('camera') }}");
+
         $.ajax({
                 type: "GET",
                 url: "/monitor/camera/face/",
@@ -103,9 +105,6 @@
 {% endblock %}
 {% block body %}
     <div>
-        <img src="{{ url_for('camera') }}">
-    </div>
-    <div>
             <span>Position</span>&nbsp;<img src="{{ url_for('static', filename='arrow_left.png') }}" id="left"/>&nbsp;&nbsp;<img src="{{ url_for('static', filename='arrow_right.png') }}" id="right"/>
     </div>
     <div>
@@ -113,5 +112,8 @@
     </div>
     <div>
         Enable/disable face detect <img src="{{ url_for('static', filename='circle_unselect.png')}}" id="face_detect" />
+    </div>
+    <div>
+            <img id="camera" />
     </div>
 {% endblock %}
