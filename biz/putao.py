@@ -141,7 +141,8 @@ class FreeFeedAlert(Login):
 
 
 class MagicPointChecker(FreeFeedAlert, Monitor):
-    bucket = "putao_mp"
+    def get_bucket(self):
+        return "putao_mp"
 
     def generate_site(self):
         site = super().generate_site()
@@ -198,9 +199,9 @@ class Exchanger(FreeFeedAlert):
         data['art'] = "traffic"
 
         with ThreadPoolExecutor(max_workers=times) as executor:
-            var = {executor.submit(HttpUtils.post("https://pt.sjtu.edu.cn/mybonus.php?action=exchange", data=data,
-                                                  headers=site.login_headers, returnRaw=True)): item for item in
-                   range(1, times + 1)}
+            {executor.submit(HttpUtils.post("https://pt.sjtu.edu.cn/mybonus.php?action=exchange", data=data,
+                                            headers=site.login_headers, returnRaw=True)): item for item in
+             range(1, times + 1)}
 
 
 if __name__ == "__main__":
@@ -217,4 +218,3 @@ if __name__ == "__main__":
     # MagicPointChecker().check()
     # Exchanger().exchange_mp()
     UploadMonitor().crawl()
-

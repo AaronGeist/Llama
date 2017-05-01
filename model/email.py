@@ -4,3 +4,4 @@ class Email:
     password = ""
     stmp_server = ""
     body = ""
+    title = ""

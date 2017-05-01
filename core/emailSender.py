@@ -20,7 +20,7 @@ class EmailSender:
         msg = MIMEText(email.body, 'plain', 'utf-8')
         msg['From'] = cls.format_addr(u'自己 <%s>' % email.from_addr)
         msg['To'] = cls.format_addr(u'自己 <%s>' % email.to_addr)
-        msg['Subject'] = Header(u'通知', 'utf-8').encode()
+        msg['Subject'] = Header(email.title, 'utf-8').encode()
 
         return msg
 
