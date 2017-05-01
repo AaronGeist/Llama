@@ -1,10 +1,12 @@
 import threading
 
 import time
+
+import io
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 import os
-import cv2
+# import cv2
 
 from core.db import Cache
 
@@ -75,47 +77,57 @@ class Camera:
             path = os.path.join(dir + '/opencv/lbpcascade_frontalface_improved.xml')
             if not os.path.isfile(path):
                 print("Cannot find cv2 xml " + path)
-            face_cascade = cv2.CascadeClassifier(path)
+            # face_cascade = cv2.CascadeClassifier(path)
 
             rawCapture = PiRGBArray(camera, size=(640, 480))
 
             # let camera warm up
             camera.start_preview()
             time.sleep(2)
-
-            # Capture frames from the camera
-            for data in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-
-                image = data.array
-
-                if Camera.is_enable_face_detect():
-                    # Use the cascade file we loaded to detect faces
-                    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                    faces = face_cascade.detectMultiScale(gray)
-
-                    #print("Found " + str(len(faces)) + " face(s)")
-
-                    # Draw a rectangle around every face and move the motor towards the face
-                    for (x, y, w, h) in faces:
-                        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 255), 1)
-                        # cv2.putText(image, "Face No." + str(len(faces)), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-                    # cv2.imshow( "Frame", image )
-                    #cv2.waitKey(1)
-
-                # Clear the stream in preparation for the next frame
-                rawCapture.truncate(0)
-
-                # encode ndarray
-                result, encodedImage = cv2.imencode('.jpg', image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-
+            #
+            # # Capture frames from the camera
+            # for data in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+            #
+            #     image = data.array
+            #
+            #     if Camera.is_enable_face_detect():
+            #         # Use the cascade file we loaded to detect faces
+            #         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            #         faces = face_cascade.detectMultiScale(gray)
+            #
+            #         #print("Found " + str(len(faces)) + " face(s)")
+            #
+            #         # Draw a rectangle around every face and move the motor towards the face
+            #         for (x, y, w, h) in faces:
+            #             cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 255), 1)
+            #             # cv2.putText(image, "Face No." + str(len(faces)), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            #
+            #         # cv2.imshow( "Frame", image )
+            #         #cv2.waitKey(1)
+            #
+            #     # Clear the stream in preparation for the next frame
+            #     rawCapture.truncate(0)
+            #
+            #     # encode ndarray
+            #     result, encodedImage = cv2.imencode('.jpg', image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+            #
+            #     # store frame
+            #     cls.frame = encodedImage.tostring()
+            stream = io.BytesIO()
+            for foo in camera.capture_continuous(stream, 'jpeg',
+                                                 use_video_port=True):
                 # store frame
-                cls.frame = encodedImage.tostring()
+                stream.seek(0)
+                cls.frame = stream.read()
+
+                # reset stream for next frame
+                stream.seek(0)
+                stream.truncate()
 
                 camera.brightness = int(Camera.getBrightness())
 
                 # if there hasn't been any clients asking for frames in
-                # the last 10 seconds stop the thread
+                # the last X seconds stop the thread
                 if time.time() - cls.last_access > 5:
                     break
         cls.thread = None
