@@ -160,18 +160,13 @@ class MagicPointChecker(FreeFeedAlert, Monitor):
         assert m
         return float(m.group(1))
 
-    def filter(self, data):
-        if data <= Config.get("putao_mp_threshold"):
-            return data
-        else:
-            return None
+    def alert(self, data):
+        threshold = Config.get("putao_mp_threshold")
+        if data <= threshold:
+            EmailSender.send("魔力值警告: %s <= %s" % (str(data), threshold), "")
 
     def generate_data(self):
         return self.crawl()
-
-    def notify(self, data):
-        if data is not None:
-            EmailSender.send("魔力值警告: " + str(data), "")
 
 
 class UploadMonitor(MagicPointChecker):
