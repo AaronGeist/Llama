@@ -13,7 +13,7 @@ class Monitor(object):
         res = dict()
         data = list()
         title = list()
-        for single in Cache().get_by_range(self.get_bucket(), start=0, end=self.LIMIT):
+        for single in Cache().get_by_range(self.get_bucket(), start=0, end=self.LIMIT - 1):
             item = single.decode("utf-8").split(self.DELIMITER)
             title.append(item[0])
             data.append(float(item[1]))

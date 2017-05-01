@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 
+from biz.putao import MagicPointChecker
 from biz.rpi import CpuTemperature, Memory
 
 app = Flask(__name__)
@@ -38,6 +39,16 @@ def monitor_memory_usage():
 @app.route('/monitor/memory/usage/1', methods=['GET', 'POST'])
 def monitor_memory_usage_single():
     return jsonify(Memory().latest())
+
+
+@app.route('/monitor/magicpoint', methods=['GET', 'POST'])
+def monitor_magicpoint():
+    return jsonify(Memory().history())
+
+
+@app.route('/monitor/magicpoint/1', methods=['GET', 'POST'])
+def monitor_magicpoint_single():
+    return jsonify(MagicPointChecker().latest())
 
 
 if __name__ == '__main__':
