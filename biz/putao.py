@@ -170,7 +170,8 @@ class MagicPointChecker(FreeFeedAlert, Monitor):
 
 
 class UploadMonitor(MagicPointChecker):
-    bucket = "putao_upload"
+    def get_bucket(self):
+        return "putao_upload"
 
     def parse(self, soup_obj):
         assert soup_obj is not None
