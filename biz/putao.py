@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import re
+import os
 from concurrent.futures import ThreadPoolExecutor
 
 from core.db import Cache
@@ -126,18 +127,34 @@ class FreeFeedAlert(Login):
 
         return filtered_seeds
 
-    def notify(self, data):
+    def action(self, data):
         if len(data) == 0:
             return
 
+        # send email
         msg = ""
         for seed in data:
             msg += str(seed)
 
         EmailSender.send(u"种子", msg)
 
+        # check current disk space
+        space = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
+
+        # download if still enough space
+        for seed in data:
+            if seed.size <= 10000:
+                space -= seed.size
+                if space <= 0:
+                    break
+                HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id,
+                                        "%s.torrent" % seed.id)
+                print("remaining %s" % str(space))
+                os.popen("transmission-remote -a %s.torrent && rm %s.torrent" % (seed.id, seed.id))
+
     def check(self):
-        self.notify(self.filter(self.crawl()))
+        data = self.crawl()
+        self.action(self.filter(data))
 
 
 class MagicPointChecker(FreeFeedAlert, Monitor):
