@@ -3,10 +3,10 @@ from flask import Flask, render_template, jsonify
 from flask import Response
 from flask import request
 
-from biz.putao import MagicPointChecker
+from biz.putao import MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
-from physics.camera import Camera
-from physics.servo import Servo
+#from physics.camera import Camera
+#from physics.servo import Servo
 
 app = Flask(__name__)
 
@@ -55,7 +55,16 @@ def monitor_magicpoint():
 def monitor_magicpoint_single():
     return jsonify(MagicPointChecker().latest())
 
+@app.route('/monitor/upload/', methods=['GET', 'POST'])
+def monitor_upload():
+    return jsonify(UploadMonitor().history())
 
+
+@app.route('/monitor/upload/1/', methods=['GET', 'POST'])
+def monitor_upload_single():
+    return jsonify(UploadMonitor().latest())
+
+'''
 def gen(camera):
     while True:
         #print("take snapshot")
@@ -80,11 +89,9 @@ def monitor_camera_servo():
         Servo.right()
     return ""
 
-
 @app.route('/monitor/camera/face/', methods=['GET'])
 def monitor_camera_face():
     return str(Camera.is_enable_face_detect())
-
 
 @app.route('/monitor/camera/face/set/', methods=['POST'])
 def monitor_camera_face_set():
@@ -112,7 +119,7 @@ def monitor_camera_brightness_set():
 def camera():
     return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-
+'''
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8888, debug=True)
