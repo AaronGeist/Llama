@@ -112,9 +112,8 @@ class HttpUtils:
             return False
 
         try:
-            f = open(dest_path, "wb")
-            f.write(res.content)
-            f.close()
+            with open(dest_path, "wb") as f:
+                f.write(res.content)
         except Exception as e:
             print("Cannot write file: " + dest_path, e)
             return False
