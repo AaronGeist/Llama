@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 import re
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -143,8 +144,8 @@ class FreeFeedAlert(Login):
 
         # check vps bankwidth
         resp = os.popen("curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
-        data = json.loads(resp)
-        info_dict = list(data.values())[0]
+        jsonData = json.loads(resp)
+        info_dict = list(jsonData.values())[0]
         current_bandwidth_gb = info_dict['current_bandwidth_gb']
         allowed_bandwidth_gb = info_dict['allowed_bandwidth_gb']
 
