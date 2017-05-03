@@ -9,7 +9,7 @@
         return {
             chart: {
                 renderTo: containerId,
-                type: 'line'
+                type: 'area'
             },
             title:{
                 text: title
@@ -57,14 +57,19 @@
     }
 
     $(document).ready(function() {
+        /*
         var cpuTempOp = genOptions("cpuTempContainer", "Cpu temperature", 40, "temperature(℃)", "time");
         createCharts("cpu/temperature", cpuTempOp, 60000);
 
         var memoryOp = genOptions("memoryContainer", "Memory Usage", 0, "memory(MB)", "time");
         createCharts("memory/usage", memoryOp, 60000);
+        */
 
         var mpOp = genOptions("mpContainer", "PuTao magic point", 0, "point", "time");
         createCharts("magicpoint", mpOp, 600000);
+
+        var upOp = genOptions("upContainer", "PuTao upload", 0, "TB", "time");
+        createCharts("upload", upOp, 60000);
 });
 
 
@@ -78,6 +83,7 @@
 <div id="cpuTempContainer"></div>
 <div id="memoryContainer"></div>
 <div id="mpContainer"></div>
+<div id="upContainer"></div>
 {% endblock %}
 {% block body %}
 {% endblock %}

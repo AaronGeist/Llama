@@ -31,6 +31,8 @@ class EmailSender:
         email.to_addr = Config.get("email_to_addr")
         email.password = Config.get("email_password")
         email.stmp_server = Config.get("email_stmp_server")
+        email.stmp_port = Config.get("email_stmp_port")
+        email.is_ssl = Config.get("email_is_ssl")
         email.title = title
         email.body = content
         return email
@@ -39,7 +41,10 @@ class EmailSender:
     def send(cls, title, content):
         email = cls.generate_email(title, content)
         msg = cls.build_msg(email)
-        server = smtplib.SMTP(email.stmp_server, 25)
+        if email.is_ssl:
+            server = smtplib.SMTP_SSL(email.stmp_server, email.stmp_port)
+        else:
+            server = smtplib.SMTP(email.stmp_server, email.stmp_port)
         server.set_debuglevel(1)
         server.login(email.from_addr, email.password)
         server.sendmail(email.from_addr, email.to_addr, msg.as_string())
