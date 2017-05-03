@@ -141,11 +141,21 @@ class FreeFeedAlert(Login):
         # check current disk space
         space = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
 
+        # check vps bankwidth
+        resp = os.popen("curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
+        data = json.loads(resp)
+        info_dict = list(data.values())[0]
+        current_bandwidth_gb = info_dict['current_bandwidth_gb']
+        allowed_bandwidth_gb = info_dict['allowed_bandwidth_gb']
+
+        print("space=%s,current_bw=%s,allowed_bw=%s", (str(space), str(current_bandwidth_gb), str(allowed_bandwidth_gb)))
+
         # download if still enough space
         for seed in data:
             if seed.size <= 10000:
                 space -= seed.size
-                if space <= 0:
+                current_bandwidth_gb += seed.size/1024
+                if space <= 0 or current_bandwidth_gb >= allowed_bandwidth_gb:
                     break
                 HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id,
                                         "%s.torrent" % seed.id)
