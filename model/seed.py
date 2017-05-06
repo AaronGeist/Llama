@@ -8,19 +8,21 @@ class SeedInfo:
     finish_num = 0
     hot = False
     free = False
+    sticky = False
     discount = 0
     discount_ttl = ""
     since = ""
 
     def __str__(self):
         msg = []
-        if self.free:
-            msg.append("Y")
-        else:
-            msg.append("N")
+        # if self.free:
+        #     msg.append("Y")
+        # else:
+        #     msg.append("N")
 
-        msg.append(str(self.upload_num))
-        msg.append(str(self.download_num))
+        # msg.append(str(self.upload_num))
+        # msg.append(str(self.download_num))
+        msg.append(self.title[0,20])
         msg.append(self.since)
         msg.append(str(int(self.size / 1024)))
 

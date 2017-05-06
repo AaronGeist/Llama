@@ -69,6 +69,7 @@ class FreeFeedAlert(Login):
                 # skip embedded contents
                 continue
 
+            seed.sticky = len(td_list[1].select("table td img[alt=\"Sticky\"]")) > 0
             seed.title = td_list[1].select("table td a")[0]["title"]
             seed.url = td_list[1].select("table td a")[0]['href']
             seed.free = len(td_list[1].select("table font.free")) > 0
@@ -121,7 +122,8 @@ class FreeFeedAlert(Login):
         # strategies:
         # 1. free seed
         # 2. hasn't been found before
-        filtered_seeds = list(filter(lambda x: x.free and Cache().get(x.id) is None, data))
+        # 3. sticky
+        filtered_seeds = list(filter(lambda x: x.free and x.sticky and Cache().get(x.id) is None, data))
         for seed in filtered_seeds:
             # keep in cache for 2 days
             Cache().set_with_expire(seed.id, str(seed), 172800)
@@ -133,29 +135,28 @@ class FreeFeedAlert(Login):
             return
 
         # send email
-        msg = ""
         for seed in data:
-            msg += str(seed)
-
-        EmailSender.send(u"种子", msg)
+            EmailSender.send(u"种子", str(seed))
 
         # check current disk space
         space = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
 
-        # check vps bankwidth
-        resp = os.popen("curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
-        jsonData = json.loads(resp)
-        info_dict = list(jsonData.values())[0]
+        # check vps bandwidth
+        resp = os.popen(
+            "curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
+        json_data = json.loads(resp)
+        info_dict = list(json_data.values())[0]
         current_bandwidth_gb = info_dict['current_bandwidth_gb']
         allowed_bandwidth_gb = info_dict['allowed_bandwidth_gb']
 
-        print("space=%s,current_bw=%s,allowed_bw=%s", (str(space), str(current_bandwidth_gb), str(allowed_bandwidth_gb)))
+        print("space=%s,current_bw=%s,allowed_bw=%s",
+              (str(space), str(current_bandwidth_gb), str(allowed_bandwidth_gb)))
 
         # download if still enough space
         for seed in data:
             if seed.size <= 10000:
                 space -= seed.size
-                current_bandwidth_gb += seed.size/1024
+                current_bandwidth_gb += seed.size / 1024
                 if space <= 0 or current_bandwidth_gb >= allowed_bandwidth_gb:
                     break
                 HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id,
@@ -238,7 +239,7 @@ if __name__ == "__main__":
     #     elif target == "mp_monitor":
     #         MagicPointChecker().monitor()
 
-    # FreeFeedAlert().check()
+    FreeFeedAlert().check()
     # MagicPointChecker().check()
     # Exchanger().exchange_mp()
-    UploadMonitor().crawl()
+    # UploadMonitor().crawl()
