@@ -32,7 +32,10 @@ class Crawler(Login):
         if cls.book_id is None:
             return
 
-        resp = HttpUtils.get("http://api.ishuhui.com/cartoon/book_ish/ver/83309921/id/%d.json" % cls.book_id,
+        soup_obj = HttpUtils.get("http://www.ishuhui.com/cartoon/book/%d" % cls.book_id)
+        sub_book_id = json.loads(soup_obj.select("meta[name='ver']")[0]['content'])['c']
+
+        resp = HttpUtils.get("http://api.ishuhui.com/cartoon/book_ish/ver/%s/id/%d.json" % (sub_book_id, cls.book_id),
                              return_raw=True)
         assert resp is not None
 
@@ -44,8 +47,8 @@ class Crawler(Login):
         for type in cartoons.keys():
             posts = cartoons[type]["posts"]
             for post_id in posts.keys():
-                url = "http://api.ishuhui.com/cartoon/post/ver/83309921/num/%d-%s-%s.json" % (
-                    cls.book_id, type, post_id)
+                url = "http://api.ishuhui.com/cartoon/post/ver/%s/num/%d-%s-%s.json" % (sub_book_id,
+                                                                                        cls.book_id, type, post_id)
                 inner_content = HttpUtils.get(url, return_raw=True)
                 assert inner_content is not None
                 inner_json_data = json.loads(inner_content.text)
@@ -53,7 +56,7 @@ class Crawler(Login):
                 m = re.search('id=(\d+)', inner_url)
                 if m:
                     inner_id = m.group(1)
-                    final_url = "http://hhzapi.ishuhui.com/cartoon/post/ver/83309921/id/%s.json" % inner_id
+                    final_url = "http://hhzapi.ishuhui.com/cartoon/post/ver/%s/id/%s.json" % (sub_book_id, inner_id)
                     cls.parse_lvl_two(final_url)
         cls.process_thread.join()
 
@@ -151,5 +154,5 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start(53)
+    Crawler.start(56)
     # Crawler.try_login()
