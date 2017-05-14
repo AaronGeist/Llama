@@ -14,7 +14,7 @@ class SeedInfo:
     since = ""
 
     def __str__(self):
-        msg = []
+        msg = list()
         # if self.free:
         #     msg.append("Y")
         # else:
@@ -22,7 +22,7 @@ class SeedInfo:
 
         # msg.append(str(self.upload_num))
         # msg.append(str(self.download_num))
-        msg.append(self.title[0,20])
+        msg.append(self.title[0: 20])
         msg.append(self.since)
         msg.append(str(int(self.size / 1024)))
 
