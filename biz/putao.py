@@ -8,6 +8,7 @@ from core.db import Cache
 from core.emailSender import EmailSender
 from core.login import Login
 from core.monitor import Monitor
+from core.seedManager import SeedManager
 from model.seed import SeedInfo
 from model.site import Site
 from util.config import Config
@@ -124,10 +125,6 @@ class FreeFeedAlert(Login):
         # 2. hasn't been found before
         # 3. sticky
         filtered_seeds = list(filter(lambda x: x.free and x.sticky and Cache().get(x.id) is None, data))
-        for seed in filtered_seeds:
-            # keep in cache for 2 days
-            Cache().set_with_expire(seed.id, str(seed), 172800)
-
         return filtered_seeds
 
     def action(self, data):
@@ -137,32 +134,9 @@ class FreeFeedAlert(Login):
         # send email
         for seed in data:
             EmailSender.send(u"种子", str(seed))
+            Cache().set_with_expire(seed.id, str(seed), 172800)
 
-        # check current disk space
-        space = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
-
-        # check vps bandwidth
-        resp = os.popen(
-            "curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
-        json_data = json.loads(resp)
-        info_dict = list(json_data.values())[0]
-        current_bandwidth_gb = info_dict['current_bandwidth_gb']
-        allowed_bandwidth_gb = info_dict['allowed_bandwidth_gb']
-
-        print("space=%s,current_bw=%s,allowed_bw=%s",
-              (str(space), str(current_bandwidth_gb), str(allowed_bandwidth_gb)))
-
-        # download if still enough space
-        for seed in data:
-            if seed.size <= 10000:
-                space -= seed.size
-                current_bandwidth_gb += seed.size / 1024
-                if space <= 0 or current_bandwidth_gb >= allowed_bandwidth_gb:
-                    break
-                HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id,
-                                        "%s.torrent" % seed.id)
-                print("remaining %s" % str(space))
-                os.popen("transmission-remote -a %s.torrent && rm %s.torrent" % (seed.id, seed.id))
+        SeedManager.try_add_seeds(data)
 
     def check(self):
         data = self.crawl()
