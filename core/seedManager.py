@@ -36,7 +36,6 @@ class SeedManager:
         HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id, torrent_file)
         os.popen("transmission-remote -a %s.torrent && rm %s" % (seed.id, torrent_file))
         print("Add seed to transmission: " + str(seed))
-        # transmission_id = os.popen("transmission-remote -l|tail -n 2| grep -v Sum|awk '{print $1}'").read()
 
     @classmethod
     def try_add_seeds(cls, seeds):
@@ -62,5 +61,7 @@ class SeedManager:
         transmission_id = os.popen("transmission-remote -l|grep Idle| head -n 1|awk '{print $1}'").read()
         info = os.popen("transmission-remote -l|grep Idle| head -n 1").read()
         if transmission_id != "":
-            os.popen("transmission-remote -t %s -rad" % transmission_id)
-            print("Remove seed: " + str(info))
+            os.popen("transmission-remote -t %s -rad" % transmission_id.strip())
+            print("Remove transmission seed: " + str(info))
+        else:
+            print("No idle transmission seed found")
