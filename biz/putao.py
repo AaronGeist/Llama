@@ -121,10 +121,17 @@ class FreeFeedAlert(Login):
 
     def filter(self, data):
         # strategies:
-        # 1. free seed
+        # 1. sticky
         # 2. hasn't been found before
-        # 3. sticky
-        filtered_seeds = list(filter(lambda x: x.free and x.sticky and Cache().get(x.id) is None, data))
+        filtered_seeds = list(filter(lambda x: x.sticky and Cache().get(x.id) is None, data))
+
+        white_lists = Config.get("putao_white_list").split("|")
+        for seed in data:
+            for white_list in white_lists:
+                if re.search(white_list, seed.title) and seed not in filtered_seeds:
+                    filtered_seeds.append(seed)
+                    break
+
         return filtered_seeds
 
     def action(self, data):
