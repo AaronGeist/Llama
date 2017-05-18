@@ -49,6 +49,7 @@ class SeedManager:
             while retry < max_retry:
                 space_in_mb = cls.check_disk_space() - new_added_space_in_mb
                 space_in_mb -= seed.size
+                print("space left: " + str(space_in_mb))
                 if space_in_mb <= 0:
                     cls.remove_oldest_seed()
                     retry += 1
