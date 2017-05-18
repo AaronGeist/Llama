@@ -1,4 +1,5 @@
 import sys
+import time
 
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
@@ -27,6 +28,8 @@ if __name__ == "__main__":
 
     cmd = sys.argv[1]
     if cmd in cmd_map.keys():
+        now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        print("%s Processing %s" % (now, cmd))
         cmd_map[cmd]()
     else:
         usage()
