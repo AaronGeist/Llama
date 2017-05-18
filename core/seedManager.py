@@ -2,6 +2,7 @@ import json
 import os
 import time
 
+from core.emailSender import EmailSender
 from util.config import Config
 from util.utils import HttpUtils
 
@@ -54,6 +55,8 @@ class SeedManager:
                     break
 
                 print("Retry %d adding seed: %s" % (retry, str(seed)))
+                if retry == max_retry:
+                    EmailSender.send(u"添加失败", str(seed))
 
     @classmethod
     def remove_oldest_seed(cls):
