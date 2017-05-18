@@ -1,9 +1,7 @@
 import json
 import os
+import time
 
-import pickle
-
-from core.db import Cache
 from util.config import Config
 from util.utils import HttpUtils
 
@@ -35,6 +33,7 @@ class SeedManager:
         torrent_file = "%s.torrent" % seed.id
         HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id, torrent_file)
         os.popen("transmission-remote -a %s" % torrent_file)
+        time.sleep(2)
         os.popen("rm %s" % torrent_file)
         print("Add seed to transmission: " + str(seed))
 
