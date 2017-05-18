@@ -120,17 +120,25 @@ class FreeFeedAlert(Login):
         return m.group(1)
 
     def filter(self, data):
-        # strategies:
-        # 1. sticky
-        # 2. hasn't been found before
-        filtered_seeds = list(filter(lambda x: x.sticky and Cache().get(x.id) is None, data))
+        # common strategy
+        # 1. hasn't been found before
+        # 2. not exceed max size
+        max_size = Config.get("seed_max_size_mb")
+        data = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, data))
 
+        # sticky
+        filtered_seeds = set(filter(lambda x: x.sticky, data))
+
+        # white list
         white_lists = Config.get("putao_white_list").split("|")
         for seed in data:
             for white_list in white_lists:
-                if re.search(white_list, seed.title) and seed not in filtered_seeds:
-                    filtered_seeds.append(seed)
+                if re.search(white_list, seed.title):
+                    filtered_seeds.add(seed)
                     break
+
+        for seed in filtered_seeds:
+            print("Add seed: " + str(seed))
 
         return filtered_seeds
 
