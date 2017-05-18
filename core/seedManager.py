@@ -42,16 +42,19 @@ class SeedManager:
     def try_add_seeds(cls, seeds):
 
         max_retry = 3
+
+        new_added_space_in_mb = 0
         for seed in seeds:
             retry = 0
             while retry < max_retry:
-                space_in_mb = cls.check_disk_space()
+                space_in_mb = cls.check_disk_space() - new_added_space_in_mb
                 space_in_mb -= seed.size
                 if space_in_mb <= 0:
                     cls.remove_oldest_seed()
                     retry += 1
                 else:
                     cls.add_seed(seed)
+                    new_added_space_in_mb += seed.size
                     break
 
                 print("Retry %d adding seed: %s" % (retry, str(seed)))
