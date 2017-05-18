@@ -149,7 +149,7 @@ class FreeFeedAlert(Login):
         # send email
         for seed in data:
             EmailSender.send(u"种子", str(seed))
-            Cache().set_with_expire(seed.id, str(seed), 172800)
+            Cache().set_with_expire(seed.id, str(seed), 864000)
 
         SeedManager.try_add_seeds(data)
 
