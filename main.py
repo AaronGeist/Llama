@@ -3,6 +3,7 @@ import time
 
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
+from biz.weather import WeatherReport
 
 cmd_map = {
     "feed_check": FreeFeedAlert().check,
@@ -11,6 +12,7 @@ cmd_map = {
     "up_monitor": UploadMonitor().monitor,
     "cpu_temp_monitor": CpuTemperature().monitor,
     "memory_monitor": Memory().monitor,
+    "weather": WeatherReport.report_shanghai_today(),
 }
 
 
