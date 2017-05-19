@@ -1,9 +1,7 @@
 import json
-import os
 import time
 
 from core.tts import TextToSpeech
-from util.config import Config
 from util.utils import HttpUtils
 
 
@@ -32,14 +30,8 @@ class WeatherReport:
 
     @classmethod
     def report_shanghai_today(cls):
-        file_path = os.path.join(Config.get("u_path"), "tts.mp3")
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-
         weather = cls.load_shanghai_today()
-
-        TextToSpeech.convert(weather, file_path)
-        os.popen("mplayer %s" % file_path)
+        TextToSpeech.convert_and_play(weather)
 
 
 if __name__ == "__main__":
