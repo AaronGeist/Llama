@@ -17,8 +17,14 @@ class TextToSpeech:
     @classmethod
     def convert_and_play(cls, text):
         audio_file_path = os.path.join(Config.get("u_path"), "tts.mp3")
+        # remove existing file
         if os.path.isfile(audio_file_path):
             os.remove(audio_file_path)
+
+        # download
+        cls.convert(text, audio_file_path)
+
+        # play
         subprocess.call(["mplayer", audio_file_path])
 
 
