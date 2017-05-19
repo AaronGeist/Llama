@@ -12,7 +12,7 @@ cmd_map = {
     "up_monitor": UploadMonitor().monitor,
     "cpu_temp_monitor": CpuTemperature().monitor,
     "memory_monitor": Memory().monitor,
-    "weather": WeatherReport.report_shanghai_today(),
+    "weather": WeatherReport.report_shanghai_today,
 }
 
 
