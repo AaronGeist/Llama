@@ -4,6 +4,7 @@ import time
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.weather import WeatherReport
+from core.tts import TextToSpeech
 
 cmd_map = {
     "feed_check": FreeFeedAlert().check,
@@ -13,6 +14,7 @@ cmd_map = {
     "cpu_temp_monitor": CpuTemperature().monitor,
     "memory_monitor": Memory().monitor,
     "weather": WeatherReport.report_shanghai_today,
+    "tts": TextToSpeech.convert_and_play
 }
 
 
@@ -32,6 +34,9 @@ if __name__ == "__main__":
     if cmd in cmd_map.keys():
         now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         print("%s Processing %s" % (now, cmd))
-        cmd_map[cmd]()
+        if len(sys.argv) > 2:
+            cmd_map[cmd](sys.argv[2])
+        else:
+            cmd_map[cmd]()
     else:
         usage()
