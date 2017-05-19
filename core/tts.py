@@ -1,6 +1,7 @@
 import os
 import string
 import subprocess
+import sys
 from urllib.parse import quote
 
 from util.config import Config
@@ -29,4 +30,6 @@ class TextToSpeech:
 
 
 if __name__ == "__main__":
-    TextToSpeech.convert("This is a test for tts", "tts.mp3")
+    if len(sys.argv) < 2:
+        exit()
+    TextToSpeech.convert_and_play(sys.argv[1])
