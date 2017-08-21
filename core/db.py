@@ -31,3 +31,9 @@ class Cache:
 
     def set_with_expire(self, key, value, expire):
         self.instance.set(name=key, value=value, ex=expire)
+
+    def set_add(self, bucket_name, value):
+        self.instance.sadd(bucket_name, value)
+
+    def set_get_all(self, bucket_name):
+        self.instance.smembers(bucket_name)

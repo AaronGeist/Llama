@@ -19,7 +19,7 @@ class SecondHand:
 
         response = HttpUtils.get(url, return_raw=True)
         assert response.status_code == 200
-        print(response.text)
+
         data = response.text.replace("({", "{").replace("})", "}")
         json_data = json.loads(data)
 
@@ -30,7 +30,7 @@ class SecondHand:
     def parse_items(cls, json_data):
         for data in json_data:
             item = cls.parse_item(data)
-            cls.db.set(item.item_id, item)
+            cls.db.set_add(item.item_id, json.dumps(item))
             cls.db.append(cls.bucket_name, item.item_id)
 
     @classmethod
@@ -64,6 +64,7 @@ class SecondHand:
     @classmethod
     def crawl(cls):
         cls.crawl_single_page(1)
+
 
 class User:
     nick_name = ""
