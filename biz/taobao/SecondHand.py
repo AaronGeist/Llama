@@ -29,6 +29,8 @@ class SecondHand:
         for i in data:
             cls.db.set_delete(cls.bucket_name_diff_id, i)
 
+        cls.db.hash_delete(cls.bucket_name_diff_item, cls.db.hash_get_all_key(cls.bucket_name_diff_item))
+
     @classmethod
     def crawl_single_page(cls, page_num):
         url = cls.base_url.replace("{pageNum}", str(page_num))
