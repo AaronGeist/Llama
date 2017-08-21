@@ -9,7 +9,7 @@ from util.utils import HttpUtils
 class SecondHand:
     base_url = "https://s.2.taobao.com/list/waterfall/waterfall.htm?stype=1&st_trust=1&page={pageNum}&q=wcf&ist=1"
 
-    bucket_name = "XIAN_YU"
+    bucket_name = "XIAN_YU_ITEM"
 
     db = Cache()
 
@@ -30,7 +30,7 @@ class SecondHand:
     def parse_items(cls, json_data):
         for data in json_data:
             item = cls.parse_item(data)
-            cls.db.append(item.item_id, json.dumps(data))
+            cls.db.hash_set(item.item_id, json.dumps(data))
             cls.db.set_add(cls.bucket_name, item.item_id)
 
     @classmethod

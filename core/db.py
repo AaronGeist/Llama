@@ -37,3 +37,12 @@ class Cache:
 
     def set_get_all(self, bucket_name):
         self.instance.smembers(bucket_name)
+
+    def set_contains(self, bucket_name, value):
+        return self.instance.sismember(bucket_name, value)
+
+    def hash_set(self, bucket_name, key, value):
+        self.instance.hset(bucket_name, key, value)
+
+    def hash_get(self,  bucket_name, key):
+        return self.instance.hget(bucket_name, key)
