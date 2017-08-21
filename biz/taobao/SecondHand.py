@@ -30,7 +30,7 @@ class SecondHand:
     def parse_items(cls, json_data):
         for data in json_data:
             item = cls.parse_item(data)
-            cls.db.set_add(item.item_id, json.dumps(item))
+            cls.db.set_add(item.item_id, json.dumps(data))
             cls.db.append(cls.bucket_name, item.item_id)
 
     @classmethod
