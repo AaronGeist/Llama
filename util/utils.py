@@ -28,29 +28,32 @@ class HttpUtils:
             return None
 
     @classmethod
-    def get(cls, url, session=None, headers=None, proxy=None, timeout=60, return_raw=False):
+    def get(cls, url, session=None, headers=None, proxy=None, timeout=60, return_raw=False, allow_redirects=True):
         if cls.session is None:
             cls.session = cls.create_session()
         if headers is None:
             headers = cls.DEFAULT_HEADER
 
         try:
-            response = cls.session.get(url, timeout=timeout, headers=headers, proxies=proxy, verify=False)
-            if response.status_code != 200:
-                print("Wrong response status: " + str(response.status_code))
+            response = cls.session.get(url, timeout=timeout, headers=headers, proxies=proxy, verify=False,
+                                       allow_redirects=allow_redirects)
+            if response.status_code != 200 and response.status_code != 301:
+                # print("Wrong response status: " + str(response.status_code))
                 return None
 
             if return_raw:
                 return response
             else:
-                return BeautifulSoup(response.text, 'html.parser')
+                return BeautifulSoup(response.text.encode(response.encoding, 'ignore'), 'html.parser')
         except Exception as e:
             print(e)
             return None
 
     @classmethod
     def post(cls, url, session=None, data=None, headers=None, proxy=None, returnRaw=False):
-        if cls.session is None:
+        if session is not None:
+            cls.session = session
+        elif cls.session is None:
             print("create session")
             cls.session = cls.create_session()
 
@@ -100,6 +103,19 @@ class HttpUtils:
             return None
         else:
             return items[0].contents[index]
+
+    @classmethod
+    def get_contents(cls, soupObj, matchExp, index=0):
+        assert (soupObj is not None)
+        assert (matchExp is not None)
+
+        items = soupObj.select(matchExp)
+
+        contents = list()
+        for item in items:
+            contents.append(item.contents[index])
+
+        return contents
 
     @classmethod
     def download_file(cls, url, dest_path, headers=None):
