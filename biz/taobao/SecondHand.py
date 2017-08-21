@@ -12,7 +12,22 @@ class SecondHand:
     bucket_name_item = "XIAN_YU_ITEM"
     bucket_name_id = "XIAN_YU_ID"
 
+    bucket_name_new_id = "XIAN_YU_NEW_ID"
+    bucket_name_diff_id = "XIAN_YU_DIFF_ID"
+    bucket_name_diff_item = "XIAN_YU_DIFF_ITEM"
+
     db = Cache()
+
+    @classmethod
+    def init(cls):
+        # clean up
+        data = cls.db.set_get_all(cls.bucket_name_new_id)
+        for i in data:
+            cls.db.set_delete(cls.bucket_name_new_id, i)
+
+        data = cls.db.set_get_all(cls.bucket_name_diff_id)
+        for i in data:
+            cls.db.set_delete(cls.bucket_name_diff_id, i)
 
     @classmethod
     def crawl_single_page(cls, page_num):
@@ -21,18 +36,39 @@ class SecondHand:
         response = HttpUtils.get(url, return_raw=True)
         assert response.status_code == 200
 
+        # to make formatting valid for JSON
         data = response.text.replace("({", "{").replace("})", "}")
         json_data = json.loads(data)
 
         items = json_data['idle']
         cls.parse_items(items)
 
+        return json_data['currPage'], json_data['totalPage']
+
     @classmethod
     def parse_items(cls, json_data):
         for data in json_data:
             item = cls.parse_item(data)
+
+            # find new item and figure out different item
+            cls.compare(item)
+
+            # store item
             cls.db.hash_set(cls.bucket_name_item, item.item_id, json.dumps(data))
             cls.db.set_add(cls.bucket_name_id, item.item_id)
+
+    @classmethod
+    def compare(cls, item):
+        if not cls.db.set_contains(cls.bucket_name_id, item.item_id):
+            cls.db.set_add(cls.bucket_name_new_id, item.item_id)
+        else:
+            old_item_str = cls.db.hash_get(cls.bucket_name_item, item.item_id)
+            old_item = cls.parse_item(json.loads(old_item_str))
+
+            if old_item.price != item.price:
+                old_item.price = str(old_item.price) + " -> " + str(item.price)
+                cls.db.set_add(cls.bucket_name_diff_id, item.item_id)
+                cls.db.hash_set(cls.bucket_name_diff_item, item.item_id, json.dumps(old_item))
 
     @classmethod
     def parse_item(cls, raw_data):
@@ -64,7 +100,20 @@ class SecondHand:
 
     @classmethod
     def crawl(cls):
-        cls.crawl_single_page(1)
+        cls.init()
+        cls.crawl_pages()
+
+    @classmethod
+    def crawl_pages(cls):
+        page_num = 1
+        previous_page = 0
+        current_page = -1
+
+        # when returned page doesn't increase, then stop
+        while previous_page != current_page:
+            previous_page = current_page
+            current_page, total_page = cls.crawl_single_page(page_num)
+            page_num += 1
 
 
 class User:
@@ -85,4 +134,4 @@ class Item:
 
 if __name__ == "__main__":
     site = SecondHand()
-    site.crawl_single_page(1)
+    site.crawl()
