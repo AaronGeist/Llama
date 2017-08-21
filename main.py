@@ -3,6 +3,7 @@ import time
 
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
+from biz.taobao.SecondHand import SecondHand
 from biz.weather import WeatherReport
 from core.tts import TextToSpeech
 
@@ -14,7 +15,8 @@ cmd_map = {
     "cpu_temp_monitor": CpuTemperature().monitor,
     "memory_monitor": Memory().monitor,
     "weather": WeatherReport.report_shanghai_today,
-    "tts": TextToSpeech.convert_and_play
+    "tts": TextToSpeech.convert_and_play,
+    "second": SecondHand.crawl,
 }
 
 

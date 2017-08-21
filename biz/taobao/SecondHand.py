@@ -13,8 +13,9 @@ class SecondHand:
 
     db = Cache()
 
-    def crawl_single_page(self, page_num):
-        url = self.base_url.replace("{pageNum}", str(page_num))
+    @classmethod
+    def crawl_single_page(cls, page_num):
+        url = cls.base_url.replace("{pageNum}", str(page_num))
 
         response = HttpUtils.get(url, return_raw=True)
         assert response.status_code == 200
@@ -23,15 +24,17 @@ class SecondHand:
         json_data = json.loads(data)
 
         items = json_data['idle']
-        self.parse_items(items)
+        cls.parse_items(items)
 
-    def parse_items(self, json_data):
+    @classmethod
+    def parse_items(cls, json_data):
         for data in json_data:
-            item = self.parse_item(data)
-            self.db.set(item.item_id, item)
-            self.db.append(self.bucket_name, item.item_id)
+            item = cls.parse_item(data)
+            cls.db.set(item.item_id, item)
+            cls.db.append(cls.bucket_name, item.item_id)
 
-    def parse_item(self, raw_data):
+    @classmethod
+    def parse_item(cls, raw_data):
         data = raw_data['item']
         item = Item()
         item.img_url = data['imageUrl']
@@ -40,7 +43,7 @@ class SecondHand:
         item.provcity = data['provcity']
         item.describe = data['describe']
         item.title = data['title']
-        item.user = self.parse_user(raw_data)
+        item.user = cls.parse_user(raw_data)
 
         m = re.search("id=(\d+)&", item.item_url)
         assert m is not None and m
@@ -48,7 +51,8 @@ class SecondHand:
 
         return item
 
-    def parse_user(self, data):
+    @classmethod
+    def parse_user(cls, data):
         data = data['user']
         user = User()
         user.nick_name = data['userNick']
@@ -57,6 +61,9 @@ class SecondHand:
 
         return user
 
+    @classmethod
+    def crawl(cls):
+        cls.crawl_single_page(1)
 
 class User:
     nick_name = ""
