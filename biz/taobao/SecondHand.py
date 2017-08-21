@@ -9,7 +9,7 @@ from util.utils import HttpUtils
 class SecondHand:
     base_url = "https://s.2.taobao.com/list/waterfall/waterfall.htm?stype=1&st_trust=1&page={pageNum}&q=wcf&ist=1"
 
-    bucket_name = "XIAN_YU_ITEM"
+    bucket_name = "XIAN_YU"
 
     db = Cache()
 
