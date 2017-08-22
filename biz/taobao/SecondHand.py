@@ -22,14 +22,19 @@ class SecondHand:
     def init(cls):
         # clean up
         data = cls.db.set_get_all(cls.bucket_name_new_id)
-        for i in data:
-            cls.db.set_delete(cls.bucket_name_new_id, i)
+        if data is not None:
+            for i in data:
+                cls.db.set_delete(cls.bucket_name_new_id, i)
 
         data = cls.db.set_get_all(cls.bucket_name_diff_id)
-        for i in data:
-            cls.db.set_delete(cls.bucket_name_diff_id, i)
+        if data is not None:
+            for i in data:
+                cls.db.set_delete(cls.bucket_name_diff_id, i)
 
-        cls.db.hash_delete(cls.bucket_name_diff_item, cls.db.hash_get_all_key(cls.bucket_name_diff_item))
+        keys = cls.db.hash_get_all_key(cls.bucket_name_diff_item)
+        if keys is not None:
+            for i in keys:
+                cls.db.hash_delete(cls.bucket_name_diff_item, i)
 
     @classmethod
     def crawl_single_page(cls, page_num):
@@ -113,6 +118,7 @@ class SecondHand:
 
         # when returned page doesn't increase, then stop
         while previous_page != current_page:
+            print("######## parsing page " + str(current_page) + " ########")
             previous_page = current_page
             current_page, total_page = cls.crawl_single_page(page_num)
             page_num += 1
