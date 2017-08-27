@@ -17,6 +17,7 @@ cmd_map = {
     "weather": WeatherReport.report_shanghai_today,
     "tts": TextToSpeech.convert_and_play,
     "second": SecondHand.crawl,
+    "second_reset": SecondHand.clean_up(),
 }
 
 

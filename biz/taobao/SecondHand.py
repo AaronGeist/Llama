@@ -125,6 +125,20 @@ class SecondHand:
             page_num += 1
             sleep(15)
 
+    @classmethod
+    def clean_up(cls):
+        cls.clean_up()
+        # clean up
+        data = cls.db.set_get_all(cls.bucket_name_id)
+        if data is not None:
+            for i in data:
+                cls.db.set_delete(cls.bucket_name_id, i)
+
+        keys = cls.db.hash_get_all_key(cls.bucket_name_item)
+        if keys is not None:
+            for i in keys:
+                cls.db.hash_delete(cls.bucket_name_item, i)
+
 
 class User:
     nick_name = ""
