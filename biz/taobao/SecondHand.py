@@ -127,7 +127,7 @@ class SecondHand:
 
     @classmethod
     def clean_up(cls):
-        cls.clean_up()
+        cls.init()
         # clean up
         data = cls.db.set_get_all(cls.bucket_name_id)
         if data is not None:
