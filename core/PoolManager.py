@@ -14,7 +14,7 @@ class PoolManager:
     def initialize(cls):
         if len(cls.sites) == 0:
             cls.sites.append(Site1())
-            cls.sites.append(Site2())
+            # cls.sites.append(Site2())
 
     @classmethod
     def refresh(cls):

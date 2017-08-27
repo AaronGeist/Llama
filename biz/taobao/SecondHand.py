@@ -1,6 +1,7 @@
 import json
 
 import re
+from time import sleep
 
 from core.db import Cache
 from util.utils import HttpUtils
@@ -113,15 +114,16 @@ class SecondHand:
     @classmethod
     def crawl_pages(cls):
         page_num = 1
-        previous_page = 0
-        current_page = -1
+        previous_page = -1
+        current_page = 0
 
         # when returned page doesn't increase, then stop
         while previous_page != current_page:
-            print("######## parsing page " + str(current_page) + " ########")
+            print("######## parsing page " + str(page_num) + " ########")
             previous_page = current_page
             current_page, total_page = cls.crawl_single_page(page_num)
             page_num += 1
+            sleep(15)
 
 
 class User:

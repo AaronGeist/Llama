@@ -1,4 +1,6 @@
-from model.ProxyInfo import ProxyInfo
+from time import sleep
+
+from model.proxy import Proxy
 from util.utils import HttpUtils
 
 
@@ -11,6 +13,8 @@ class BaseCrawler(object):
     ip_css_selector = None
     port_css_selector = None
     skip_first_line = False
+    headers = None
+    interval = 3
 
     def parse(self):
         ret = []
@@ -19,7 +23,7 @@ class BaseCrawler(object):
         while True:
             url = self.navigation_url.replace(self.PAGE_NUM_PLACEHOLDER, str(cnt))
             print(url)
-            soup_obj = HttpUtils.get(url=url)
+            soup_obj = HttpUtils.get(url=url, headers=self.headers)
             if soup_obj is None:
                 print("Fail " + url)
 
@@ -30,6 +34,9 @@ class BaseCrawler(object):
                 continue
             ret.extend(self.parse_line(soup_obj))
             cnt += 1
+            if cnt >= 10:
+                break
+            sleep(self.interval)
         return ret
 
     def parse_line(self, soup_obj):
@@ -42,7 +49,7 @@ class BaseCrawler(object):
             ip = line.select(self.ip_css_selector)[0].get_text()
             port = line.select(self.port_css_selector)[0].get_text()
             print("Find %s %s" % (ip, port))
-            proxyInfo = ProxyInfo()
+            proxyInfo = Proxy()
             proxyInfo.ip = ip
             proxyInfo.port = port
             ret.append(proxyInfo)
