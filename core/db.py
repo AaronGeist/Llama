@@ -36,7 +36,7 @@ class Cache:
         self.instance.sadd(bucket_name, value)
 
     def set_get_all(self, bucket_name):
-        self.instance.smembers(bucket_name)
+        return self.instance.smembers(bucket_name)
 
     def set_contains(self, bucket_name, value):
         return self.instance.sismember(bucket_name, value)
