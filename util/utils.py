@@ -29,8 +29,12 @@ class HttpUtils:
 
     @classmethod
     def get(cls, url, session=None, headers=None, proxy=None, timeout=60, return_raw=False, allow_redirects=True):
-        if cls.session is None:
+        if session is not None:
+            cls.session = session
+        elif cls.session is None:
+            print("create session")
             cls.session = cls.create_session()
+
         if headers is None:
             headers = cls.DEFAULT_HEADER
 

@@ -9,7 +9,7 @@ class SeedInfo:
     hot = False
     free = False
     sticky = False
-    discount = 0
+    discount = 100
     discount_ttl = ""
     since = ""
 

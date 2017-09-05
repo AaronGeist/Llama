@@ -64,8 +64,8 @@ class SeedManager:
 
     @classmethod
     def remove_oldest_seed(cls):
-        # remove the oldest seed which is idle
-        transmission_id = os.popen("transmission-remote -l|grep Idle| head -n 1|awk '{print $1}'").read()
+        # remove the oldest seed which is idle and GB size
+        transmission_id = os.popen("transmission-remote -l| grep ' GB ' | grep Idle| head -n 1|awk '{print $1}'").read()
         info = os.popen("transmission-remote -l|grep Idle| head -n 1").read()
         if transmission_id != "":
             os.popen("transmission-remote -t %s -rad" % transmission_id.strip())

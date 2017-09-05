@@ -70,7 +70,7 @@ class SecondHand:
         if not cls.db.set_contains(cls.bucket_name_id, item.item_id):
             cls.db.set_add(cls.bucket_name_new_id, item.item_id)
         else:
-            old_item_str = cls.db.hash_get(cls.bucket_name_item, item.item_id)
+            old_item_str = cls.db.hash_get(cls.bucket_name_item, item.item_id).decode()
             old_item = cls.parse_item(json.loads(old_item_str))
 
             if old_item.price != item.price:
