@@ -8,6 +8,7 @@ from core.monitor import Monitor
 from core.seedManager import SeedManager
 from model.seed import SeedInfo
 from model.site import Site
+from util.ParallelTemplate import ParallelTemplate
 from util.config import Config
 from util.utils import HttpUtils
 
@@ -19,12 +20,19 @@ class NormalAlert(Login):
         site.login_page = "https://tp.m-team.cc/takelogin.php"
         site.login_headers = {
             "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
+            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2,ja;q=0.2",
             "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "max-age=0",
+            "Connection": "keep-alive",
             "Content-Type": "application/x-www-form-urlencoded",
-            "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
+            "DNT": "1",
+            "Host": "tp.m-team.cc",
+            "Origin": "https://tp.m-team.cc",
+            "Referer": "https://tp.m-team.cc/login.php",
+            "Upgrade-Insecure-Requests": "1",
+            # "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
         }
 
         site.login_needed = True
@@ -169,12 +177,19 @@ class AdultAlert(NormalAlert):
         site.login_page = "https://tp.m-team.cc/takelogin.php"
         site.login_headers = {
             "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
+            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2,ja;q=0.2",
             "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "max-age=0",
+            "Connection": "keep-alive",
             "Content-Type": "application/x-www-form-urlencoded",
-            "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
+            "DNT": "1",
+            "Host": "tp.m-team.cc",
+            "Origin": "https://tp.m-team.cc",
+            "Referer": "https://tp.m-team.cc/login.php",
+            "Upgrade-Insecure-Requests": "1",
+            # "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
         }
 
         site.login_needed = True
@@ -253,6 +268,68 @@ class UploadMonitor(MagicPointChecker):
         return span_list[1].contents[2].replace("TB", "").strip()
 
 
+class UserCrawl(Login):
+    site = None
+
+    def generate_site(self):
+        site = Site()
+        site.home_page = "https://tp.m-team.cc/userdetails.php?id="
+        site.login_page = "https://tp.m-team.cc/takelogin.php"
+        site.login_headers = {
+            "User-Agent":
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
+        }
+
+        site.login_needed = True
+        site.login_verify_css_selector = "#info_block span.nowrap a b"
+        site.login_verify_str = Config.get("mteam_username")
+        site.login_username = Config.get("mteam_username")
+        site.login_password = Config.get("mteam_password")
+
+        self.site = site
+
+        return site
+
+    def single(self, i):
+        url = self.site.home_page + str(i)
+        soup_obj = HttpUtils.get(url, headers=self.site.login_headers, return_raw=False)
+        assert soup_obj is not None
+
+        name = HttpUtils.get_content(soup_obj, "#outer h1 span b")
+        isBan = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
+        if isBan:
+            return
+
+        if name is not None:
+            # parse rank
+            rank = "secret"
+            imgs = soup_obj.select("table.main table tr > td > img[title!='']")
+            for img in imgs:
+                if not img.has_attr("class"):
+                    rank = img["title"]
+
+            if "Peasant" in rank:
+                print("###### find user=" + name + " id=" + str(i) + " rank=" + rank)
+
+    def crawl(self):
+        site = self.generate_site()
+        assert self.login(site)
+
+        start = 180000
+        end = 190000
+        step = 1000
+
+        current = start
+        while current < end:
+            ParallelTemplate(500).run(func=self.single, inputs=range(current, current + step))
+            current += step
+
+
 if __name__ == "__main__":
     # if len(sys.argv) >= 2:
     #     target = sys.argv[1]
@@ -264,7 +341,8 @@ if __name__ == "__main__":
     #         MagicPointChecker().monitor()
 
     NormalAlert().check()
-    AdultAlert().check()
+    # AdultAlert().check()
+    # UserCrawl().crawl()
     # MagicPointChecker().check()
     # Exchanger().exchange_mp()
     # UploadMonitor().crawl()
