@@ -3,13 +3,12 @@ import os
 import time
 
 from core.emailSender import EmailSender
+from model.seed import TransmissionSeed
 from util.config import Config
 from util.utils import HttpUtils
 
 
 class SeedManager:
-    BUCKET_NAME_TRANSMISSION = "transmission_list"
-
     @classmethod
     def check_disk_space(cls):
         space_in_mb = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
@@ -39,6 +38,27 @@ class SeedManager:
         print("Add seed to transmission: " + str(seed))
 
     @classmethod
+    def parse_current_seeds(cls):
+        seeds = []
+        cmdResults = os.popen("transmission-remote -l").read()
+        lines = cmdResults.split("\n")[1: -2]  # remove first and last line
+        for line in lines:
+            data = line.split()
+            seed = TransmissionSeed()
+            seed.id = data[0]
+            seed.done = data[1]
+            seed.size = data[2] + data[3]
+            seed.ETA = data[4]
+            seed.up = data[5]
+            seed.down = data[6]
+            seed.ratio = data[7]
+            seed.status = data[8]
+            seed.name = data[9]
+            seeds.append(seed)
+
+        return seeds
+
+    @classmethod
     def try_add_seeds(cls, seeds):
 
         max_retry = 3
@@ -65,7 +85,7 @@ class SeedManager:
     @classmethod
     def remove_oldest_seed(cls):
         # remove the oldest seed which is idle and GB size
-        transmission_id = os.popen("transmission-remote -l| grep ' GB ' | grep Idle| head -n 1|awk '{print $1}'").read()
+        transmission_id = os.popen("transmission-remote -l| grep Idle| head -n 1|awk '{print $1}'").read()
         info = os.popen("transmission-remote -l|grep Idle| head -n 1").read()
         if transmission_id != "":
             os.popen("transmission-remote -t %s -rad" % transmission_id.strip())

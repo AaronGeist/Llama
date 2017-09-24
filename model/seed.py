@@ -27,3 +27,15 @@ class SeedInfo:
         msg.append(str(int(self.size / 1024)))
 
         return "|".join(msg)
+
+
+class TransmissionSeed:
+    id = ""
+    done = 0
+    have = 0
+    ETA = None
+    up = 0
+    down = 0
+    ratio = 0
+    status = None
+    name = ""
