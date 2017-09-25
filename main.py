@@ -6,6 +6,7 @@ from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
 from biz.weather import WeatherReport
+from core.seedManager import SeedManager
 from core.tts import TextToSpeech
 
 cmd_map = {
@@ -20,7 +21,9 @@ cmd_map = {
     "second": SecondHand.crawl,
     "second_reset": SecondHand.clean_up,
     "mt_feed_check": NormalAlert().check,
-    "mt_adult_feed_check": AdultAlert().check(),
+    "mt_adult_feed_check": AdultAlert().check,
+    "check_seed": SeedManager().parse_current_seeds
+
 }
 
 
