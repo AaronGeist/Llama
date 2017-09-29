@@ -21,8 +21,8 @@ cmd_map = {
     "second": SecondHand.crawl,
     "second_reset": SecondHand.clean_up,
     "mt_feed_check": NormalAlert().check,
-    "mt_adult_feed_check": AdultAlert().check,
-    "check_seed": SeedManager().parse_current_seeds
+    "mt_adult": AdultAlert().check,
+    "check_seed": SeedManager().find_bad_seeds
 
 }
 

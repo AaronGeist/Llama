@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 import re
 
 from core.db import Cache
@@ -6,6 +7,7 @@ from core.emailSender import EmailSender
 from core.login import Login
 from core.monitor import Monitor
 from core.seedManager import SeedManager
+from model.ptUser import User
 from model.seed import SeedInfo
 from model.site import Site
 from util.ParallelTemplate import ParallelTemplate
@@ -32,7 +34,6 @@ class NormalAlert(Login):
             "Origin": "https://tp.m-team.cc",
             "Referer": "https://tp.m-team.cc/login.php",
             "Upgrade-Insecure-Requests": "1",
-            # "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
         }
 
         site.login_needed = True
@@ -136,7 +137,7 @@ class NormalAlert(Login):
         # 1. hasn't been found before
         # 2. not exceed max size
         max_size = Config.get("seed_max_size_mb")
-        data = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, data))
+        data = list(filter(lambda x: x.size < max_size, data))
 
         # sticky
         filtered_seeds = set(filter(lambda x: x.sticky and (x.free or x.discount <= 50), data))
@@ -158,12 +159,12 @@ class NormalAlert(Login):
         if len(data) == 0:
             return
 
-        # send email
-        for seed in data:
-            EmailSender.send(u"种子", str(seed))
-            Cache().set_with_expire(seed.id, str(seed), 864000)
-
-        SeedManager.try_add_seeds(data)
+            # # send email
+            # for seed in data:
+            #     EmailSender.send(u"种子", str(seed))
+            #     Cache().set_with_expire(seed.id, str(seed), 864000)
+            #
+            # SeedManager.try_add_seeds(data)
 
     def check(self):
         data = self.crawl()
@@ -209,7 +210,9 @@ class AdultAlert(NormalAlert):
         data = list(filter(lambda x: x.size < max_size, data))
 
         # sticky
-        filtered_seeds = set(filter(lambda x: (x.sticky and (x.free or x.discount <= 50)) or x.discount <= 50, data))
+        filtered_seeds = set(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num >= 2) and (
+                (x.sticky and (x.free or x.discount <= 50)) or (x.discount <= 50 and x.upload_num <= 2))), data))
 
         # white list
         white_lists = Config.get("putao_white_list").split("|")
@@ -271,18 +274,28 @@ class UploadMonitor(MagicPointChecker):
 class UserCrawl(Login):
     site = None
 
+    buffer = []
+    errors = []
+
     def generate_site(self):
         site = Site()
         site.home_page = "https://tp.m-team.cc/userdetails.php?id="
         site.login_page = "https://tp.m-team.cc/takelogin.php"
         site.login_headers = {
             "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2",
+            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2,ja;q=0.2",
             "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "max-age=0",
+            "Connection": "keep-alive",
             "Content-Type": "application/x-www-form-urlencoded",
-            "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
+            "DNT": "1",
+            "Host": "tp.m-team.cc",
+            "Origin": "https://tp.m-team.cc",
+            "Referer": "https://tp.m-team.cc/login.php",
+            "Upgrade-Insecure-Requests": "1",
+            "Cookie": "tp=NjM1NmNkODExODNlMjQ5YTAyOTAwYmJlMjdkMGRjMGUwMWI2ZjE0Nw%3D%3D"
         }
 
         site.login_needed = True
@@ -296,38 +309,167 @@ class UserCrawl(Login):
         return site
 
     def single(self, i):
-        url = self.site.home_page + str(i)
-        soup_obj = HttpUtils.get(url, headers=self.site.login_headers, return_raw=False)
-        assert soup_obj is not None
+        try:
+            url = self.site.home_page + str(i)
+            soup_obj = HttpUtils.get(url, headers=self.site.login_headers, return_raw=False)
+            assert soup_obj is not None
 
-        name = HttpUtils.get_content(soup_obj, "#outer h1 span b")
-        isBan = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
-        if isBan:
+            user = User()
+            user.id = i
+            user.name = HttpUtils.get_content(soup_obj, "#outer h1 span b")
+
+            if user.name is None:
+                return
+
+            try:
+                user.is_ban = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
+
+                if len(soup_obj.select("#outer table tr")) <= 5:
+                    user.is_secret = True
+                    print("secret user: id=" + str(i))
+                else:
+
+                    tr_list = soup_obj.select("#outer table tr")
+                    for tr in tr_list:
+                        td_name = HttpUtils.get_content(tr, "td:nth-of-type(1)")
+                        if td_name == "加入日期":
+                            user.create_time = HttpUtils.get_content(tr, "td:nth-of-type(2)").replace(" (", "")
+                        elif td_name == "最近動向":
+                            user.last_time = HttpUtils.get_content(tr, "td:nth-of-type(2)").replace(" (", "")
+                        elif td_name == "傳送":
+                            user.ratio = HttpUtils.get_content(tr, "td:nth-of-type(2) table tr td font")
+                            if user.ratio is None:
+                                # seems that no download is made and ratio is infinite
+                                user.ratio = -1
+                                user.up = self.parse_size_in_gb(
+                                    HttpUtils.get_content(tr,
+                                                          "td:nth-of-type(2) table tr:nth-of-type(1) td:nth-of-type(1)",
+                                                          1))
+                                user.down = self.parse_size_in_gb(
+                                    HttpUtils.get_content(tr,
+                                                          "td:nth-of-type(2) table tr:nth-of-type(1) td:nth-of-type(2)",
+                                                          2))
+                            else:
+                                user.up = self.parse_size_in_gb(
+                                    HttpUtils.get_content(tr,
+                                                          "td:nth-of-type(2) table tr:nth-of-type(2) td:nth-of-type(1)",
+                                                          1))
+                                user.down = self.parse_size_in_gb(
+                                    HttpUtils.get_content(tr,
+                                                          "td:nth-of-type(2) table tr:nth-of-type(2) td:nth-of-type(2)",
+                                                          2))
+                        elif td_name == "魔力值":
+                            user.mp = HttpUtils.get_content(tr, "td:nth-of-type(2)")
+
+                    # parse rank
+                    user.rank = "secret"
+                    imgs = soup_obj.select("table.main table tr > td > img[title!='']")
+                    for img in imgs:
+                        if not img.has_attr("class"):
+                            user.rank = img["title"]
+
+                            # if "Peasant" in user.rank:
+                            #     print("###### find user=" + user.name + " id=" + str(i) + " rank=" + user.rank)
+                    print("###### find user=" + user.name + " id=" + str(i) + " rank=" + user.rank)
+            except Exception as e:
+                print(str(i) + "\n" + str(e) + "\n")
+
+            # print(str(user))
+            self.buffer.append(user)
+        except Exception as e:
+            print(">>>>> fail to parse " + str(i))
+            self.errors.append(i)
+
+    def parse_size_in_gb(self, sizeStr):
+        assert sizeStr is not None
+        if str.endswith(sizeStr, "TB"):
+            return float(sizeStr.replace(" TB", "").replace(": ", "")) * 1024
+        if str.endswith(sizeStr, "GB"):
+            return float(sizeStr.replace(" GB", "").replace(": ", ""))
+        elif str.endswith(sizeStr, "MB"):
+            return 0.001
+        elif str.endswith(sizeStr, "KB"):
+            return 0.001
+        else:
+            return -1
+
+    def write(self):
+        if len(self.buffer) == 0:
             return
 
-        if name is not None:
-            # parse rank
-            rank = "secret"
-            imgs = soup_obj.select("table.main table tr > td > img[title!='']")
-            for img in imgs:
-                if not img.has_attr("class"):
-                    rank = img["title"]
+        print("########### start writing ###########")
+        with open("user.txt", "a") as f:
+            for data in self.buffer:
+                f.write(str(data) + "\r")
+        print("########### finish writing ###########")
+        self.buffer.clear()
 
-            if "Peasant" in rank:
-                print("###### find user=" + name + " id=" + str(i) + " rank=" + rank)
-
-    def crawl(self):
+    def crawl(self, ids=None):
         site = self.generate_site()
         assert self.login(site)
 
-        start = 180000
-        end = 190000
-        step = 1000
+        if ids is None:
+            start = 0
+            end = 200000
+            step = 2000
 
-        current = start
-        while current < end:
-            ParallelTemplate(500).run(func=self.single, inputs=range(current, current + step))
-            current += step
+            current = start
+            while current < end:
+                ParallelTemplate(500).run(func=self.single, inputs=range(current, current + step))
+                current += step
+
+                if len(self.errors) > 0:
+                    print(">>>>>>>>>>>>>>>>> retry >>>>>>>>>>>>>>>>>>>>>>")
+                    ParallelTemplate(100).run(func=self.single, inputs=self.errors)
+                    self.errors.clear()
+                    print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
+
+                if len(self.buffer) > 300:
+                    self.write()
+            self.write()
+        else:
+            start = 0
+            end = len(ids)
+            step = 2000
+
+            current = start
+            while current < end:
+                ParallelTemplate(500).run(func=self.single, inputs=ids[current: min(current + step, end)])
+                current += step
+
+                if len(self.errors) > 0:
+                    print(">>>>>>>>>>>>>>>>> retry >>>>>>>>>>>>>>>>>>>>>>")
+                    ParallelTemplate(100).run(func=self.single, inputs=self.errors)
+                    self.errors.clear()
+                    print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
+
+                if len(self.buffer) > 300:
+                    self.write()
+            self.write()
+
+    def refresh(self):
+        userIds = []
+        with open("user_origin.txt", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                user = User.parse(line)
+                userIds.append(user.id)
+        self.crawl(userIds)
+
+    def filter(self):
+        users = []
+        with open("user.txt", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                user = User.parse(line)
+                if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
+                    continue
+                if user.ratio < 0.8 and user.ratio > 0:
+                    if "Peasant" in user.rank:
+                        if user.ratio < 0.5:
+                            print(">>>>>>>>>> " + str(user))
+                        else:
+                            print("**********" + str(user))
 
 
 if __name__ == "__main__":
@@ -340,9 +482,11 @@ if __name__ == "__main__":
     #     elif target == "mp_monitor":
     #         MagicPointChecker().monitor()
 
-    NormalAlert().check()
+    # NormalAlert().check()
     # AdultAlert().check()
     # UserCrawl().crawl()
+    UserCrawl().refresh()
+    # UserCrawl().filter()
     # MagicPointChecker().check()
     # Exchanger().exchange_mp()
     # UploadMonitor().crawl()

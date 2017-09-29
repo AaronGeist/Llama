@@ -154,6 +154,30 @@ class HttpUtils:
             print("Cannot parser image name")
             return "NA.jpg"
 
+    factor_map = {
+        "GB": 1 / 1024,
+        "MB": 1,
+        "KB": 1024
+    }
+
+    @classmethod
+    def pretty_format(cls, data, unit):
+        assert data is not None
+
+        factor = cls.factor_map[str(unit).upper()]
+        data = str(data).replace(" ", "").upper()
+
+        if data.endswith("GB"):
+            res = float(data.replace("GB", "")) * (1024 * factor)
+        elif data.endswith("MB"):
+            res = float(data.replace("MB", "")) * factor
+        elif data.endswith("KB"):
+            res = float(data.replace("KB", "")) * (factor / 1024)
+        else:
+            res = 0.001
+
+        return res
+
 
 if __name__ == "__main__":
     print(HttpUtils.get("https://www.jd.com"))

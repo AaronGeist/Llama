@@ -9,6 +9,12 @@ from util.utils import HttpUtils
 
 
 class SeedManager:
+    # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
+    speed_threshold = [0, 0, 0, 100, 100, 300, 300, 500, 500, 500, 500]
+
+    # index indicates the size in GB, 0 -> 0GB
+    size_factor = [1, 1, 1.2, 1.3, 1.5, 1.5, 1.5, 1.5, 2, 2, 2, 2.5, 2.5, 2.5]
+
     @classmethod
     def check_disk_space(cls):
         space_in_mb = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
@@ -38,57 +44,134 @@ class SeedManager:
         print("Add seed to transmission: " + str(seed))
 
     @classmethod
+    def load_avg_speed(cls):
+        times = 15
+        interval = 2
+
+        statistics = {}
+        for i in range(times):
+            seeds = cls.parse_current_seeds()
+            for seed in seeds:
+                if seed.id not in statistics.keys():
+                    statistics[seed.id] = seed
+                else:
+                    item = statistics[seed.id]
+                    item.up += seed.up
+                    item.down += seed.down
+            time.sleep(interval)
+
+        for key in statistics.keys():
+            statistics[key].up = round(statistics[key].up / times, 2)
+            statistics[key].down = round(statistics[key].down / times, 2)
+
+        for seed in statistics.values():
+            print(seed)
+
+        return statistics.values()
+
+    @classmethod
     def parse_current_seeds(cls):
         seeds = []
-        cmdResults = os.popen("transmission-remote -l").read()
-        lines = cmdResults.split("\n")[1: -2]  # remove first and last line
+        cmd_result = os.popen("transmission-remote -l").read()
+        lines = cmd_result.split("\n")[1: -2]  # remove first and last line
+
         for line in lines:
-            data = line.split()
             seed = TransmissionSeed()
-            seed.id = data[0]
-            seed.done = data[1]
-            seed.size = data[2] + data[3]
-            seed.ETA = data[4]
-            seed.up = data[5]
-            seed.down = data[6]
-            seed.ratio = data[7]
-            seed.status = data[8]
-            seed.name = data[9]
             seeds.append(seed)
+
+            data = line.split()
+            seed.id = data[0]
+            cmd_result = os.popen("transmission-remote -t {0} -i".format(seed.id)).read()
+            seed_details = cmd_result.split("\n")
+
+            for detail in seed_details:
+                if detail.startswith("  Name: "):
+                    seed.name = detail.replace("  Name: ", "")
+                elif detail.startswith("  State: "):
+                    seed.status = detail.replace("  State: ", "")
+                elif detail.startswith("  Percent Done:"):
+                    seed.done = float(detail.replace("  Percent Done: ", "").replace('%', ''))
+                elif detail.startswith("  ETA: "):
+                    seed.ETA = detail.replace("  ETA: ", "").replace(" ", "").split("(")[0]
+                elif detail.startswith("  Download Speed: "):
+                    seed.down = HttpUtils.pretty_format(
+                        detail.replace("  Download Speed: ", "").replace(" ", "").split("/s")[0], "KB")
+                elif detail.startswith("  Upload Speed: "):
+                    seed.up = HttpUtils.pretty_format(
+                        detail.replace("  Upload Speed: ", "").replace(" ", "").split("/s")[0], "KB")
+                elif detail.startswith("  Total size: "):
+                    seed.size = HttpUtils.pretty_format(
+                        detail.replace("  Total size: ", "").replace(" ", "").split("(")[0], "MB")
+                elif detail.startswith("  Ratio: "):
+                    seed.ratio = float(detail.replace("  Ratio: ", ""))
 
         return seeds
 
     @classmethod
-    def try_add_seeds(cls, seeds):
+    def try_add_seeds(cls, new_seeds):
 
         max_retry = 3
 
         new_added_space_in_mb = 0
-        for seed in seeds:
+        for new_seed in new_seeds:
             retry = 0
             while retry < max_retry:
-                space_in_mb = cls.check_disk_space() - new_added_space_in_mb
-                space_in_mb -= seed.size
+                space_in_mb = cls.check_disk_space() - new_added_space_in_mb - new_seed.size
                 print("space left: " + str(space_in_mb))
                 if space_in_mb <= 0:
-                    cls.remove_oldest_seed()
+                    # not enough space left, try to remove existing bad seeds
+                    total_size, bad_seeds = cls.find_bad_seeds()
+
+                    for bad_seed in bad_seeds:
+                        cls.remove_seed(bad_seed.id)
+                        space_in_mb += bad_seed.size
+                        print("remove bad seed and space left: " + str(space_in_mb))
+                        if space_in_mb > 100:
+                            break
                     retry += 1
                 else:
-                    cls.add_seed(seed)
-                    new_added_space_in_mb += seed.size
+                    cls.add_seed(new_seed)
+                    new_added_space_in_mb += new_seed.size
                     break
 
-                print("Retry %d adding seed: %s" % (retry, str(seed)))
+                print("Retry %d adding seed: %s" % (retry, str(new_seed)))
                 if retry == max_retry:
-                    EmailSender.send(u"添加失败", str(seed))
+                    EmailSender.send(u"添加失败", str(new_seed))
 
     @classmethod
-    def remove_oldest_seed(cls):
-        # remove the oldest seed which is idle and GB size
-        transmission_id = os.popen("transmission-remote -l| grep Idle| head -n 1|awk '{print $1}'").read()
-        info = os.popen("transmission-remote -l|grep Idle| head -n 1").read()
-        if transmission_id != "":
-            os.popen("transmission-remote -t %s -rad" % transmission_id.strip())
-            print("Remove transmission seed: " + str(info))
-        else:
-            print("No idle transmission seed found")
+    def remove_seed(cls, seed_id):
+        assert seed_id is not None
+        os.popen("transmission-remote -t %s -rad" % seed_id.strip())
+        print("Remove transmission seed: " + seed_id)
+
+    @classmethod
+    def find_bad_seeds(cls):
+        seeds = cls.load_avg_speed()
+
+        bad_seeds = []
+        total_bad_seed_size = 0
+        for seed in seeds:
+            if str(seed.status).upper() == "IDLE":
+                print("IDLE: >>>>>>>>> " + str(seed))
+                total_bad_seed_size += seed.size
+                bad_seeds.append(seed)
+                continue
+
+            speed_threshold = cls.speed_threshold[round(seed.done / 10)] * cls.size_factor[round(seed.size / 1024)]
+            print("check speed {0}, {1}, {2}, {3}".format(seed.up, str(cls.speed_threshold[round(seed.done / 10)]),
+                                                          str(cls.size_factor[round(seed.size / 1024)]),
+                                                          speed_threshold))
+            if seed.up < speed_threshold:
+                print("SLOW: >>>>>>>>> " + str(seed))
+                total_bad_seed_size += seed.size
+                bad_seeds.append(seed)
+                continue
+
+        # the more larger size and the less upload speed, the first to be removed
+        # up is added 0.01 to avoid dividing zero
+        bad_seeds.sort(key=lambda x: round(x.size / (x.up + 0.01)), reverse=True)
+
+        for seed in bad_seeds:
+            print(seed)
+
+        return total_bad_seed_size, bad_seeds

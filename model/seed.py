@@ -32,10 +32,59 @@ class SeedInfo:
 class TransmissionSeed:
     id = ""
     done = 0
-    have = 0
+    size = 0
     ETA = None
     up = 0
     down = 0
     ratio = 0
     status = None
     name = ""
+
+    def __str__(self):
+        msg = list()
+        msg.append(self.id)
+        msg.append(str(self.done))
+        msg.append(str(self.size))
+        msg.append(self.ETA)
+        msg.append(str(self.up))
+        msg.append(str(self.down))
+        msg.append(str(self.ratio))
+        msg.append(str(self.status))
+        msg.append(str(self.name))
+
+        return "|".join(msg)
+
+if __name__=="__main__":
+    l = []
+    seed = TransmissionSeed()
+    seed.size = 1
+    seed.up = 2
+    seed.ETA=""
+    seed.status=""
+    l.append(seed)
+
+    seed = TransmissionSeed()
+    seed.size = 2
+    seed.up = 2
+    seed.ETA=""
+    seed.status=""
+    l.append(seed)
+
+    seed = TransmissionSeed()
+    seed.size = 3
+    seed.up = 1
+    seed.ETA=""
+    seed.status=""
+    l.append(seed)
+
+
+    seed = TransmissionSeed()
+    seed.size = 3
+    seed.up = 100
+    seed.ETA=""
+    seed.status=""
+    l.append(seed)
+
+    l.sort(key=lambda x: round(x.size/x.up), reverse=True)
+    for i in l:
+        print(i)
