@@ -19,6 +19,8 @@ class NormalAlert(Login):
     site = Site()
     size_factor = 1.074  # the shown size on web page is not accurate
 
+    download_link = "https://tp.m-team.cc/download.php?id=%s&https=1"
+
     def __init__(self):
         self.site.home_page = "https://tp.m-team.cc/torrents.php"
         self.site.login_page = "https://tp.m-team.cc/takelogin.php"
@@ -173,7 +175,7 @@ class NormalAlert(Login):
         for seed in final_seeds:
             print("Find valuable seed: " + str(seed))
 
-        return filtered_seeds
+        return final_seeds
 
     def action(self, data):
         if len(data) == 0:
@@ -183,7 +185,7 @@ class NormalAlert(Login):
         for seed in data:
             EmailSender.send(u"种子", str(seed))
 
-        success_seeds = SeedManager.try_add_seeds(data)
+        success_seeds = SeedManager.try_add_seeds(data, self.download_link)
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)

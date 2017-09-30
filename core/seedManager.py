@@ -38,9 +38,9 @@ class SeedManager:
         return current_bandwidth_gb, allowed_bandwidth_gb
 
     @classmethod
-    def add_seed(cls, seed):
+    def add_seed(cls, seed, download_link):
         torrent_file = "%s.torrent" % seed.id
-        HttpUtils.download_file("https://pt.sjtu.edu.cn/download.php?id=%s" % seed.id, torrent_file)
+        HttpUtils.download_file(download_link % seed.id, torrent_file)
         os.popen("transmission-remote -a %s" % torrent_file)
         time.sleep(2)
         os.popen("rm %s" % torrent_file)
@@ -122,7 +122,7 @@ class SeedManager:
         return seeds
 
     @classmethod
-    def try_add_seeds(cls, new_seeds):
+    def try_add_seeds(cls, new_seeds, download_link):
         success_seeds = []
         max_retry = 1
 
@@ -144,7 +144,7 @@ class SeedManager:
                             break
                     retry += 1
                 else:
-                    cls.add_seed(new_seed)
+                    cls.add_seed(new_seed, download_link)
                     success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
                     break
@@ -209,6 +209,6 @@ class SeedManager:
         bad_seeds.sort(key=lambda x: round(x.size / (x.up + 0.01)), reverse=True)
 
         for seed in bad_seeds:
-            print(seed)
+            print("bad seed: " + str(seed))
 
         return total_bad_seed_size, bad_seeds

@@ -16,6 +16,9 @@ from util.utils import HttpUtils
 
 
 class FreeFeedAlert(Login):
+
+    download_link = "https://pt.sjtu.edu.cn/download.php?id=%s"
+
     def generate_site(self):
         site = Site()
         site.home_page = "https://pt.sjtu.edu.cn/torrents.php"
@@ -151,7 +154,7 @@ class FreeFeedAlert(Login):
             EmailSender.send(u"种子", str(seed))
             Cache().set_with_expire(seed.id, str(seed), 864000)
 
-        SeedManager.try_add_seeds(data)
+        SeedManager.try_add_seeds(data, self.download_link)
 
     def check(self):
         data = self.crawl()
