@@ -149,6 +149,7 @@ class SeedManager:
                     cls.add_seed(new_seed, download_link)
                     success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
+                    EmailSender.send(u"种子", str(new_seed))
                     break
 
                 retry += 1

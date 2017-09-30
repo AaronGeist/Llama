@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-import json
 import re
 
 from core.db import Cache
@@ -182,10 +181,6 @@ class NormalAlert(Login):
             return
 
         success_seeds = SeedManager.try_add_seeds(candidate_seeds, self.download_link)
-
-        # send email
-        for seed in success_seeds:
-            EmailSender.send(u"种子", str(seed))
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
