@@ -131,9 +131,10 @@ class SeedManager:
             retry = 0
             while retry < max_retry:
                 space_in_mb = cls.check_disk_space() - new_added_space_in_mb - new_seed.size
-                print("space left: " + str(space_in_mb))
+                print("disk space left: " + str(space_in_mb))
+
+                # not enough space left, try to remove existing bad seeds
                 if space_in_mb <= 0:
-                    # not enough space left, try to remove existing bad seeds
                     total_size, bad_seeds = cls.find_bad_seeds()
 
                     for bad_seed in bad_seeds:
@@ -142,14 +143,15 @@ class SeedManager:
                         print("remove bad seed and space left: " + str(space_in_mb))
                         if space_in_mb > 100:
                             break
-                    retry += 1
-                else:
+
+                if space_in_mb > 0:
                     cls.add_seed(new_seed, download_link)
                     success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
                     break
 
-                print("Retry %d adding seed: %s" % (retry, str(new_seed)))
+                retry += 1
+                print("Try %d adding seed failed: %s" % (retry, str(new_seed)))
                 if retry == max_retry:
                     EmailSender.send(u"添加失败", str(new_seed))
 
@@ -168,6 +170,10 @@ class SeedManager:
         bad_seeds = []
         total_bad_seed_size = 0
         for seed in seeds:
+            # let new seed live for N minutes
+            if seed.since <= 60 * 30:
+                continue
+
             if str(seed.status).upper() == "IDLE":
                 print("IDLE: >>>>>>>>> " + str(seed))
                 total_bad_seed_size += seed.size
