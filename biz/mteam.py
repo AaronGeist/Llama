@@ -189,8 +189,8 @@ class NormalAlert(Login):
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
 
 
-def check(self):
-    self.action(self.filter(self.crawl()))
+    def check(self):
+        self.action(self.filter(self.crawl()))
 
 
 class AdultAlert(NormalAlert):
