@@ -18,9 +18,12 @@ class SeedManager:
     # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
     down_avg_speed_threshold = [0, 100, 200, 300, 400, 500, 500, 500, 500, 500, 500]
 
+    init_disk_space = 23 * 1024
+
     @classmethod
     def check_disk_space(cls):
         space_in_mb = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
+        space_in_mb = min(space_in_mb, cls.init_disk_space - cls.total_size())
         print("disk_space=%sMB" % str(space_in_mb))
         return space_in_mb
 
@@ -120,6 +123,14 @@ class SeedManager:
                         detail.replace("  Downloaded: ", ""), "KB")
 
         return seeds
+
+    @classmethod
+    def total_size(cls):
+        seeds = cls.parse_current_seeds()
+        total_size = 0
+        for seed in seeds:
+            total_size += seed.size
+        return total_size
 
     @classmethod
     def try_add_seeds(cls, new_seeds, download_link):
