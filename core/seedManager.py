@@ -160,12 +160,13 @@ class SeedManager:
                     cls.add_seed(new_seed, download_link)
                     success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
-                    EmailSender.send(u"种子", str(new_seed))
+                    if Config.get("enable_email"):
+                        EmailSender.send(u"种子", str(new_seed))
                     break
 
                 retry += 1
                 print("Try %d adding seed failed: %s" % (retry, str(new_seed)))
-                if retry == max_retry:
+                if retry == max_retry and Config.get("enable_email"):
                     EmailSender.send(u"添加失败", str(new_seed))
 
         return success_seeds
@@ -184,7 +185,7 @@ class SeedManager:
         total_bad_seed_size = 0
         for seed in seeds:
             # let new seed live for N minutes
-            if seed.since <= 60 * 30:
+            if seed.since <= 60 * 60:
                 continue
 
             if str(seed.status).upper() == "IDLE":
