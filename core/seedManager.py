@@ -48,8 +48,8 @@ class SeedManager:
 
     @classmethod
     def load_avg_speed(cls):
-        times = 30
-        interval = 2
+        times = 60
+        interval = 1
 
         statistics = {}
         for i in range(times):

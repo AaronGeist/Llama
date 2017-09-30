@@ -138,7 +138,7 @@ class NormalAlert(Login):
         data = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, data))
 
         # customized strategy
-        filtered_seeds = set(filter(
+        filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
                       (x.free or (x.sticky and x.discount <= 50) or (
                           x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
@@ -150,10 +150,27 @@ class NormalAlert(Login):
         for seed in data:
             for white_list in white_lists:
                 if re.search(white_list, seed.title):
-                    filtered_seeds.add(seed)
+                    filtered_seeds.append(seed)
                     break
 
+        for x in filtered_seeds:
+            print("score=" + str(int(x.sticky) * 100 + int(x.free) * 50 + round(
+                (100000 / x.discount) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3)) + "  >>>> " + str(
+                x))
+
+        filtered_seeds.sort(key=lambda x: int(x.sticky) * 100 + int(x.free) * 50 + round(
+            (100000 / x.discount) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3), reverse=True)
+
+        # do not add too many seed at one time
+        total_size_limit = 10 * 1024
+        size_cnt = 0
+        final_seeds = []
         for seed in filtered_seeds:
+            size_cnt += seed.size
+            if size_cnt < total_size_limit:
+                final_seeds.append(seed)
+
+        for seed in final_seeds:
             print("Find valuable seed: " + str(seed))
 
         return filtered_seeds
@@ -162,7 +179,7 @@ class NormalAlert(Login):
         if len(data) == 0:
             return
 
-            # send email
+        # send email
         for seed in data:
             EmailSender.send(u"种子", str(seed))
 
@@ -171,8 +188,9 @@ class NormalAlert(Login):
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
 
-    def check(self):
-        self.action(self.filter(self.crawl()))
+
+def check(self):
+    self.action(self.filter(self.crawl()))
 
 
 class AdultAlert(NormalAlert):
