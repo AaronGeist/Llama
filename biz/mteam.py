@@ -177,19 +177,18 @@ class NormalAlert(Login):
 
         return final_seeds
 
-    def action(self, data):
-        if len(data) == 0:
+    def action(self, candidate_seeds):
+        if len(candidate_seeds) == 0:
             return
 
-        # send email
-        for seed in data:
-            EmailSender.send(u"种子", str(seed))
+        success_seeds = SeedManager.try_add_seeds(candidate_seeds, self.download_link)
 
-        success_seeds = SeedManager.try_add_seeds(data, self.download_link)
+        # send email
+        for seed in success_seeds:
+            EmailSender.send(u"种子", str(seed))
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
-
 
     def check(self):
         self.action(self.filter(self.crawl()))

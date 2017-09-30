@@ -126,12 +126,13 @@ class SeedManager:
         success_seeds = []
         max_retry = 1
 
+        init_disk_space = cls.check_disk_space()
         new_added_space_in_mb = 0
         for new_seed in new_seeds:
             retry = 0
             while retry < max_retry:
-                space_in_mb = cls.check_disk_space() - new_added_space_in_mb - new_seed.size
-                print("disk space left: " + str(space_in_mb))
+                space_in_mb = round(init_disk_space - new_added_space_in_mb - new_seed.size, 1)
+                print("disk space left: %sMB" % str(space_in_mb))
 
                 # not enough space left, try to remove existing bad seeds
                 if space_in_mb <= 0:
@@ -140,7 +141,7 @@ class SeedManager:
                     for bad_seed in bad_seeds:
                         cls.remove_seed(bad_seed.id)
                         space_in_mb += bad_seed.size
-                        print("remove bad seed and space left: " + str(space_in_mb))
+                        print("remove bad seed and space left: %sMB" % str(space_in_mb))
                         if space_in_mb > 100:
                             break
 
