@@ -15,13 +15,18 @@ class SeedInfo:
 
     def __str__(self):
         msg = list()
-        # if self.free:
-        #     msg.append("Y")
-        # else:
-        #     msg.append("N")
+        if self.free:
+            msg.append("Y")
+        else:
+            msg.append("N")
+        if self.sticky:
+            msg.append("Y")
+        else:
+            msg.append("N")
 
-        # msg.append(str(self.upload_num))
-        # msg.append(str(self.download_num))
+        msg.append(str(self.discount))
+        msg.append(str(self.upload_num))
+        msg.append(str(self.download_num))
         msg.append(self.title[0: 25])
         msg.append(self.since)
         msg.append(str(int(self.size / 1024)))
@@ -39,6 +44,8 @@ class TransmissionSeed:
     ratio = 0
     status = None
     name = ""
+    since = 0
+    done_size = 0
 
     def __str__(self):
         msg = list()
@@ -51,6 +58,9 @@ class TransmissionSeed:
         msg.append(str(self.ratio))
         msg.append(str(self.status))
         msg.append(str(self.name))
+        msg.append(str(self.since))
+        msg.append(str(self.done_size))
+
 
         return "|".join(msg)
 

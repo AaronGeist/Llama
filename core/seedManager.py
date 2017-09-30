@@ -10,10 +10,13 @@ from util.utils import HttpUtils
 
 class SeedManager:
     # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
-    speed_threshold = [0, 0, 0, 100, 100, 300, 300, 500, 500, 500, 500]
+    up_speed_threshold = [0, 0, 0, 100, 100, 300, 300, 500, 500, 500, 500]
 
     # index indicates the size in GB, 0 -> 0GB
     size_factor = [1, 1, 1.2, 1.3, 1.5, 1.5, 1.5, 1.5, 2, 2, 2, 2.5, 2.5, 2.5]
+
+    # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
+    down_avg_speed_threshold = [0, 100, 200, 300, 400, 500, 500, 500, 500, 500, 500]
 
     @classmethod
     def check_disk_space(cls):
@@ -45,7 +48,7 @@ class SeedManager:
 
     @classmethod
     def load_avg_speed(cls):
-        times = 15
+        times = 30
         interval = 2
 
         statistics = {}
@@ -103,13 +106,24 @@ class SeedManager:
                     seed.size = HttpUtils.pretty_format(
                         detail.replace("  Total size: ", "").replace(" ", "").split("(")[0], "MB")
                 elif detail.startswith("  Ratio: "):
-                    seed.ratio = float(detail.replace("  Ratio: ", ""))
+                    ratio_str = detail.replace("  Ratio: ", "")
+                    if ratio_str == "None":
+                        seed.ratio = 0.0
+                    else:
+                        seed.ratio = float(ratio_str)
+                elif detail.startswith("  Downloading Time: "):
+                    seed.since = int(
+                        detail.replace("  Downloading Time: ", "").replace(" ", "").split("(")[1].split("sec")[
+                            0])
+                elif detail.startswith("  Downloaded: "):
+                    seed.done_size = HttpUtils.pretty_format(
+                        detail.replace("  Downloaded: ", ""), "KB")
 
         return seeds
 
     @classmethod
     def try_add_seeds(cls, new_seeds):
-
+        success_seeds = []
         max_retry = 3
 
         new_added_space_in_mb = 0
@@ -131,12 +145,15 @@ class SeedManager:
                     retry += 1
                 else:
                     cls.add_seed(new_seed)
+                    success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
                     break
 
                 print("Retry %d adding seed: %s" % (retry, str(new_seed)))
                 if retry == max_retry:
                     EmailSender.send(u"添加失败", str(new_seed))
+
+        return success_seeds
 
     @classmethod
     def remove_seed(cls, seed_id):
@@ -157,12 +174,32 @@ class SeedManager:
                 bad_seeds.append(seed)
                 continue
 
-            speed_threshold = cls.speed_threshold[round(seed.done / 10)] * cls.size_factor[round(seed.size / 1024)]
-            print("check speed {0}, {1}, {2}, {3}".format(seed.up, str(cls.speed_threshold[round(seed.done / 10)]),
-                                                          str(cls.size_factor[round(seed.size / 1024)]),
-                                                          speed_threshold))
-            if seed.up < speed_threshold:
-                print("SLOW: >>>>>>>>> " + str(seed))
+            # check upload speed
+            up_speed_threshold = cls.up_speed_threshold[round(seed.done / 10)] * cls.size_factor[
+                round(seed.size / 1024)]
+            print(
+                "check up speed up={0}, threshold={1}, factor={2}, final_threshold={3}".format(seed.up, str(
+                    cls.up_speed_threshold[round(seed.done / 10)]),
+                                                                                               str(cls.size_factor[
+                                                                                                       round(
+                                                                                                           seed.size / 1024)]),
+                                                                                               up_speed_threshold))
+            if seed.up < up_speed_threshold:
+                print("SLOW UP: >>>>>>>>> " + str(seed))
+                total_bad_seed_size += seed.size
+                bad_seeds.append(seed)
+                continue
+
+            # check average download speed
+            down_speed_threshold = cls.down_avg_speed_threshold[round(seed.done / 10)]
+            print(
+                "check down avg speed done={0}, down_avg={1}, threshold={2}, ratio={3}".format(seed.done,
+                                                                                               round(
+                                                                                                   seed.done_size / seed.since),
+                                                                                               down_speed_threshold,
+                                                                                               seed.ratio))
+            if round(seed.done_size / seed.since) < down_speed_threshold and seed.ratio < 1:
+                print("SLOW DOWN: >>>>>>>>> " + str(seed))
                 total_bad_seed_size += seed.size
                 bad_seeds.append(seed)
                 continue

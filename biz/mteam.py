@@ -16,11 +16,13 @@ from util.utils import HttpUtils
 
 
 class NormalAlert(Login):
-    def generate_site(self):
-        site = Site()
-        site.home_page = "https://tp.m-team.cc/torrents.php"
-        site.login_page = "https://tp.m-team.cc/takelogin.php"
-        site.login_headers = {
+    site = Site()
+    size_factor = 1.074  # the shown size on web page is not accurate
+
+    def __init__(self):
+        self.site.home_page = "https://tp.m-team.cc/torrents.php"
+        self.site.login_page = "https://tp.m-team.cc/takelogin.php"
+        self.site.login_headers = {
             "User-Agent":
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -34,15 +36,17 @@ class NormalAlert(Login):
             "Origin": "https://tp.m-team.cc",
             "Referer": "https://tp.m-team.cc/login.php",
             "Upgrade-Insecure-Requests": "1",
+            # "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
         }
 
-        site.login_needed = True
-        site.login_verify_css_selector = "#info_block span.nowrap a b"
-        site.login_verify_str = Config.get("mteam_username")
-        site.login_username = Config.get("mteam_username")
-        site.login_password = Config.get("mteam_password")
+        self.site.login_needed = True
+        self.site.login_verify_css_selector = "#info_block span.nowrap a b"
+        self.site.login_verify_str = Config.get("mteam_username")
+        self.site.login_username = Config.get("mteam_username")
+        self.site.login_password = Config.get("mteam_password")
 
-        return site
+    def generate_site(self):
+        return self.site
 
     def build_post_data(self, site):
         data = dict()
@@ -99,20 +103,14 @@ class NormalAlert(Login):
 
         return seeds
 
-    @staticmethod
-    def parse_size(soup_obj):
+    def parse_size(self, soup_obj):
         assert soup_obj is not None
         assert len(soup_obj.contents) == 3
 
-        size_num = float(soup_obj.contents[0])
+        size_num = round(float(soup_obj.contents[0]) * self.size_factor, 2)
         size_unit = soup_obj.contents[2]
 
-        if size_unit == "GB":
-            return size_num * 1024
-        if size_unit == "MB":
-            return size_num
-        if size_unit == "KB":
-            return 0.01
+        return HttpUtils.pretty_format(str(size_num) + str(size_unit), "MB")
 
     @staticmethod
     def clean_tag(soup_obj):
@@ -137,10 +135,15 @@ class NormalAlert(Login):
         # 1. hasn't been found before
         # 2. not exceed max size
         max_size = Config.get("seed_max_size_mb")
-        data = list(filter(lambda x: x.size < max_size, data))
+        data = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, data))
 
-        # sticky
-        filtered_seeds = set(filter(lambda x: x.sticky and (x.free or x.discount <= 50), data))
+        # customized strategy
+        filtered_seeds = set(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
+                      (x.free or (x.sticky and x.discount <= 50) or (
+                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
+                          x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10))),
+            data))
 
         # white list
         white_lists = Config.get("putao_white_list").split("|")
@@ -151,7 +154,7 @@ class NormalAlert(Login):
                     break
 
         for seed in filtered_seeds:
-            print("Add seed: " + str(seed))
+            print("Find valuable seed: " + str(seed))
 
         return filtered_seeds
 
@@ -159,73 +162,23 @@ class NormalAlert(Login):
         if len(data) == 0:
             return
 
-            # # send email
-            # for seed in data:
-            #     EmailSender.send(u"种子", str(seed))
-            #     Cache().set_with_expire(seed.id, str(seed), 864000)
-            #
-            # SeedManager.try_add_seeds(data)
+            # send email
+        for seed in data:
+            EmailSender.send(u"种子", str(seed))
+
+        success_seeds = SeedManager.try_add_seeds(data)
+
+        for success_seed in success_seeds:
+            Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
 
     def check(self):
-        data = self.crawl()
-        self.action(self.filter(data))
+        self.action(self.filter(self.crawl()))
 
 
 class AdultAlert(NormalAlert):
     def generate_site(self):
-        site = Site()
-        site.home_page = "https://tp.m-team.cc/adult.php"
-        site.login_page = "https://tp.m-team.cc/takelogin.php"
-        site.login_headers = {
-            "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2,ja;q=0.2",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Cache-Control": "max-age=0",
-            "Connection": "keep-alive",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "DNT": "1",
-            "Host": "tp.m-team.cc",
-            "Origin": "https://tp.m-team.cc",
-            "Referer": "https://tp.m-team.cc/login.php",
-            "Upgrade-Insecure-Requests": "1",
-            # "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
-        }
-
-        site.login_needed = True
-        site.login_verify_css_selector = "#info_block span.nowrap a b"
-        site.login_verify_str = Config.get("mteam_username")
-        site.login_username = Config.get("mteam_username")
-        site.login_password = Config.get("mteam_password")
-
-        return site
-
-    def filter(self, data):
-        # common strategy
-        # 1. hasn't been found before
-        # 2. not exceed max size
-        max_size = Config.get("seed_max_size_mb")
-        # data = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, data))
-        data = list(filter(lambda x: x.size < max_size, data))
-
-        # sticky
-        filtered_seeds = set(filter(
-            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num >= 2) and (
-                (x.sticky and (x.free or x.discount <= 50)) or (x.discount <= 50 and x.upload_num <= 2))), data))
-
-        # white list
-        white_lists = Config.get("putao_white_list").split("|")
-        for seed in data:
-            for white_list in white_lists:
-                if re.search(white_list, seed.title):
-                    filtered_seeds.add(seed)
-                    break
-
-        for seed in filtered_seeds:
-            print("Add seed: " + str(seed))
-
-        return filtered_seeds
+        self.site.home_page = "https://tp.m-team.cc/adult.php"
+        return self.site
 
 
 class MagicPointChecker(NormalAlert, Monitor):
