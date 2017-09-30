@@ -167,7 +167,9 @@ class HttpUtils:
         factor = cls.factor_map[str(unit).upper()]
         data = str(data).replace(" ", "").upper()
 
-        if data.endswith("GB"):
+        if data.endswith("TB"):
+            res = float(data.replace("TB", "")) * (1024 * 1024 * factor)
+        elif data.endswith("GB"):
             res = float(data.replace("GB", "")) * (1024 * factor)
         elif data.endswith("MB"):
             res = float(data.replace("MB", "")) * factor
