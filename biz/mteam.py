@@ -188,6 +188,13 @@ class NormalAlert(Login):
     def check(self):
         self.action(self.filter(self.crawl()))
 
+    def init(self):
+        # crawl and add to cache
+        seeds = self.crawl()
+
+        for seed in seeds:
+            Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
+
 
 class AdultAlert(NormalAlert):
     def generate_site(self):

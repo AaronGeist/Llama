@@ -22,6 +22,7 @@ cmd_map = {
     "second_reset": SecondHand.clean_up,
     "mt_feed_check": NormalAlert().check,
     "mt_adult": AdultAlert().check,
+    "mt_adult_init": AdultAlert().init,
     "check_seed": SeedManager().find_bad_seeds
 
 }
