@@ -38,7 +38,6 @@ class NormalAlert(Login):
             "Origin": "https://tp.m-team.cc",
             "Referer": "https://tp.m-team.cc/login.php",
             "Upgrade-Insecure-Requests": "1",
-            "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
         }
 
         self.site.login_needed = True
