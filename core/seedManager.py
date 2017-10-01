@@ -146,18 +146,22 @@ class SeedManager:
                 space_in_mb = round(init_disk_space - new_added_space_in_mb - new_seed.size, 1)
                 print("disk space left: %sMB" % str(space_in_mb))
 
+                remove_list = []
                 # not enough space left, try to remove existing bad seeds
                 if space_in_mb <= 0:
                     total_size, bad_seeds = cls.find_bad_seeds()
 
                     for bad_seed in bad_seeds:
-                        cls.remove_seed(bad_seed.id)
+                        remove_list.append(bad_seed)
                         space_in_mb += bad_seed.size
-                        print("remove bad seed and space left: %sMB" % str(space_in_mb))
                         if space_in_mb > 100:
                             break
 
                 if space_in_mb > 0:
+                    for seed in remove_list:
+                        cls.remove_seed(seed.id)
+                        print("remove bad seed and space left: %sMB" % str(space_in_mb))
+
                     cls.add_seed(new_seed, download_link)
                     success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
