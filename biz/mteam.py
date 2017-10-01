@@ -139,31 +139,52 @@ class NormalAlert(Login):
         data = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, data))
 
         # customized strategy
-        filtered_seeds = list(filter(
-            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
-                      (x.free or (x.sticky and x.discount <= 50) or (
-                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
-                          x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10))),
-            data))
+        final_seeds = []
+        if Config.get("mt_strategy") == "easy":
+            final_seeds = self.easy_strategy(data)
+        elif Config.get("mt_strategy") == "medium":
+            final_seeds = self.medium_strategy(data)
+        elif Config.get("mt_strategy") == "hard":
+            final_seeds = self.hard_strategy(data)
 
         # white list
         white_lists = Config.get("putao_white_list").split("|")
         for seed in data:
             for white_list in white_lists:
                 if re.search(white_list, seed.title):
-                    filtered_seeds.append(seed)
+                    final_seeds.append(seed)
                     break
 
-        for x in filtered_seeds:
+        for seed in final_seeds:
+            print("Find valuable seed: " + str(seed))
+
+        return final_seeds
+
+    def sort_seed(self, seeds):
+        # sort seed, sticky and free seed has highest weight, the less discount,
+        # the more download, the less upload, the less size, the better
+        for x in seeds:
             print("score=" + str(int(x.sticky) * 100 + int(x.free) * 50 + round(
                 (100000 / x.discount) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3)) + "  >>>> " + str(
                 x))
 
-        filtered_seeds.sort(key=lambda x: int(x.sticky) * 100 + int(x.free) * 50 + round(
+        seeds.sort(key=lambda x: int(x.sticky) * 100 + int(x.free) * 50 + round(
             (100000 / x.discount) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3), reverse=True)
 
+        return seeds
+
+    def easy_strategy(self, data):
+        filtered_seeds = list(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
+                      (x.free or (x.sticky and x.discount <= 50) or (
+                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or (
+                           x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10)),
+            data))
+
+        filtered_seeds = self.sort_seed(filtered_seeds)
+
         # do not add too many seed at one time
-        total_size_limit = 10 * 1024
+        total_size_limit = 12 * 1024
         size_cnt = 0
         final_seeds = []
         for seed in filtered_seeds:
@@ -171,8 +192,54 @@ class NormalAlert(Login):
             if size_cnt < total_size_limit:
                 final_seeds.append(seed)
 
-        for seed in final_seeds:
-            print("Find valuable seed: " + str(seed))
+        return final_seeds
+
+    def medium_strategy(self, data):
+        filtered_seeds = list(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 2) and
+                      (x.free or (x.sticky and x.discount <= 50) or (
+                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
+                          x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10))),
+            data))
+
+        filtered_seeds = self.sort_seed(filtered_seeds)
+        # do not add too many seed at one time
+        total_size_limit = 8 * 1024
+        size_cnt = 0
+        final_seeds = []
+        for seed in filtered_seeds:
+            size_cnt += seed.size
+            if size_cnt < total_size_limit:
+                final_seeds.append(seed)
+
+        return final_seeds
+
+    def hard_strategy(self, data):
+        filtered_seeds = list(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 3) and
+                      (x.free or (x.sticky and x.discount <= 50) or (
+                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 5)),
+            data))
+        filtered_seeds = self.sort_seed(filtered_seeds)
+
+        # only limited number of no discount seed is allowed
+        not_free_limit = 2
+        not_free_cnt = 0
+        filtered_seeds_lvl2 = []
+        for seed in filtered_seeds:
+            if not seed.free and not seed.sticky and seed.discount > 50 and not_free_cnt < not_free_limit:
+                filtered_seeds_lvl2.append(seed)
+            elif seed.free or seed.sticky or seed.discount <= 50:
+                filtered_seeds_lvl2.append(seed)
+
+        # do not add too many seed at one time
+        total_size_limit = 5 * 1024
+        size_cnt = 0
+        final_seeds = []
+        for seed in filtered_seeds_lvl2:
+            size_cnt += seed.size
+            if size_cnt < total_size_limit:
+                final_seeds.append(seed)
 
         return final_seeds
 
@@ -180,10 +247,14 @@ class NormalAlert(Login):
         if len(candidate_seeds) == 0:
             return
 
-        success_seeds = SeedManager.try_add_seeds(candidate_seeds, self.download_link)
+        success_seeds, fail_seeds = SeedManager.try_add_seeds(candidate_seeds, self.download_link)
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
+
+        # make the failed seed cool down for N hours
+        for fail_seed in fail_seeds:
+            Cache().set_with_expire(fail_seed.id, str(fail_seed), 3600)
 
     def check(self):
         self.action(self.filter(self.crawl()))

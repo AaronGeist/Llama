@@ -135,6 +135,7 @@ class SeedManager:
     @classmethod
     def try_add_seeds(cls, new_seeds, download_link):
         success_seeds = []
+        fail_seeds = []
         max_retry = 1
 
         init_disk_space = cls.check_disk_space()
@@ -166,10 +167,12 @@ class SeedManager:
 
                 retry += 1
                 print("Try %d adding seed failed: %s" % (retry, str(new_seed)))
-                if retry == max_retry and Config.get("enable_email"):
-                    EmailSender.send(u"添加失败", str(new_seed))
+                if retry == max_retry:
+                    fail_seeds.append(new_seed)
+                    if Config.get("enable_email"):
+                        EmailSender.send(u"添加失败", str(new_seed))
 
-        return success_seeds
+        return success_seeds, fail_seeds
 
     @classmethod
     def remove_seed(cls, seed_id):
