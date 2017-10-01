@@ -10,10 +10,10 @@ from util.utils import HttpUtils
 
 class SeedManager:
     # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
-    up_speed_threshold = [0, 0, 0, 100, 100, 300, 300, 400, 500, 500, 500]
+    up_speed_threshold = [0, 0, 0, 100, 100, 300, 300, 400, 400, 400, 400]
 
     # index indicates the size in GB, 0 -> 0GB
-    size_factor = [1, 1, 1.2, 1.3, 1.4, 1.5, 1.5, 1.5, 2, 2, 2, 2.5, 2.5, 2.5]
+    size_factor = [1, 1, 1.1, 1.2, 1.3, 1.3, 1.4, 1.6, 2, 2, 2, 2.5, 2.5, 2.5]
 
     # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
     down_avg_speed_threshold = [0, 100, 200, 300, 400, 500, 500, 500, 500, 500, 500]
