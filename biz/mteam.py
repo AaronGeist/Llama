@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 import re
 
+import time
+
 from core.db import Cache
 from core.emailSender import EmailSender
 from core.login import Login
-from core.monitor import Monitor
 from core.seedManager import SeedManager
 from model.ptUser import User
 from model.seed import SeedInfo
@@ -37,7 +38,7 @@ class NormalAlert(Login):
             "Origin": "https://tp.m-team.cc",
             "Referer": "https://tp.m-team.cc/login.php",
             "Upgrade-Insecure-Requests": "1",
-            # "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
+            "Cookie": "tp=Yzc1NDY4MTU3MDcyNjcyOTEyNmU3OTJjNTVjOTgxNTIzOWE4NDdjYQ%3D%3D"
         }
 
         self.site.login_needed = True
@@ -140,11 +141,11 @@ class NormalAlert(Login):
 
         # customized strategy
         final_seeds = []
-        if Config.get("mt_strategy") == "easy":
+        if Config.get("mteam_strategy") == "easy":
             final_seeds = self.easy_strategy(data)
-        elif Config.get("mt_strategy") == "medium":
+        elif Config.get("mteam_strategy") == "medium":
             final_seeds = self.medium_strategy(data)
-        elif Config.get("mt_strategy") == "hard":
+        elif Config.get("mteam_strategy") == "hard":
             final_seeds = self.hard_strategy(data)
 
         # white list
@@ -264,47 +265,29 @@ class AdultAlert(NormalAlert):
         return self.site
 
 
-class MagicPointChecker(NormalAlert, Monitor):
-    def get_bucket(self):
-        return "mteam_mp"
-
-    def generate_site(self):
-        site = super().generate_site()
-        site.home_page = "https://tp.m-team.cc/mybonus.php"
-        return site
-
+class UploadCheck(AdultAlert):
     def parse(self, soup_obj):
         assert soup_obj is not None
 
-        div_list = soup_obj.select("#outer table:nth-of-type(3) table tr:nth-of-type(2) td:nth-of-type(4)")
-        assert len(div_list) == 1
+        info_block = soup_obj.select("#info_block table tr td:nth-of-type(1) span")[0]
 
-        content = div_list[0].contents[0]
-        m = re.search(u"可獲得(\d+.\d+)魔力值", content)
-        assert m
-        return float(m.group(1))
+        upload = HttpUtils.pretty_format(info_block.contents[24], "GB")
+        download = HttpUtils.pretty_format(info_block.contents[26], "GB")
 
-    def action(self, data):
-        threshold = Config.get("mteam_mp_threshold")
-        if data <= threshold:
-            EmailSender.send("魔力值警告: %s <= %s" % (str(data), threshold), "")
+        print("upload={0}, download={1}".format(upload, download))
+
+        return upload, download
 
     def filter(self, data):
         return data
 
-    def generate_data(self):
-        return self.crawl()
-
-
-class UploadMonitor(MagicPointChecker):
-    def get_bucket(self):
-        return "mteam_upload"
-
-    def parse(self, soup_obj):
-        assert soup_obj is not None
-
-        span_list = soup_obj.select("#usermsglink span")
-        return span_list[1].contents[2].replace("TB", "").strip()
+    def action(self, data):
+        upload_target = Config.get("mteam_upload_target")
+        current_upload = data[0] - data[1]
+        if upload_target < current_upload:
+            for i in range(3):
+                EmailSender.send(u"完成上传", Config.get("mteam_username"))
+                time.sleep(10000)
 
 
 class UserCrawl(Login):
@@ -521,8 +504,6 @@ if __name__ == "__main__":
     # NormalAlert().check()
     # AdultAlert().check()
     # UserCrawl().crawl()
-    UserCrawl().refresh()
+    # UserCrawl().refresh()
     # UserCrawl().filter()
-    # MagicPointChecker().check()
-    # Exchanger().exchange_mp()
-    # UploadMonitor().crawl()
+    UploadCheck().check()
