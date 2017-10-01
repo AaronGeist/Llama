@@ -173,6 +173,17 @@ class NormalAlert(Login):
 
         return seeds
 
+    # do not add too many seed at one time
+    def limit_size(self, seeds, limit):
+        size_cnt = 0
+        filtered_seeds = []
+        for seed in seeds:
+            size_cnt += seed.size
+            if size_cnt < limit:
+                filtered_seeds.append(seed)
+
+        return filtered_seeds
+
     def easy_strategy(self, data):
         filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
@@ -183,14 +194,7 @@ class NormalAlert(Login):
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 
-        # do not add too many seed at one time
-        total_size_limit = 12 * 1024
-        size_cnt = 0
-        final_seeds = []
-        for seed in filtered_seeds:
-            size_cnt += seed.size
-            if size_cnt < total_size_limit:
-                final_seeds.append(seed)
+        final_seeds = self.limit_size(filtered_seeds, 12 * 1024)
 
         return final_seeds
 
@@ -203,14 +207,7 @@ class NormalAlert(Login):
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
-        # do not add too many seed at one time
-        total_size_limit = 8 * 1024
-        size_cnt = 0
-        final_seeds = []
-        for seed in filtered_seeds:
-            size_cnt += seed.size
-            if size_cnt < total_size_limit:
-                final_seeds.append(seed)
+        final_seeds = self.limit_size(filtered_seeds, 10 * 1024)
 
         return final_seeds
 
@@ -220,10 +217,11 @@ class NormalAlert(Login):
                       (x.free or (x.sticky and x.discount <= 50) or (
                           x.discount <= 50 and round(x.download_num / x.upload_num) >= 5)),
             data))
+
         filtered_seeds = self.sort_seed(filtered_seeds)
 
         # only limited number of no discount seed is allowed
-        not_free_limit = 2
+        not_free_limit = 1
         not_free_cnt = 0
         filtered_seeds_lvl2 = []
         for seed in filtered_seeds:
@@ -232,14 +230,7 @@ class NormalAlert(Login):
             elif seed.free or seed.sticky or seed.discount <= 50:
                 filtered_seeds_lvl2.append(seed)
 
-        # do not add too many seed at one time
-        total_size_limit = 5 * 1024
-        size_cnt = 0
-        final_seeds = []
-        for seed in filtered_seeds_lvl2:
-            size_cnt += seed.size
-            if size_cnt < total_size_limit:
-                final_seeds.append(seed)
+        final_seeds = self.limit_size(filtered_seeds_lvl2, 8 * 1024)
 
         return final_seeds
 

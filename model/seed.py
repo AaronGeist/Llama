@@ -52,7 +52,7 @@ class TransmissionSeed:
         msg.append(self.id)
         msg.append(str(self.done))
         msg.append(str(self.size))
-        msg.append(self.ETA)
+        msg.append(str(self.ETA))
         msg.append(str(self.up))
         msg.append(str(self.down))
         msg.append(str(self.ratio))
@@ -61,40 +61,39 @@ class TransmissionSeed:
         msg.append(str(self.since))
         msg.append(str(self.done_size))
 
-
         return "|".join(msg)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     l = []
     seed = TransmissionSeed()
     seed.size = 1
     seed.up = 2
-    seed.ETA=""
-    seed.status=""
+    seed.ETA = ""
+    seed.status = ""
     l.append(seed)
 
     seed = TransmissionSeed()
     seed.size = 2
     seed.up = 2
-    seed.ETA=""
-    seed.status=""
+    seed.ETA = ""
+    seed.status = ""
     l.append(seed)
 
     seed = TransmissionSeed()
     seed.size = 3
     seed.up = 1
-    seed.ETA=""
-    seed.status=""
+    seed.ETA = ""
+    seed.status = ""
     l.append(seed)
-
 
     seed = TransmissionSeed()
     seed.size = 3
     seed.up = 100
-    seed.ETA=""
-    seed.status=""
+    seed.ETA = ""
+    seed.status = ""
     l.append(seed)
 
-    l.sort(key=lambda x: round(x.size/x.up), reverse=True)
+    l.sort(key=lambda x: round(x.size / x.up), reverse=True)
     for i in l:
         print(i)
