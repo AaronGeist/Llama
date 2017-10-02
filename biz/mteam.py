@@ -254,6 +254,12 @@ class NormalAlert(Login):
         # crawl and add to cache
         seeds = self.crawl()
 
+        # common strategy
+        # 1. hasn't been found before
+        # 2. not exceed max size
+        max_size = Config.get("seed_max_size_mb")
+        seeds = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, seeds))
+
         for seed in seeds:
             print("Add seed: " + str(seed))
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
