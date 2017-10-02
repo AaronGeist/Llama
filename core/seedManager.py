@@ -192,7 +192,7 @@ class SeedManager:
         total_bad_seed_size = 0
         for seed in seeds:
             # let new seed live for N minutes
-            if seed.since <= 60 * 60:
+            if seed.done < 100 and seed.since <= 60 * 60:
                 continue
 
             if str(seed.status).upper() == "IDLE":

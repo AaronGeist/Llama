@@ -287,8 +287,6 @@ class UploadCheck(AdultAlert):
         upload = HttpUtils.pretty_format(info_block.contents[24], "GB")
         download = HttpUtils.pretty_format(info_block.contents[26], "GB")
 
-        print("upload={0}, download={1}".format(upload, download))
-
         return upload, download
 
     def filter(self, data):
@@ -297,6 +295,9 @@ class UploadCheck(AdultAlert):
     def action(self, data):
         upload_target = Config.get("mteam_upload_target")
         current_upload = data[0] - data[1]
+        print(
+            "upload={0}, download={1}, current={2}, target={3}".format(data[0], data[1], current_upload, upload_target))
+
         if upload_target < current_upload:
             for i in range(3):
                 EmailSender.send(u"完成上传", Config.get("mteam_username"))
