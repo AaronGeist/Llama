@@ -174,7 +174,7 @@ class NormalAlert(Login):
         return seeds
 
     # do not add too many seed at one time
-    def limit_size(self, seeds, limit):
+    def limit_total_size(self, seeds, limit):
         size_cnt = 0
         filtered_seeds = []
         for seed in seeds:
@@ -187,14 +187,14 @@ class NormalAlert(Login):
     def easy_strategy(self, data):
         filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
-                      (x.free or (x.sticky and x.discount <= 50) or (
+                      (x.free or x.sticky or (
                           x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or (
                            x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10)),
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 
-        final_seeds = self.limit_size(filtered_seeds, 12 * 1024)
+        final_seeds = self.limit_total_size(filtered_seeds, 12 * 1024)
 
         return final_seeds
 
@@ -204,18 +204,6 @@ class NormalAlert(Login):
                       (x.free or (x.sticky and x.discount <= 50) or (
                           x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
                           x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10))),
-            data))
-
-        filtered_seeds = self.sort_seed(filtered_seeds)
-        final_seeds = self.limit_size(filtered_seeds, 10 * 1024)
-
-        return final_seeds
-
-    def hard_strategy(self, data):
-        filtered_seeds = list(filter(
-            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 3) and
-                      (x.free or (x.sticky and x.discount <= 50) or (
-                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 5)),
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
@@ -230,7 +218,20 @@ class NormalAlert(Login):
             elif seed.free or seed.sticky or seed.discount <= 50:
                 filtered_seeds_lvl2.append(seed)
 
-        final_seeds = self.limit_size(filtered_seeds_lvl2, 8 * 1024)
+        final_seeds = self.limit_total_size(filtered_seeds_lvl2, 10 * 1024)
+
+        return final_seeds
+
+    def hard_strategy(self, data):
+        filtered_seeds = list(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 3) and
+                      (x.free or (x.sticky and x.discount <= 50) or (
+                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 5)),
+            data))
+
+        filtered_seeds = self.sort_seed(filtered_seeds)
+
+        final_seeds = self.limit_total_size(filtered_seeds, 8 * 1024)
 
         return final_seeds
 
