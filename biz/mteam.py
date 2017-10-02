@@ -243,9 +243,15 @@ class NormalAlert(Login):
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
 
-        # make the failed seed cool down for N hours
+        # make the failed seed cool down for some time
         for fail_seed in fail_seeds:
-            Cache().set_with_expire(fail_seed.id, str(fail_seed), 3600)
+            cool_down_time = 3600  # 1 hour
+            if fail_seed.free or fail_seed.sticky:
+                cool_down_time = 300  # 5 minutes
+            elif fail_seed.discount <= 50:
+                cool_down_time = 1800  # 30 minutes
+
+            Cache().set_with_expire(fail_seed.id, str(fail_seed), cool_down_time)
 
     def check(self):
         self.action(self.filter(self.crawl()))
