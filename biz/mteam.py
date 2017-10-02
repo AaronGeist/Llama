@@ -255,6 +255,7 @@ class NormalAlert(Login):
         seeds = self.crawl()
 
         for seed in seeds:
+            print("Add seed: " + str(seed))
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
 
