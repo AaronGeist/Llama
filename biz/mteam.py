@@ -484,20 +484,19 @@ class UserCrawl(NormalAlert):
     def refresh(self):
         self.crawl(self.cache.hash_get_all_key(self.id_bucket_name))
 
-        # def filter(self):
-        #     users = []
-        #     with open("user.txt", "r") as f:
-        #         lines = f.readlines()
-        #         for line in lines:
-        #             user = User.parse(line)
-        #             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
-        #                 continue
-        #             if user.ratio < 0.8 and user.ratio > 0:
-        #                 if "Peasant" in user.rank:
-        #                     if user.ratio < 0.5:
-        #                         print(">>>>>>>>>> " + str(user))
-        #                     else:
-        #                         print("**********" + str(user))
+    def find_warn_user(self):
+        user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
+        for user_id in user_ids:
+            user_str = self.cache.hash_get(self.id_bucket_name, user_id)
+            user = User.parse(user_str)
+            if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
+                continue
+            if 0.8 > user.ratio > 0:
+                if "Peasant" in user.rank:
+                    if user.ratio < 0.5:
+                        print(">>>>>>>>>> " + str(user))
+                    else:
+                        print("**********" + str(user))
 
 
 if __name__ == "__main__":

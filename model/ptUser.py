@@ -45,9 +45,10 @@ class User:
         user.down = float(data[5])
         user.last_time = data[6]
         user.create_time = data[7]
-        user.mp = float(data[8])
-        user.is_ban = data[9] == "True"
-        user.is_secret = data[10] == "True"
+        user.warn_time = data[8]
+        user.mp = float(data[9])
+        user.is_ban = data[10] == "True"
+        user.is_secret = data[11] == "True"
 
         return user
 
