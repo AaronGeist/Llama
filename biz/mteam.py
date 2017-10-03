@@ -338,7 +338,7 @@ class UserCrawl(NormalAlert):
     id_bucket_name = "mteam_user_id"
     name_bucket_name = "mteam_user_name"
 
-    max_id = 20000
+    max_id = 200000
     scan_batch_size = 2000
 
     cache = Cache()
@@ -503,6 +503,19 @@ class UserCrawl(NormalAlert):
 
     def load_by_name(self, user_name):
         print(self.cache.hash_get(self.name_bucket_name, user_name))
+
+    def send_msg(self):
+        site = self.generate_site()
+        assert self.login(site)
+
+        url = "https://tp.m-team.cc/takemessage.php"
+        data = {
+            "receiver": "188311",
+            "subject": "test",
+            "body": "test, test, test"
+        }
+
+        HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
 
 
 if __name__ == "__main__":
