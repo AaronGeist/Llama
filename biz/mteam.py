@@ -237,8 +237,6 @@ class NormalAlert(Login):
 
     # general download way for both normal user and warned user
     def download_seed_file(self, seed_id):
-        site = self.generate_site()
-        assert self.login(site)
         data = {
             "id": seed_id,
             "type": "ratio",

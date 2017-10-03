@@ -23,7 +23,7 @@ cmd_map = {
     "mt_adult_init": AdultAlert().init,
     "mt_up_check": UploadCheck().check,
     "mt_user_init": UserCrawl().crawl,
-    "mt_user_refresh": UserCrawl().refresh()
+    "mt_user_refresh": UserCrawl().refresh
 }
 
 
