@@ -499,7 +499,11 @@ class UserCrawl(NormalAlert):
                         print("**********" + str(user))
 
     def load_by_id(self, user_id):
-        return self.cache.hash_get(self.id_bucket_name, user_id)
+        print(self.cache.hash_get(self.id_bucket_name, user_id))
+
+    def load_by_name(self, user_name):
+        print(self.cache.hash_get(self.name_bucket_name, user_name))
+
 
 if __name__ == "__main__":
     # NormalAlert().check()
