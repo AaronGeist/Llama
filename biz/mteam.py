@@ -491,7 +491,7 @@ class UserCrawl(NormalAlert):
             user = User.parse(user_str)
             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
                 continue
-            if 0.8 > user.ratio > 0:
+            if 0.9 > user.ratio > 0:
                 if "Peasant" in user.rank:
                     if user.ratio < 0.5:
                         print(">>>>>>>>>> " + str(user))
@@ -504,18 +504,16 @@ class UserCrawl(NormalAlert):
     def load_by_name(self, user_name):
         print(self.cache.hash_get(self.name_bucket_name, user_name))
 
-    def send_msg(self):
-        site = self.generate_site()
-        assert self.login(site)
-
+    def send_msg(self, user_id, subject, body):
         url = "https://tp.m-team.cc/takemessage.php"
         data = {
-            "receiver": "188311",
-            "subject": "test",
-            "body": "test, test, test"
+            "receiver": user_id,
+            "subject": subject,
+            "body": body
         }
 
-        HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
+        # HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
+        print("Send msg to {0}, subject={1}, body={2}".format(user_id, subject, body))
 
 
 if __name__ == "__main__":
