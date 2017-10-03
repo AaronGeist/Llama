@@ -51,6 +51,9 @@ class Cache:
         return self.instance.hget(bucket_name, key)
 
     def hash_get_all_key(self, bucket_name):
+        return self.instance.hkeys(bucket_name)
+
+    def hash_get_all(self, bucket_name):
         return self.instance.hgetall(bucket_name)
 
     def hash_delete(self, bucket_name, keys):
