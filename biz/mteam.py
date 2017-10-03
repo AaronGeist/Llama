@@ -2,6 +2,7 @@
 import re
 
 import time
+from datetime import datetime
 
 from core.db import Cache
 from core.emailSender import EmailSender
@@ -337,11 +338,15 @@ class UserCrawl(NormalAlert):
 
     id_bucket_name = "mteam_user_id"
     name_bucket_name = "mteam_user_name"
+    warn_bucket_name = "mteam_user_warn"
 
     max_id = 200000
     scan_batch_size = 2000
 
     cache = Cache()
+
+    msg_subject = "由于分享率过低，您已经被警告了，7天内不改善的话会被封账号"
+    msg_body = "需要帮助快速增加上传量，请微信联系shakazxx，并注明 “mt上传”"
 
     def generate_site(self):
         self.site.home_page = "https://tp.m-team.cc/userdetails.php?id=%s"
@@ -429,8 +434,9 @@ class UserCrawl(NormalAlert):
         print("########### start storing cache ###########")
 
         for user in data:
-            exist_user = self.cache.hash_get(self.id_bucket_name, user.id)
-            if exist_user is not None:
+            res = self.cache.hash_get(self.id_bucket_name, user.id)
+            if res is not None:
+                exist_user = User.parse(res.decode())
                 # warned before, do not update warn time
                 if "Peasant" in user.rank and "Peasant" in exist_user.rank:
                     user.warn_time = exist_user.warn_time
@@ -484,32 +490,58 @@ class UserCrawl(NormalAlert):
     def refresh(self):
         self.crawl(self.cache.hash_get_all_key(self.id_bucket_name))
 
-    def find_warn_user(self):
+    def warn(self):
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
+        now = datetime.now()
         for user_id in user_ids:
-            user_str = self.cache.hash_get(self.id_bucket_name, user_id)
+            user_str = self.cache.hash_get(self.id_bucket_name, user_id).decode()
             user = User.parse(user_str)
             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
                 continue
-            if 0.9 > user.ratio > 0:
-                if "Peasant" in user.rank:
+            if 0.9 > user.ratio > 0 and "Peasant" in user.rank:
+                create_time = datetime.strptime(user.create_time, "%Y-%m-%d %H:%M:%S")
+                create_since = (now - create_time).days
+                warn_time = datetime.strptime(user.warn_time, "%Y-%m-%d %H:%M:%S")
+                warn_since = (now - warn_time).days
+                print("{0}|{1}|{2}".format(str(user), str(create_since), str(warn_since)))
+
+                # skip user who has registered for less than 2 days
+                if create_since < 2:
+                    continue
+
+                # skip veteran user
+                if user.down > 100:
+                    continue
+
+                if not self.cache.set_contains(self.warn_bucket_name, user.id):
+                    self.send_msg(user.id, self.msg_subject, self.msg_body)
+                    self.cache.set_add(self.warn_bucket_name, user.id)
                     if user.ratio < 0.5:
                         print(">>>>>>>>>> " + str(user))
                     else:
                         print("**********" + str(user))
 
     def load_by_id(self, user_id):
-        print(self.cache.hash_get(self.id_bucket_name, user_id))
+        res = self.cache.hash_get(self.id_bucket_name, user_id)
+        if res is not None:
+            print(res.decode())
+        else:
+            print("Cannot find user by ID: " + user_id)
 
     def load_by_name(self, user_name):
-        print(self.cache.hash_get(self.name_bucket_name, user_name))
+        res = self.cache.hash_get(self.name_bucket_name, user_name)
+        if res is not None:
+            print(res.decode())
+        else:
+            print("Cannot find user by name: " + user_name)
 
     def send_msg(self, user_id, subject, body):
         url = "https://tp.m-team.cc/takemessage.php"
         data = {
             "receiver": user_id,
             "subject": subject,
-            "body": body
+            "body": body,
+            "save": "yes"
         }
 
         # HttpUtils.post(url=url, data=data, headers=self.site.login_headers)

@@ -24,7 +24,7 @@ cmd_map = {
     "mt_up_check": UploadCheck().check,
     "mt_user_init": UserCrawl().crawl,
     "mt_user_refresh": UserCrawl().refresh,
-    "mt_user_warn": UserCrawl().find_warn_user,
+    "mt_user_warn": UserCrawl().warn,
     "mt_id": UserCrawl().load_by_id,
     "mt_name": UserCrawl().load_by_name,
     "mt_msg": UserCrawl().send_msg
