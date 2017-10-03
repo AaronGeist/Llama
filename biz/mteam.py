@@ -328,7 +328,7 @@ class UploadCheck(AdultAlert):
             "upload={0}, download={1}, current={2}, target={3}".format(data[0], data[1], current_upload, upload_target))
 
         if upload_target < current_upload:
-            for i in range(3):
+            for i in range(5):
                 EmailSender.send(u"完成上传", Config.get("mteam_username"))
                 time.sleep(10000)
 
@@ -337,7 +337,9 @@ class UserCrawl(NormalAlert):
     buffer = []
     errors = []
 
-    bucket_name = "mteam_user"
+    id_bucket_name = "mteam_user_id"
+    name_bucket_name = "mteam_user_name"
+
     max_id = 20000
     scan_batch_size = 2000
 
@@ -413,7 +415,6 @@ class UserCrawl(NormalAlert):
             except Exception as e:
                 print(str(user_id) + "\n" + str(e) + "\n")
 
-            # print(str(user))
             self.buffer.append(user)
         except Exception as e:
             print(">>>>> fail to parse " + str(user_id))
@@ -422,6 +423,24 @@ class UserCrawl(NormalAlert):
     def parse_size_in_gb(self, size_str):
         assert size_str is not None
         return HttpUtils.pretty_format(size_str.replace(": ", ""), "GB")
+
+    def store_cache(self, data):
+        if data is None or len(data) == 0:
+            return
+
+        print("########### start storing cache ###########")
+
+        for user in data:
+            exist_user = self.cache.hash_get(self.id_bucket_name, user.id)
+            if exist_user is not None:
+                # warned before, do not update warn time
+                if "Peasant" in user.rank and "Peasant" in exist_user.rank:
+                    user.warn_time = exist_user.warn_time
+
+            self.cache.hash_set(self.id_bucket_name, user.id, str(user))
+            self.cache.hash_set(self.name_bucket_name, user.name, str(user))
+
+        print("########### finish storing cache ###########")
 
     def write_data(self):
         if len(self.buffer) == 0:
@@ -457,19 +476,15 @@ class UserCrawl(NormalAlert):
                 print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
 
             if len(self.buffer) > 300:
-                self.write_data()
+                self.store_cache(self.buffer)
+                self.buffer.clear()
 
         # write all others left
-        self.write_data()
+        self.store_cache(self.buffer)
+        self.buffer.clear()
 
     def refresh(self):
-        userIds = []
-        with open("user_origin.txt", "r") as f:
-            lines = f.readlines()
-            for line in lines:
-                user = User.parse(line)
-                userIds.append(user.id)
-        self.crawl(userIds)
+        self.crawl(self.cache.hash_get_all_key(self.id_bucket_name))
 
         # def filter(self):
         #     users = []

@@ -1,12 +1,11 @@
 import sys
 import time
 
-from biz.mteam import AdultAlert, UploadCheck
+from biz.mteam import AdultAlert, UploadCheck, UserCrawl
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
 from biz.weather import WeatherReport
-from core.seedManager import SeedManager
 from core.tts import TextToSpeech
 
 cmd_map = {
@@ -23,8 +22,8 @@ cmd_map = {
     "mt_adult": AdultAlert().check,
     "mt_adult_init": AdultAlert().init,
     "mt_up_check": UploadCheck().check,
-    "check_seed": SeedManager().find_bad_seeds
-
+    "mt_user_init": UserCrawl().crawl,
+    "mt_user_refresh": UserCrawl().refresh()
 }
 
 
