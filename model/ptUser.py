@@ -7,6 +7,7 @@ class User:
     down = 0
     last_time = ""
     create_time = ""
+    warn_time = ""
     mp = 0
     is_ban = False
     is_secret = False
@@ -21,6 +22,7 @@ class User:
         data.append(str(self.down).replace(",", ""))
         data.append(self.last_time)
         data.append(self.create_time)
+        data.append(self.warn_time)
         data.append(str(self.mp).replace(",", ""))
         data.append(str(self.is_ban))
         data.append(str(self.is_secret))

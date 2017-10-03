@@ -66,7 +66,7 @@ class HttpUtils:
             if response.status_code != 200:
                 print("Wrong response status: " + str(response.status_code))
             if returnRaw:
-                return response.text
+                return response
             else:
                 return BeautifulSoup(response.text, 'html.parser')
         except Exception as e:

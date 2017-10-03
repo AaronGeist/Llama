@@ -271,6 +271,23 @@ class NormalAlert(Login):
             print("Add seed: " + str(seed))
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
+    def download_seed(self, seed_id):
+        site = self.generate_site()
+        assert self.login(site)
+        data = {
+            "id": seed_id,
+            "type": "ratio",
+            "hidenotice": "1",
+            "letmedown": "ratio"
+        }
+        res = HttpUtils.post("https://tp.m-team.cc/downloadnotice.php?", data=data, headers=self.site.login_headers,
+                             returnRaw=True)
+        try:
+            with open("test.torrent", "wb") as f:
+                f.write(res.content)
+        except Exception as e:
+            print("Cannot write file: ", e)
+
 
 class AdultAlert(NormalAlert):
     def generate_site(self):
@@ -284,8 +301,16 @@ class UploadCheck(AdultAlert):
 
         info_block = soup_obj.select("#info_block table tr td:nth-of-type(1) span")[0]
 
-        upload = HttpUtils.pretty_format(info_block.contents[24], "GB")
-        download = HttpUtils.pretty_format(info_block.contents[26], "GB")
+        prev_info = ""
+        upload = 0
+        download = 0
+        for info in info_block.contents:
+            if "上傳量" in prev_info:
+                upload = HttpUtils.pretty_format(info, "GB")
+            elif "下載量" in prev_info:
+                download = HttpUtils.pretty_format(info, "GB")
+                break
+            prev_info = str(info)
 
         return upload, download
 
@@ -304,51 +329,28 @@ class UploadCheck(AdultAlert):
                 time.sleep(10000)
 
 
-class UserCrawl(Login):
-    site = None
-
+class UserCrawl(NormalAlert):
     buffer = []
     errors = []
 
+    bucket_name = "mteam_user"
+    max_id = 20000
+    scan_batch_size = 2000
+
+    cache = Cache()
+
     def generate_site(self):
-        site = Site()
-        site.home_page = "https://tp.m-team.cc/userdetails.php?id="
-        site.login_page = "https://tp.m-team.cc/takelogin.php"
-        site.login_headers = {
-            "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2,ja;q=0.2",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Cache-Control": "max-age=0",
-            "Connection": "keep-alive",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "DNT": "1",
-            "Host": "tp.m-team.cc",
-            "Origin": "https://tp.m-team.cc",
-            "Referer": "https://tp.m-team.cc/login.php",
-            "Upgrade-Insecure-Requests": "1",
-            "Cookie": "tp=NjM1NmNkODExODNlMjQ5YTAyOTAwYmJlMjdkMGRjMGUwMWI2ZjE0Nw%3D%3D"
-        }
+        self.site.home_page = "https://tp.m-team.cc/userdetails.php?id=%s"
+        return self.site
 
-        site.login_needed = True
-        site.login_verify_css_selector = "#info_block span.nowrap a b"
-        site.login_verify_str = Config.get("mteam_username")
-        site.login_username = Config.get("mteam_username")
-        site.login_password = Config.get("mteam_password")
-
-        self.site = site
-
-        return site
-
-    def single(self, i):
+    def crawl_single(self, user_id):
         try:
-            url = self.site.home_page + str(i)
+            url = self.site.home_page % str(user_id)
             soup_obj = HttpUtils.get(url, headers=self.site.login_headers, return_raw=False)
             assert soup_obj is not None
 
             user = User()
-            user.id = i
+            user.id = user_id
             user.name = HttpUtils.get_content(soup_obj, "#outer h1 span b")
 
             if user.name is None:
@@ -359,7 +361,7 @@ class UserCrawl(Login):
 
                 if len(soup_obj.select("#outer table tr")) <= 5:
                     user.is_secret = True
-                    print("secret user: id=" + str(i))
+                    print("secret user: id=" + str(user_id))
                 else:
 
                     tr_list = soup_obj.select("#outer table tr")
@@ -401,39 +403,30 @@ class UserCrawl(Login):
                         if not img.has_attr("class"):
                             user.rank = img["title"]
 
-                            # if "Peasant" in user.rank:
-                            #     print("###### find user=" + user.name + " id=" + str(i) + " rank=" + user.rank)
-                    print("###### find user=" + user.name + " id=" + str(i) + " rank=" + user.rank)
+                            if "Peasant" in user.rank:
+                                user.warn_time = str(time.strftime("%Y-%m-%d %H:%M:%S"))
+                    print("###### find user=" + user.name + " id=" + str(user_id) + " rank=" + user.rank)
             except Exception as e:
-                print(str(i) + "\n" + str(e) + "\n")
+                print(str(user_id) + "\n" + str(e) + "\n")
 
             # print(str(user))
             self.buffer.append(user)
         except Exception as e:
-            print(">>>>> fail to parse " + str(i))
-            self.errors.append(i)
+            print(">>>>> fail to parse " + str(user_id))
+            self.errors.append(user_id)
 
-    def parse_size_in_gb(self, sizeStr):
-        assert sizeStr is not None
-        if str.endswith(sizeStr, "TB"):
-            return float(sizeStr.replace(" TB", "").replace(": ", "")) * 1024
-        if str.endswith(sizeStr, "GB"):
-            return float(sizeStr.replace(" GB", "").replace(": ", ""))
-        elif str.endswith(sizeStr, "MB"):
-            return 0.001
-        elif str.endswith(sizeStr, "KB"):
-            return 0.001
-        else:
-            return -1
+    def parse_size_in_gb(self, size_str):
+        assert size_str is not None
+        return HttpUtils.pretty_format(size_str.replace(": ", ""), "GB")
 
-    def write(self):
+    def write_data(self):
         if len(self.buffer) == 0:
             return
 
         print("########### start writing ###########")
         with open("user.txt", "a") as f:
-            for data in self.buffer:
-                f.write(str(data) + "\r")
+            for user in self.buffer:
+                f.write(str(user) + "\r")
         print("########### finish writing ###########")
         self.buffer.clear()
 
@@ -442,43 +435,28 @@ class UserCrawl(Login):
         assert self.login(site)
 
         if ids is None:
-            start = 0
-            end = 200000
-            step = 2000
+            ids = range(1, self.max_id)
 
-            current = start
-            while current < end:
-                ParallelTemplate(500).run(func=self.single, inputs=range(current, current + step))
-                current += step
+        start = 0
+        end = len(ids)
+        step = self.scan_batch_size
 
-                if len(self.errors) > 0:
-                    print(">>>>>>>>>>>>>>>>> retry >>>>>>>>>>>>>>>>>>>>>>")
-                    ParallelTemplate(100).run(func=self.single, inputs=self.errors)
-                    self.errors.clear()
-                    print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
+        current = start
+        while current < end:
+            ParallelTemplate(500).run(func=self.crawl_single, inputs=ids[current: min(current + step, end)])
+            current += step
 
-                if len(self.buffer) > 300:
-                    self.write()
-            self.write()
-        else:
-            start = 0
-            end = len(ids)
-            step = 2000
+            if len(self.errors) > 0:
+                print(">>>>>>>>>>>>>>>>> retry >>>>>>>>>>>>>>>>>>>>>>")
+                ParallelTemplate(100).run(func=self.crawl_single, inputs=self.errors)
+                self.errors.clear()
+                print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
 
-            current = start
-            while current < end:
-                ParallelTemplate(500).run(func=self.single, inputs=ids[current: min(current + step, end)])
-                current += step
+            if len(self.buffer) > 300:
+                self.write_data()
 
-                if len(self.errors) > 0:
-                    print(">>>>>>>>>>>>>>>>> retry >>>>>>>>>>>>>>>>>>>>>>")
-                    ParallelTemplate(100).run(func=self.single, inputs=self.errors)
-                    self.errors.clear()
-                    print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
-
-                if len(self.buffer) > 300:
-                    self.write()
-            self.write()
+        # write all others left
+        self.write_data()
 
     def refresh(self):
         userIds = []
@@ -489,35 +467,26 @@ class UserCrawl(Login):
                 userIds.append(user.id)
         self.crawl(userIds)
 
-    def filter(self):
-        users = []
-        with open("user.txt", "r") as f:
-            lines = f.readlines()
-            for line in lines:
-                user = User.parse(line)
-                if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
-                    continue
-                if user.ratio < 0.8 and user.ratio > 0:
-                    if "Peasant" in user.rank:
-                        if user.ratio < 0.5:
-                            print(">>>>>>>>>> " + str(user))
-                        else:
-                            print("**********" + str(user))
+        # def filter(self):
+        #     users = []
+        #     with open("user.txt", "r") as f:
+        #         lines = f.readlines()
+        #         for line in lines:
+        #             user = User.parse(line)
+        #             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
+        #                 continue
+        #             if user.ratio < 0.8 and user.ratio > 0:
+        #                 if "Peasant" in user.rank:
+        #                     if user.ratio < 0.5:
+        #                         print(">>>>>>>>>> " + str(user))
+        #                     else:
+        #                         print("**********" + str(user))
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) >= 2:
-    #     target = sys.argv[1]
-    #     if target == "feed_check":
-    #         FreeFeedAlert().check()
-    #     elif target == "mp_check":
-    #         MagicPointChecker().check()
-    #     elif target == "mp_monitor":
-    #         MagicPointChecker().monitor()
-
     # NormalAlert().check()
+    # NormalAlert().download_seed("209094")
     # AdultAlert().check()
-    # UserCrawl().crawl()
+    # UserCrawl().crawl([1, 188311, 188298])
     # UserCrawl().refresh()
-    # UserCrawl().filter()
     UploadCheck().check()

@@ -137,7 +137,7 @@ class Crawler(Login):
 
     @classmethod
     def check_login(self, site):
-        resp = HttpUtils.post(site.home_page, data={}, returnRaw=True)
+        resp = HttpUtils.post(site.home_page, data={}, returnRaw=True).text
         jsonValue = json.loads(resp)
         if jsonValue['errNo'] == 0:
             content = jsonValue['data']['name']
