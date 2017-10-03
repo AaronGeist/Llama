@@ -235,11 +235,32 @@ class NormalAlert(Login):
 
         return final_seeds
 
+    # general download way for both normal user and warned user
+    def download_seed_file(self, seed_id):
+        site = self.generate_site()
+        assert self.login(site)
+        data = {
+            "id": seed_id,
+            "type": "ratio",
+            "hidenotice": "1",
+            "letmedown": "ratio"
+        }
+        res = HttpUtils.post("https://tp.m-team.cc/downloadnotice.php?", data=data, headers=self.site.login_headers,
+                             returnRaw=True)
+        try:
+            with open("%s.torrent" % seed_id, "wb") as f:
+                f.write(res.content)
+        except Exception as e:
+            print("Cannot download seed file: " + seed_id, e)
+
     def action(self, candidate_seeds):
         if len(candidate_seeds) == 0:
             return
 
-        success_seeds, fail_seeds = SeedManager.try_add_seeds(candidate_seeds, self.download_link)
+        for seed in candidate_seeds:
+            self.download_seed_file(seed.id)
+
+        success_seeds, fail_seeds = SeedManager.try_add_seeds(candidate_seeds)
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
@@ -270,23 +291,6 @@ class NormalAlert(Login):
         for seed in seeds:
             print("Add seed: " + str(seed))
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
-
-    def download_seed(self, seed_id):
-        site = self.generate_site()
-        assert self.login(site)
-        data = {
-            "id": seed_id,
-            "type": "ratio",
-            "hidenotice": "1",
-            "letmedown": "ratio"
-        }
-        res = HttpUtils.post("https://tp.m-team.cc/downloadnotice.php?", data=data, headers=self.site.login_headers,
-                             returnRaw=True)
-        try:
-            with open("test.torrent", "wb") as f:
-                f.write(res.content)
-        except Exception as e:
-            print("Cannot write file: ", e)
 
 
 class AdultAlert(NormalAlert):
@@ -319,7 +323,7 @@ class UploadCheck(AdultAlert):
 
     def action(self, data):
         upload_target = Config.get("mteam_upload_target")
-        current_upload = data[0] - data[1]
+        current_upload = round(data[0] - data[1], 2)
         print(
             "upload={0}, download={1}, current={2}, target={3}".format(data[0], data[1], current_upload, upload_target))
 

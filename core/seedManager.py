@@ -41,9 +41,11 @@ class SeedManager:
         return current_bandwidth_gb, allowed_bandwidth_gb
 
     @classmethod
-    def add_seed(cls, seed, download_link):
+    def add_seed(cls, seed):
         torrent_file = "%s.torrent" % seed.id
-        HttpUtils.download_file(download_link % seed.id, torrent_file)
+        if not os.path.exists(torrent_file):
+            print("Add seed fail, cannot find seed file: " + str(seed))
+            return
         os.popen("transmission-remote -a %s" % torrent_file)
         time.sleep(2)
         os.popen("rm %s" % torrent_file)
@@ -133,7 +135,7 @@ class SeedManager:
         return total_size
 
     @classmethod
-    def try_add_seeds(cls, new_seeds, download_link):
+    def try_add_seeds(cls, new_seeds):
         success_seeds = []
         fail_seeds = []
         max_retry = 1
@@ -162,7 +164,7 @@ class SeedManager:
                         cls.remove_seed(seed.id)
                         print("remove bad seed and space left: %sMB" % str(space_in_mb))
 
-                    cls.add_seed(new_seed, download_link)
+                    cls.add_seed(new_seed)
                     success_seeds.append(new_seed)
                     new_added_space_in_mb += new_seed.size
                     if Config.get("enable_email"):
