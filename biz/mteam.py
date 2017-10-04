@@ -381,7 +381,7 @@ class UserCrawl(NormalAlert):
                         elif td_name == "最近動向":
                             user.last_time = HttpUtils.get_content(tr, "td:nth-of-type(2)").replace(" (", "")
                         elif td_name == "傳送":
-                            user.ratio = HttpUtils.get_content(tr, "td:nth-of-type(2) table tr td font").replace(",", "")
+                            user.ratio = HttpUtils.get_content(tr, "td:nth-of-type(2) table tr td font")
                             if user.ratio is None:
                                 # seems that no download is made and ratio is infinite
                                 user.ratio = -1
@@ -394,6 +394,7 @@ class UserCrawl(NormalAlert):
                                                           "td:nth-of-type(2) table tr:nth-of-type(1) td:nth-of-type(2)",
                                                           2))
                             else:
+                                user.ratio = user.ratio.replace(",", "")
                                 user.up = self.parse_size_in_gb(
                                     HttpUtils.get_content(tr,
                                                           "td:nth-of-type(2) table tr:nth-of-type(2) td:nth-of-type(1)",
