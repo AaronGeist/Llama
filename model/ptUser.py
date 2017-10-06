@@ -40,7 +40,7 @@ class User:
         user.id = data[0]
         user.name = data[1]
         user.rank = data[2]
-        user.ratio = float(data[3])
+        user.ratio = float(data[3].replace(",", ""))
         user.up = float(data[4])
         user.down = float(data[5])
         user.last_time = data[6]

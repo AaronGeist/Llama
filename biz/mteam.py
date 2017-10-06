@@ -341,7 +341,7 @@ class UserCrawl(NormalAlert):
     warn_bucket_name = "mteam_user_warn"
 
     max_id = 200000
-    scan_batch_size = 2000
+    scan_batch_size = 500
 
     cache = Cache()
 
@@ -353,6 +353,11 @@ class UserCrawl(NormalAlert):
         return self.site
 
     def crawl_single(self, user_id):
+
+        if self.cache.hash_get(self.id_bucket_name, user_id) is not None:
+            print("Skip " + str(user_id))
+            return
+
         try:
             url = self.site.home_page % str(user_id)
             soup_obj = HttpUtils.get(url, headers=self.site.login_headers, return_raw=False)
