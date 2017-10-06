@@ -300,6 +300,7 @@ class NormalAlert(Login):
         seed.id = seed_id
         SeedManager.add_seed(seed)
 
+
 class AdultAlert(NormalAlert):
     def generate_site(self):
         self.site.home_page = "https://tp.m-team.cc/adult.php"
@@ -350,6 +351,7 @@ class UserCrawl(NormalAlert):
 
     max_id = 200000
     scan_batch_size = 500
+    reload = False  # ignore cache and re-crawl all user
 
     cache = Cache()
 
@@ -362,7 +364,7 @@ class UserCrawl(NormalAlert):
 
     def crawl_single(self, user_id):
 
-        if self.cache.hash_get(self.id_bucket_name, user_id) is not None:
+        if not self.reload and self.cache.hash_get(self.id_bucket_name, user_id) is not None:
             print("Skip " + str(user_id))
             return
 
@@ -477,6 +479,7 @@ class UserCrawl(NormalAlert):
 
         if ids is None:
             ids = range(1, self.max_id)
+            self.reload = True
 
         start = 0
         end = len(ids)
@@ -505,6 +508,8 @@ class UserCrawl(NormalAlert):
         self.crawl(list(map(lambda x: x.decode(), self.cache.hash_get_all_key(self.id_bucket_name))))
 
     def warn(self):
+        self.refresh()
+
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
         now = datetime.now()
         for user_id in user_ids:
@@ -512,7 +517,7 @@ class UserCrawl(NormalAlert):
             user = User.parse(user_str)
             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
                 continue
-            if 0.9 > user.ratio > -1 and "Peasant" in user.rank:
+            if 0.5 > user.ratio > -1 and "Peasant" in user.rank:
                 create_time = datetime.strptime(user.create_time, "%Y-%m-%d %H:%M:%S")
                 create_since = (now - create_time).days
                 warn_time = datetime.strptime(user.warn_time, "%Y-%m-%d %H:%M:%S")
@@ -530,10 +535,6 @@ class UserCrawl(NormalAlert):
                 if warn_since in [0, 1, 3, 5, 6]:
                     self.send_msg(user.id, self.msg_subject, self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
-                    if user.ratio < 0.5:
-                        print(">>>>>>>>>> " + str(user))
-                    else:
-                        print("**********" + str(user))
 
     def load_by_id(self, user_id):
         res = self.cache.hash_get(self.id_bucket_name, user_id)
@@ -558,7 +559,7 @@ class UserCrawl(NormalAlert):
             "save": "yes"
         }
 
-        # HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
+        HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
         print("Send msg to {0}, subject={1}, body={2}".format(user_id, subject, body))
 
 
