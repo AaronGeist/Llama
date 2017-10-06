@@ -291,6 +291,14 @@ class NormalAlert(Login):
             print("Add seed: " + str(seed))
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
+    def add_seed(self, seed_id):
+        site = self.generate_site()
+        assert self.login(site)
+
+        self.download_seed_file(seed_id)
+        seed = SeedInfo()
+        seed.id = seed_id
+        SeedManager.add_seed(seed)
 
 class AdultAlert(NormalAlert):
     def generate_site(self):
@@ -494,7 +502,7 @@ class UserCrawl(NormalAlert):
         self.buffer.clear()
 
     def refresh(self):
-        self.crawl(self.cache.hash_get_all_key(self.id_bucket_name))
+        self.crawl(list(map(lambda x: x.decode(), self.cache.hash_get_all_key(self.id_bucket_name))))
 
     def warn(self):
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
@@ -504,7 +512,7 @@ class UserCrawl(NormalAlert):
             user = User.parse(user_str)
             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
                 continue
-            if 0.9 > user.ratio > 0 and "Peasant" in user.rank:
+            if 0.9 > user.ratio > -1 and "Peasant" in user.rank:
                 create_time = datetime.strptime(user.create_time, "%Y-%m-%d %H:%M:%S")
                 create_since = (now - create_time).days
                 warn_time = datetime.strptime(user.warn_time, "%Y-%m-%d %H:%M:%S")
@@ -519,7 +527,7 @@ class UserCrawl(NormalAlert):
                 if user.down > 100:
                     continue
 
-                if not self.cache.set_contains(self.warn_bucket_name, user.id):
+                if warn_since in [0, 1, 3, 5, 6]:
                     self.send_msg(user.id, self.msg_subject, self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
                     if user.ratio < 0.5:

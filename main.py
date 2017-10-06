@@ -21,6 +21,7 @@ cmd_map = {
     "second_reset": SecondHand.clean_up,
     "mt_adult": AdultAlert().check,
     "mt_adult_init": AdultAlert().init,
+    "mt_add": AdultAlert().add_seed,
     "mt_up_check": UploadCheck().check,
     "mt_user_init": UserCrawl().crawl,
     "mt_user_refresh": UserCrawl().refresh,
