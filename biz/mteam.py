@@ -351,7 +351,7 @@ class UserCrawl(NormalAlert):
 
     max_id = 200000
     scan_batch_size = 500
-    reload = False  # ignore cache and re-crawl all user
+    skip_if_exist = False  # ignore cache and re-crawl all user
 
     cache = Cache()
 
@@ -364,7 +364,7 @@ class UserCrawl(NormalAlert):
 
     def crawl_single(self, user_id):
 
-        if not self.reload and self.cache.hash_get(self.id_bucket_name, user_id) is not None:
+        if self.skip_if_exist and self.cache.hash_get(self.id_bucket_name, user_id) is not None:
             print("Skip " + str(user_id))
             return
 
@@ -479,7 +479,7 @@ class UserCrawl(NormalAlert):
 
         if ids is None:
             ids = range(1, self.max_id)
-            self.reload = True
+            self.skip_if_exist = True
 
         start = 0
         end = len(ids)
