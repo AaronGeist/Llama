@@ -354,9 +354,11 @@ class UploadCheck(AdultAlert):
         upload_target = Config.get("mteam_upload_target")
         current_upload = round(data[0] - data[1], 2)
         print(
-            "upload={0}, download={1}, current={2}, delta_ratio={3}, target={4}".format(data[0], data[1],
-                                                                                        current_upload, delta_ratio,
-                                                                                        upload_target))
+            "upload={0}, download={1}, current={2}, delta_up={3}, delta_down={4}, delta_ratio={5}, target={6}".format(
+                data[0], data[1],
+                current_upload, delta_up, delta_down, delta_ratio,
+                upload_target))
+
         self.cache.set("mt_up", data[0])
         self.cache.set("mt_down", data[1])
 
