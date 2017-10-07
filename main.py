@@ -29,6 +29,7 @@ cmd_map = {
     "mt_id": UserCrawl().load_by_id,
     "mt_name": UserCrawl().load_by_name,
     "mt_msg": UserCrawl().send_msg,
+    "mt_order": UserCrawl().order,
     "mt_vote": CandidateVote().check
 }
 

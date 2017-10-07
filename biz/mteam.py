@@ -606,6 +606,19 @@ class UserCrawl(NormalAlert):
                     self.send_msg(user.id, self.msg_subject, self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
 
+    def order(self, limit=250):
+        user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
+        users = []
+        for user_id in user_ids:
+            user_str = self.cache.hash_get(self.id_bucket_name, user_id).decode()
+            user = User.parse(user_str)
+            if not user.is_secret and not user.is_ban and user.ratio >= 0 and user.down >= 10 and "VIP" not in user.rank and "職人" not in user.rank:
+                users.append(user)
+
+        users.sort(key=lambda x: x.ratio)
+        for i in range(0, int(limit)):
+            print(users[i])
+
     def load_by_id(self, user_id):
         res = self.cache.hash_get(self.id_bucket_name, user_id)
         if res is not None:
