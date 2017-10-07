@@ -11,6 +11,7 @@ class User:
     mp = 0
     is_ban = False
     is_secret = False
+    is_warn = False
 
     def __str__(self):
         data = list()
@@ -26,6 +27,7 @@ class User:
         data.append(str(self.mp).replace(",", ""))
         data.append(str(self.is_ban))
         data.append(str(self.is_secret))
+        data.append(str(self.is_warn))
 
         return "|".join(data)
 
@@ -49,8 +51,7 @@ class User:
         user.mp = float(data[9])
         user.is_ban = data[10] == "True"
         user.is_secret = data[11] == "True"
+        if len(data) > 12:
+            user.is_warn = data[12] == "True"
 
         return user
-
-
-

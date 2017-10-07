@@ -435,18 +435,17 @@ class UserCrawl(NormalAlert):
             user = User()
             user.id = user_id
             user.name = HttpUtils.get_content(soup_obj, "#outer h1 span b")
+            user.is_warn = len(soup_obj.select("#outer h1 span img[alt='Leechwarned']")) > 0
+            user.is_ban = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
 
             if user.name is None:
                 return
 
             try:
-                user.is_ban = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
-
                 if len(soup_obj.select("#outer table tr")) <= 5:
                     user.is_secret = True
-                    print("secret user: id=" + str(user_id))
+                    print("secret user: name={0} id={1}".format(user.name, str(user_id)))
                 else:
-
                     tr_list = soup_obj.select("#outer table tr")
                     for tr in tr_list:
                         td_name = HttpUtils.get_content(tr, "td:nth-of-type(1)")
@@ -556,11 +555,11 @@ class UserCrawl(NormalAlert):
                 print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
 
             if len(self.buffer) > 300:
-                self.store_cache(self.buffer)
+                # self.store_cache(self.buffer)
                 self.buffer.clear()
 
         # write all others left
-        self.store_cache(self.buffer)
+        # self.store_cache(self.buffer)
         self.buffer.clear()
 
     def refresh(self):
@@ -650,7 +649,7 @@ if __name__ == "__main__":
     # NormalAlert().check()
     # NormalAlert().download_seed("209094")
     # AdultAlert().check()
-    # UserCrawl().crawl([1, 188311, 188298])
+    UserCrawl().crawl([182533])
     # UserCrawl().refresh()
     # UploadCheck().check()
-    CandidateVote().check()
+    # CandidateVote().check()
