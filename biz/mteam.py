@@ -349,6 +349,7 @@ class UserCrawl(NormalAlert):
     name_bucket_name = "mteam_user_name"
     warn_bucket_name = "mteam_user_warn"
 
+    min_id = 1
     max_id = 200000
     scan_batch_size = 500
     skip_if_exist = False  # ignore cache and re-crawl all user
@@ -478,7 +479,7 @@ class UserCrawl(NormalAlert):
         assert self.login(site)
 
         if ids is None:
-            ids = range(1, self.max_id)
+            ids = range(self.min_id, self.max_id)
             self.skip_if_exist = True
 
         start = 0
@@ -505,7 +506,16 @@ class UserCrawl(NormalAlert):
         self.buffer.clear()
 
     def refresh(self):
-        self.crawl(list(map(lambda x: x.decode(), self.cache.hash_get_all_key(self.id_bucket_name))))
+        ids = list(sorted(map(lambda x: int(x.decode()), self.cache.hash_get_all_key(self.id_bucket_name))))
+        print("max ID=" + str(ids[-1]))
+        self.min_id = ids[-1]
+        self.max_id = self.min_id + 50000
+
+        # refresh existing user
+        self.crawl(ids)
+
+        # find new user
+        self.crawl()
 
     def warn(self):
         self.refresh()
