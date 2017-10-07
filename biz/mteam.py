@@ -509,11 +509,13 @@ class UserCrawl(NormalAlert):
         ids = list(sorted(map(lambda x: int(x.decode()), self.cache.hash_get_all_key(self.id_bucket_name))))
         print("max ID=" + str(ids[-1]))
         self.min_id = ids[-1]
-        self.max_id = self.min_id + 50000
+        self.max_id = self.min_id + 5000
 
+        print("\n############## refresh user ##############\n")
         # refresh existing user
         self.crawl(ids)
 
+        print("\n############## crawl new user ##############\n")
         # find new user
         self.crawl()
 
