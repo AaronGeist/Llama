@@ -337,12 +337,19 @@ class UploadCheck(AdultAlert):
 
         if prev_up is None:
             prev_up = 0
+        else:
+            prev_up = float(prev_up.decode())
         if prev_down is None:
             prev_down = 0
+        else:
+            prev_down = float(prev_down.decode())
 
         delta_up = data[0] - prev_up
         delta_down = data[1] - prev_down
-        delta_ratio = round(delta_up / delta_down, 2)
+        if delta_down == 0:
+            delta_ratio = "Inf"
+        else:
+            delta_ratio = round(delta_up / delta_down, 2)
 
         upload_target = Config.get("mteam_upload_target")
         current_upload = round(data[0] - data[1], 2)
