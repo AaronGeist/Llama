@@ -1,7 +1,7 @@
 import sys
 import time
 
-from biz.mteam import AdultAlert, UploadCheck, UserCrawl
+from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
@@ -28,7 +28,8 @@ cmd_map = {
     "mt_user_warn": UserCrawl().warn,
     "mt_id": UserCrawl().load_by_id,
     "mt_name": UserCrawl().load_by_name,
-    "mt_msg": UserCrawl().send_msg
+    "mt_msg": UserCrawl().send_msg,
+    "mt_vote": CandidateVote().check
 }
 
 

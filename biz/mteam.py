@@ -308,6 +308,8 @@ class AdultAlert(NormalAlert):
 
 
 class UploadCheck(AdultAlert):
+    cache = Cache()
+
     def parse(self, soup_obj):
         assert soup_obj is not None
 
@@ -330,15 +332,62 @@ class UploadCheck(AdultAlert):
         return data
 
     def action(self, data):
+        prev_up = self.cache.get("mt_up")
+        prev_down = self.cache.get("mt_down")
+
+        if prev_up is None:
+            prev_up = 0
+        if prev_down is None:
+            prev_down = 0
+
+        delta_up = data[0] - prev_up
+        delta_down = data[1] - prev_down
+        delta_ratio = round(delta_up / delta_down, 2)
+
         upload_target = Config.get("mteam_upload_target")
         current_upload = round(data[0] - data[1], 2)
         print(
-            "upload={0}, download={1}, current={2}, target={3}".format(data[0], data[1], current_upload, upload_target))
+            "upload={0}, download={1}, current={2}, delta_ratio={3}, target={4}".format(data[0], data[1],
+                                                                                        current_upload, delta_ratio,
+                                                                                        upload_target))
+        self.cache.set("mt_up", data[0])
+        self.cache.set("mt_down", data[1])
 
         if upload_target < current_upload:
             for i in range(5):
                 EmailSender.send(u"完成上传", Config.get("mteam_username"))
                 time.sleep(10000)
+
+
+class CandidateVote(NormalAlert):
+    def generate_site(self):
+        self.site.home_page = "https://tp.m-team.cc/offers.php"
+        return self.site
+
+    def parse(self, soup_obj):
+        assert soup_obj is not None
+
+        id_set = set()
+        vote_list = soup_obj.select("#form_torrent table tr td.rowfollow b a")
+        for vote_obj in vote_list:
+            id_set.add(self.parse_id(vote_obj['href']))
+
+        return id_set
+
+    def filter(self, data):
+        return data
+
+    def action(self, data):
+        vote_url = "https://tp.m-team.cc/vote.php?tid=%s&type=1"
+        success_cnt = 0
+        for id in data:
+            res_obj = HttpUtils.get(url=vote_url % id, headers=self.site.login_headers)
+            msg = HttpUtils.get_content(res_obj, "#outer table h2")
+            print(id + ": " + msg)
+            if msg == "操作成功":
+                success_cnt += 1
+
+        print("Vote success: " + str(success_cnt))
 
 
 class UserCrawl(NormalAlert):
@@ -529,7 +578,7 @@ class UserCrawl(NormalAlert):
             user = User.parse(user_str)
             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
                 continue
-            if 0.5 > user.ratio > -1 and "Peasant" in user.rank:
+            if (0.5 > user.ratio > -1 or (0.9 > user.ratio and user.down - user.up > 50)) and "Peasant" in user.rank:
                 create_time = datetime.strptime(user.create_time, "%Y-%m-%d %H:%M:%S")
                 create_since = (now - create_time).days
                 warn_time = datetime.strptime(user.warn_time, "%Y-%m-%d %H:%M:%S")
@@ -541,7 +590,7 @@ class UserCrawl(NormalAlert):
                     continue
 
                 # skip veteran user
-                if user.down > 100:
+                if user.up > 500:
                     continue
 
                 if warn_since in [0, 1, 3, 5, 6]:
@@ -581,4 +630,5 @@ if __name__ == "__main__":
     # AdultAlert().check()
     # UserCrawl().crawl([1, 188311, 188298])
     # UserCrawl().refresh()
-    UploadCheck().check()
+    # UploadCheck().check()
+    CandidateVote().check()
