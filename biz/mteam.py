@@ -568,7 +568,7 @@ class UserCrawl(NormalAlert):
     def refresh(self):
         ids = list(sorted(map(lambda x: int(x.decode()), self.cache.hash_get_all_key(self.id_bucket_name))))
         print("max ID=" + str(ids[-1]))
-        self.min_id = ids[-1]
+        self.min_id = ids[-1] + 1
         self.max_id = self.min_id + 1000
 
         print("\n############## refresh user ##############\n")
@@ -587,9 +587,9 @@ class UserCrawl(NormalAlert):
         for user_id in user_ids:
             user_str = self.cache.hash_get(self.id_bucket_name, user_id).decode()
             user = User.parse(user_str)
-            if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
+            if user.is_ban or not user.is_warn or "VIP" in user.rank or "職人" in user.rank:
                 continue
-            if (0.5 > user.ratio > -1 or (0.9 > user.ratio and user.down - user.up > 50)) and "Peasant" in user.rank:
+            if user.is_secret or (0.5 > user.ratio > -1 or (0.9 > user.ratio and user.down - user.up > 50)):
                 if user.create_time == "":
                     create_since = 999999
                 else:
@@ -601,10 +601,6 @@ class UserCrawl(NormalAlert):
 
                 # skip user who has registered for less than 2 days
                 if create_since < 2:
-                    continue
-
-                # skip veteran user
-                if user.up > 500:
                     continue
 
                 if warn_since in [0, 1, 3, 5, 6]:
