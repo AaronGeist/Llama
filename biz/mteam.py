@@ -305,6 +305,7 @@ class NormalAlert(Login):
         seed = SeedInfo()
         seed.id = seed_id
         SeedManager.add_seed(seed)
+        Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
 
 class AdultAlert(NormalAlert):
