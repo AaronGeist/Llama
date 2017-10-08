@@ -515,7 +515,7 @@ class UserCrawl(NormalAlert):
             if res is not None:
                 exist_user = User.parse(res.decode())
                 # warned before, do not update warn time
-                if "Peasant" in user.rank and "Peasant" in exist_user.rank:
+                if user.is_warn and exist_user.is_warn:
                     user.warn_time = exist_user.warn_time
 
             self.cache.hash_set(self.id_bucket_name, user.id, str(user))
@@ -590,8 +590,11 @@ class UserCrawl(NormalAlert):
             if user.is_ban or user.is_secret or "VIP" in user.rank or "職人" in user.rank:
                 continue
             if (0.5 > user.ratio > -1 or (0.9 > user.ratio and user.down - user.up > 50)) and "Peasant" in user.rank:
-                create_time = datetime.strptime(user.create_time, "%Y-%m-%d %H:%M:%S")
-                create_since = (now - create_time).days
+                if user.create_time == "":
+                    create_since = 999999
+                else:
+                    create_time = datetime.strptime(user.create_time, "%Y-%m-%d %H:%M:%S")
+                    create_since = (now - create_time).days
                 warn_time = datetime.strptime(user.warn_time, "%Y-%m-%d %H:%M:%S")
                 warn_since = (now - warn_time).days
                 print("{0}|{1}|{2}".format(str(user), str(create_since), str(warn_since)))
