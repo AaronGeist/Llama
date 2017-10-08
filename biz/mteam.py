@@ -331,7 +331,22 @@ class NormalAlert(Login):
         tracker_data = {
             "action": "tracker",
             "type": "save",
-            "t_look": "1"
+            "t_look": "1",  # show pic
+            "tooltip": "off",
+            "timetype": "timealive",
+            "appendsticky": "yes",
+            "radio": "icon",
+            "smalldescr": "yes",
+            "dlicon": "yes",
+            "bmicon": "yes",
+            "show_hot": "yes",
+            "showfb": "yes",
+            "showdescription": "yes",
+            "showimdb": "yes",
+            "showcomment": "yes",
+            "appendnew": "yes",
+            "appendpicked": "yes",
+            "showcomnum": "yes"
         }
         res = HttpUtils.post(url=setting_url, data=tracker_data, headers=self.site.login_headers, returnRaw=True)
         assert res.status_code == 200
