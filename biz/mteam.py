@@ -48,6 +48,12 @@ class NormalAlert(Login):
         self.site.login_username = Config.get("mteam_username")
         self.site.login_password = Config.get("mteam_password")
 
+    def login_if_not(self):
+        if not self.is_login:
+            self.generate_site()
+            self.is_login = self.login(self.site)
+            assert self.is_login
+
     def generate_site(self):
         return self.site
 
@@ -59,11 +65,7 @@ class NormalAlert(Login):
         return data
 
     def crawl(self):
-
-        if not self.is_login:
-            self.generate_site()
-            self.is_login = self.login(self.site)
-            assert self.is_login
+        self.login_if_not()
 
         soup_obj = HttpUtils.get(self.site.home_page, headers=self.site.login_headers)
         return self.parse(soup_obj)
@@ -244,6 +246,8 @@ class NormalAlert(Login):
 
     # general download way for both normal user and warned user
     def download_seed_file(self, seed_id):
+        self.login_if_not()
+
         data = {
             "id": seed_id,
             "type": "ratio",
@@ -284,6 +288,9 @@ class NormalAlert(Login):
         self.action(self.filter(self.crawl()))
 
     def init(self):
+        # enable adult torrent and close pic
+        self.init_setting()
+
         # crawl and add to cache
         seeds = self.crawl()
 
@@ -298,14 +305,36 @@ class NormalAlert(Login):
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
     def add_seed(self, seed_id):
-        site = self.generate_site()
-        assert self.login(site)
+        self.login_if_not()
 
         self.download_seed_file(seed_id)
         seed = SeedInfo()
         seed.id = seed_id
         SeedManager.add_seed(seed)
         Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
+
+    def init_setting(self):
+        self.login_if_not()
+
+        # enable adult torrent
+        setting_url = "https://tp.m-team.cc/usercp.php"
+        lab_data = {
+            "action": "laboratory",
+            "type": "save",
+            "laboratory_adult_mode": "0",
+            "laboratory_torrent_page_https": "0"
+        }
+        res = HttpUtils.post(url=setting_url, data=lab_data, headers=self.site.login_headers, returnRaw=True)
+        assert res.status_code == 200
+
+        # do not show picture
+        tracker_data = {
+            "action": "tracker",
+            "type": "save",
+            "t_look": "1"
+        }
+        res = HttpUtils.post(url=setting_url, data=tracker_data, headers=self.site.login_headers, returnRaw=True)
+        assert res.status_code == 200
 
 
 class AdultAlert(NormalAlert):
@@ -531,10 +560,7 @@ class UserCrawl(NormalAlert):
         print("########### finish storing cache ###########")
 
     def crawl(self, ids=None):
-        if not self.is_login:
-            site = self.generate_site()
-            self.is_login = self.login(site)
-            assert self.is_login
+        self.login_if_not()
 
         if ids is None:
             ids = range(self.min_id, self.max_id)
@@ -633,10 +659,7 @@ class UserCrawl(NormalAlert):
             print("Cannot find user by name: " + user_name)
 
     def send_msg(self, user_id, subject, body):
-        if not self.is_login:
-            site = self.generate_site()
-            self.is_login = self.login(site)
-            assert self.is_login
+        self.login_if_not()
 
         url = "https://tp.m-team.cc/takemessage.php"
         data = {
@@ -654,7 +677,8 @@ if __name__ == "__main__":
     # NormalAlert().check()
     # NormalAlert().download_seed("209094")
     # AdultAlert().check()
-    UserCrawl().crawl([182533])
+    # UserCrawl().crawl([182533])
+    NormalAlert().init_setting()
     # UserCrawl().refresh()
     # UploadCheck().check()
     # CandidateVote().check()
