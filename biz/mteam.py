@@ -609,7 +609,7 @@ class UserCrawl(NormalAlert):
                 if create_since < 2:
                     continue
 
-                if warn_since in [0, 1, 3, 5, 6]:
+                if warn_since in [0, 3, 5]:
                     self.send_msg(user.id, self.msg_subject, self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
 
