@@ -435,11 +435,12 @@ class UserCrawl(NormalAlert):
             user = User()
             user.id = user_id
             user.name = HttpUtils.get_content(soup_obj, "#outer h1 span b")
-            user.is_warn = len(soup_obj.select("#outer h1 span img[alt='Leechwarned']")) > 0
-            user.is_ban = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
 
             if user.name is None:
                 return
+
+            user.is_warn = len(soup_obj.select("#outer h1 span img[alt='Leechwarned']")) > 0
+            user.is_ban = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
 
             try:
                 if len(soup_obj.select("#outer table tr")) <= 5:
@@ -555,18 +556,18 @@ class UserCrawl(NormalAlert):
                 print(">>>>>>>>>>>>>>>>> retry finished >>>>>>>>>>>>>>>>>>>>>>")
 
             if len(self.buffer) > 300:
-                # self.store_cache(self.buffer)
+                self.store_cache(self.buffer)
                 self.buffer.clear()
 
         # write all others left
-        # self.store_cache(self.buffer)
+        self.store_cache(self.buffer)
         self.buffer.clear()
 
     def refresh(self):
         ids = list(sorted(map(lambda x: int(x.decode()), self.cache.hash_get_all_key(self.id_bucket_name))))
         print("max ID=" + str(ids[-1]))
         self.min_id = ids[-1]
-        self.max_id = self.min_id + 5000
+        self.max_id = self.min_id + 1000
 
         print("\n############## refresh user ##############\n")
         # refresh existing user
