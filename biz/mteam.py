@@ -183,6 +183,8 @@ class NormalAlert(Login):
         size_cnt = 0
         filtered_seeds = []
         for seed in seeds:
+            if seed.size > limit:
+                continue
             size_cnt += seed.size
             if size_cnt < limit:
                 filtered_seeds.append(seed)
@@ -526,17 +528,6 @@ class UserCrawl(NormalAlert):
             self.cache.hash_set(self.name_bucket_name, user.name, str(user))
 
         print("########### finish storing cache ###########")
-
-    def write_data(self):
-        if len(self.buffer) == 0:
-            return
-
-        print("########### start writing ###########")
-        with open("user.txt", "a") as f:
-            for user in self.buffer:
-                f.write(str(user) + "\r")
-        print("########### finish writing ###########")
-        self.buffer.clear()
 
     def crawl(self, ids=None):
         if not self.is_login:
