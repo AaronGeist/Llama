@@ -19,6 +19,7 @@ from util.utils import HttpUtils
 class NormalAlert(Login):
     site = Site()
     size_factor = 1.074  # the shown size on web page is not accurate
+    is_login = False
 
     download_link = "https://tp.m-team.cc/download.php?id=%s&https=1"
 
@@ -58,10 +59,13 @@ class NormalAlert(Login):
         return data
 
     def crawl(self):
-        site = self.generate_site()
-        assert self.login(site)
 
-        soup_obj = HttpUtils.get(site.home_page, headers=site.login_headers)
+        if not self.is_login:
+            self.generate_site()
+            self.is_login = self.login(self.site)
+            assert self.is_login
+
+        soup_obj = HttpUtils.get(self.site.home_page, headers=self.site.login_headers)
         return self.parse(soup_obj)
 
     def parse(self, soup_obj):
@@ -535,8 +539,10 @@ class UserCrawl(NormalAlert):
         self.buffer.clear()
 
     def crawl(self, ids=None):
-        site = self.generate_site()
-        assert self.login(site)
+        if not self.is_login:
+            site = self.generate_site()
+            self.is_login = self.login(site)
+            assert self.is_login
 
         if ids is None:
             ids = range(self.min_id, self.max_id)
@@ -635,6 +641,11 @@ class UserCrawl(NormalAlert):
             print("Cannot find user by name: " + user_name)
 
     def send_msg(self, user_id, subject, body):
+        if not self.is_login:
+            site = self.generate_site()
+            self.is_login = self.login(site)
+            assert self.is_login
+
         url = "https://tp.m-team.cc/takemessage.php"
         data = {
             "receiver": user_id,
