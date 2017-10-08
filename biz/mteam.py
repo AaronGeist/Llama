@@ -441,6 +441,8 @@ class UserCrawl(NormalAlert):
 
             user.is_warn = len(soup_obj.select("#outer h1 span img[alt='Leechwarned']")) > 0
             user.is_ban = len(soup_obj.select("#outer h1 span img[alt='Disabled']")) > 0
+            if user.is_warn:
+                user.warn_time = str(time.strftime("%Y-%m-%d %H:%M:%S"))
 
             try:
                 if len(soup_obj.select("#outer table tr")) <= 5:
