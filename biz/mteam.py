@@ -405,7 +405,7 @@ class UploadCheck(AdultAlert):
         upload_target = Config.get("mteam_upload_target")
         current_upload = round(data[0] - data[1], 2)
         print(
-            "%s, upload=%s, download=%s, current=%s, delta_up=%s, delta_down=%s, delta_ratio=%s, target=%s".format(
+            "%s, upload=%s, download=%s, current=%s, delta_up=%s, delta_down=%s, delta_ratio=%s, target=%s" % (
                 str(time.strftime("%Y-%m-%d %H:%M:%S")),
                 data[0], data[1],
                 current_upload, delta_up, delta_down, delta_ratio,
