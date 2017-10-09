@@ -405,7 +405,8 @@ class UploadCheck(AdultAlert):
         upload_target = Config.get("mteam_upload_target")
         current_upload = round(data[0] - data[1], 2)
         print(
-            "upload={0}, download={1}, current={2}, delta_up={3}, delta_down={4}, delta_ratio={5}, target={6}".format(
+            "%s, upload=%s, download=%s, current=%s, delta_up=%s, delta_down=%s, delta_ratio=%s, target=%s".format(
+                str(time.strftime("%Y-%m-%d %H:%M:%S")),
                 data[0], data[1],
                 current_upload, delta_up, delta_down, delta_ratio,
                 upload_target))
@@ -443,7 +444,6 @@ class CandidateVote(NormalAlert):
         for id in data:
             res_obj = HttpUtils.get(url=vote_url % id, headers=self.site.login_headers)
             msg = HttpUtils.get_content(res_obj, "#outer table h2")
-            print(id + ": " + msg)
             if msg == "操作成功":
                 success_cnt += 1
 
@@ -498,7 +498,7 @@ class UserCrawl(NormalAlert):
             try:
                 if len(soup_obj.select("#outer table tr")) <= 5:
                     user.is_secret = True
-                    print("secret user: name={0} id={1}".format(user.name, str(user_id)))
+                    # print("secret user: name={0} id={1}".format(user.name, str(user_id)))
                 else:
                     tr_list = soup_obj.select("#outer table tr")
                     for tr in tr_list:
@@ -542,7 +542,7 @@ class UserCrawl(NormalAlert):
 
                             if "Peasant" in user.rank:
                                 user.warn_time = str(time.strftime("%Y-%m-%d %H:%M:%S"))
-                    print("###### find user=" + user.name + " id=" + str(user_id) + " rank=" + user.rank)
+                                # print("###### find user=" + user.name + " id=" + str(user_id) + " rank=" + user.rank)
             except Exception as e:
                 print(str(user_id) + "\n" + str(e) + "\n")
 
@@ -558,8 +558,6 @@ class UserCrawl(NormalAlert):
     def store_cache(self, data):
         if data is None or len(data) == 0:
             return
-
-        print("########### start storing cache ###########")
 
         for user in data:
             res = self.cache.hash_get(self.id_bucket_name, user.id)
@@ -587,6 +585,7 @@ class UserCrawl(NormalAlert):
 
         current = start
         while current < end:
+            print(">>>>>>>>>>>> crawl {0} -> {1} >>>>>>>>>>>>>>>>".format(current, current + step))
             ParallelTemplate(500).run(func=self.crawl_single, inputs=ids[current: min(current + step, end)])
             current += step
 
@@ -620,6 +619,7 @@ class UserCrawl(NormalAlert):
 
     def warn(self):
         self.refresh()
+        warn_white_list = str(Config.get("mt_warn_white_list")).split("|")
 
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
         now = datetime.now()
@@ -640,6 +640,9 @@ class UserCrawl(NormalAlert):
 
                 # skip user who has registered for less than 2 days
                 if create_since < 2:
+                    continue
+
+                if user.name in warn_white_list:
                     continue
 
                 if warn_since in [0, 3, 5]:
@@ -685,7 +688,7 @@ class UserCrawl(NormalAlert):
         }
 
         HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
-        print("Send msg to {0}, subject={1}, body={2}".format(user_id, subject, body))
+        print(">>>>>>>>> Send msg to {0}, subject={1}, body={2} >>>>>>>>>>".format(user_id, subject, body))
 
 
 if __name__ == "__main__":
