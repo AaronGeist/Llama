@@ -395,8 +395,8 @@ class UploadCheck(AdultAlert):
         else:
             prev_down = float(prev_down.decode())
 
-        delta_up = data[0] - prev_up
-        delta_down = data[1] - prev_down
+        delta_up = round(data[0] - prev_up, 2)
+        delta_down = round(data[1] - prev_down, 2)
         if delta_down == 0:
             delta_ratio = "Inf"
         else:
