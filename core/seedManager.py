@@ -197,8 +197,8 @@ class SeedManager:
             if seed.done < 100 and seed.since <= 60 * 60:
                 continue
 
-            if str(seed.status).upper() == "IDLE":
-                print("IDLE: >>>>>>>>> " + str(seed))
+            if str(seed.status).upper() == "IDLE" or str(seed.status).upper() == "STOPPED":
+                print("IDLE|STOP: >>>>>>>>> " + str(seed))
                 total_bad_seed_size += seed.size
                 bad_seeds.append(seed)
                 continue
