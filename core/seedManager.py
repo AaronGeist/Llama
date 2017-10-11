@@ -235,7 +235,8 @@ class SeedManager:
 
         # the more larger size and the less upload speed, the first to be removed
         # up is added 0.01 to avoid dividing zero
-        bad_seeds.sort(key=lambda x: round(x.size / (x.up + 0.01)), reverse=True)
+        bad_seeds.sort(key=lambda x: int(x.status == "STOPPED") * 100 + int(x.status == "IDLE") * 30 + round(
+            x.size / (x.up + 0.01)), reverse=True)
 
         for seed in bad_seeds:
             print("bad seed: " + str(seed))
