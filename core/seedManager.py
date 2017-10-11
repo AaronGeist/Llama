@@ -131,6 +131,9 @@ class SeedManager:
         seeds = cls.parse_current_seeds()
         total_size = 0
         for seed in seeds:
+            if seed.status == "Stopped":
+                cls.remove_seed(seed.id)
+                continue
             total_size += seed.size
         return total_size
 
