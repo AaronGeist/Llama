@@ -193,14 +193,14 @@ class SeedManager:
         bad_seeds = []
         total_bad_seed_size = 0
         for seed in seeds:
-            # let new seed live for N minutes
-            if seed.done < 100 and seed.since <= 60 * 60:
-                continue
-
             if str(seed.status).upper() == "IDLE" or str(seed.status).upper() == "STOPPED":
                 print("IDLE|STOP: >>>>>>>>> " + str(seed))
                 total_bad_seed_size += seed.size
                 bad_seeds.append(seed)
+                continue
+
+            # let new seed live for N minutes
+            if seed.done < 100 and seed.since <= 60 * 60:
                 continue
 
             # check upload speed
