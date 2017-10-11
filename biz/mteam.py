@@ -105,6 +105,10 @@ class NormalAlert(Login):
                 seed.discount = 50
             elif len(td_title[0].select("img[alt=\"30%\"]")) > 0:
                 seed.discount = 30
+            elif seed.free:
+                seed.discount = 0
+            else:
+                seed.discount = 100
             seed.id = self.parse_id(seed.url)
 
             seeds.append(seed)
@@ -171,12 +175,12 @@ class NormalAlert(Login):
         # sort seed, sticky and free seed has highest weight, the less discount,
         # the more download, the less upload, the less size, the better
         for x in seeds:
-            print("score=" + str(int(x.sticky) * 100 + int(x.free) * 50 + round(
-                (100000 / x.discount) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3)) + "  >>>> " + str(
+            print("score=" + str(int(x.sticky) * 50 + int(x.free) * 50 + round(
+                (100000 / (x.discount + 10)) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3)) + "  >>>> " + str(
                 x))
 
-        seeds.sort(key=lambda x: int(x.sticky) * 100 + int(x.free) * 50 + round(
-            (100000 / x.discount) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3), reverse=True)
+        seeds.sort(key=lambda x: int(x.sticky) * 50 + int(x.free) * 50 + round(
+            (100000 / (x.discount + 10)) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3), reverse=True)
 
         return seeds
 
