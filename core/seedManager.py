@@ -88,7 +88,7 @@ class SeedManager:
             seeds.append(seed)
 
             data = line.split()
-            seed.id = data[0]
+            seed.id = data[0].replace("*", "")
             cmd_result = os.popen("transmission-remote -t {0} -i".format(seed.id)).read()
             seed_details = cmd_result.split("\n")
 
