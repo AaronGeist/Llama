@@ -589,7 +589,7 @@ class UserCrawl(NormalAlert):
 
         current = start
         while current < end:
-            print(">>>>>>>>>>>> crawl {0} -> {1} >>>>>>>>>>>>>>>>".format(ids[current], ids[min(current + step, end)]))
+            print(">>>>>>>>>>>> crawl {0} -> {1} >>>>>>>>>>>>>>>>".format(ids[current], ids[min(current + step, end - 1)]))
             ParallelTemplate(500).run(func=self.crawl_single, inputs=ids[current: min(current + step, end)])
             current += step + 1
 
