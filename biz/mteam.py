@@ -652,6 +652,7 @@ class UserCrawl(NormalAlert):
                 if warn_since in [0, 3, 5]:
                     self.send_msg(user.id, self.msg_subject, self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
+                    time.sleep(5)
 
     def order(self, limit=250):
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
