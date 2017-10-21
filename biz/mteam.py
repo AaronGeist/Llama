@@ -176,7 +176,8 @@ class NormalAlert(Login):
         # the more download, the less upload, the less size, the better
         for x in seeds:
             print("score=" + str(int(x.sticky) * 50 + int(x.free) * 50 + round(
-                (100000 / (x.discount + 10)) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000), 3)) + "  >>>> " + str(
+                (100000 / (x.discount + 10)) * x.download_num / (x.upload_num + 0.01) / (x.size + 5000),
+                3)) + "  >>>> " + str(
                 x))
 
         seeds.sort(key=lambda x: int(x.sticky) * 50 + int(x.free) * 50 + round(
@@ -244,7 +245,7 @@ class NormalAlert(Login):
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 
-        final_seeds = self.limit_total_size(filtered_seeds, 8 * 1024)
+        final_seeds = self.limit_total_size(filtered_seeds, 9 * 1024)
 
         return final_seeds
 
@@ -469,8 +470,11 @@ class UserCrawl(NormalAlert):
 
     cache = Cache()
 
-    msg_subject = "由于分享率过低，您已经被警告了，7天内不改善的话会被封账号"
-    msg_body = "需要帮助快速增加上传量，请微信联系shakazxx，并注明 “mt上传”"
+    msg_subject = "由于分享率过低，您已经被警告了，%s天内不改善的话会被封账号"
+    msg_body = "需要帮助快速增加上传量，请微信联系shakazxx，并注明“mt上传”"
+
+    msg_urgent_subject = "由于分享率低于0.3，您已经被警告了，且随时可能会被封账号！！！"
+    msg_urgent_body = "分享率低于0.3的新用户可能随时会被封账号!!!! 需要帮助快速增加上传量，请立刻微信联系shakazxx，并注明“mt上传”"
 
     def generate_site(self):
         self.site.home_page = "https://tp.m-team.cc/userdetails.php?id=%s"
@@ -589,7 +593,8 @@ class UserCrawl(NormalAlert):
 
         current = start
         while current < end:
-            print(">>>>>>>>>>>> crawl {0} -> {1} >>>>>>>>>>>>>>>>".format(ids[current], ids[min(current + step, end - 1)]))
+            print(">>>>>>>>>>>> crawl {0} -> {1} >>>>>>>>>>>>>>>>".format(ids[current],
+                                                                          ids[min(current + step, end - 1)]))
             ParallelTemplate(500).run(func=self.crawl_single, inputs=ids[current: min(current + step, end)])
             current += step + 1
 
@@ -642,6 +647,13 @@ class UserCrawl(NormalAlert):
                 warn_since = (now - warn_time).days
                 print("{0}|{1}|{2}".format(str(user), str(create_since), str(warn_since)))
 
+                # new user and ratio lower than 0.3 will be baned any time
+                if create_since < 30 and user.ratio < 0.3 and warn_since in [0, 1]:
+                    self.send_msg(user.id, self.msg_urgent_subject, self.msg_urgent_body)
+                    self.cache.set_add(self.warn_bucket_name, user.id)
+                    time.sleep(20)
+                    continue
+
                 # skip user who has registered for less than 2 days
                 if create_since < 2:
                     continue
@@ -650,7 +662,7 @@ class UserCrawl(NormalAlert):
                     continue
 
                 if warn_since in [0, 3, 5]:
-                    self.send_msg(user.id, self.msg_subject, self.msg_body)
+                    self.send_msg(user.id, self.msg_subject % (7 - warn_since), self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
                     time.sleep(20)
 
