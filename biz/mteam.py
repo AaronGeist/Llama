@@ -471,10 +471,10 @@ class UserCrawl(NormalAlert):
     cache = Cache()
 
     msg_subject = "分享率过低的账户会被警告并封禁，请注意（%s)"
-    msg_body = "如需咨询帮助，请微信加好友 helloworld1984\n注1：本人非网站工作人员，如不信任请勿联系，谢谢\n注2：如果打扰到了您，表示抱歉，请pm回复我一下，保证不再有短信"
+    msg_body = "如需咨询帮助，请站内联系\n注1：本人非网站工作人员，如不信任请勿联系，谢谢\n注2：如果打扰到了您，表示抱歉，请pm回复我一下，保证不再有短信"
 
     msg_urgent_subject = "分享率低于0.3的账户可能随时会被封号，请注意"
-    msg_urgent_body = "如需咨询帮助，请微信加好友 helloworld1984\n注1：本人非网站工作人员，如不信任请勿联系，谢谢\n注2：如果打扰到了您，表示抱歉，请pm回复我一下，保证不再有短信"
+    msg_urgent_body = "如需咨询帮助，站内联系\n注1：本人非网站工作人员，如不信任请勿联系，谢谢\n注2：如果打扰到了您，表示抱歉，请pm回复我一下，保证不再有短信"
 
     def generate_site(self):
         self.site.home_page = "https://tp.m-team.cc/userdetails.php?id=%s"
