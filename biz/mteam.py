@@ -366,6 +366,8 @@ class AdultAlert(NormalAlert):
 class UploadCheck(AdultAlert):
     cache = Cache()
 
+    is_store = True
+
     def parse(self, soup_obj):
         assert soup_obj is not None
 
@@ -416,13 +418,25 @@ class UploadCheck(AdultAlert):
                 current_upload, delta_up, delta_down, delta_ratio,
                 upload_target))
 
-        self.cache.set("mt_up", data[0])
-        self.cache.set("mt_down", data[1])
+        if self.is_store:
+            self.cache.set("mt_up", data[0])
+            self.cache.set("mt_down", data[1])
 
         if upload_target < current_upload:
             for i in range(5):
                 EmailSender.send(u"完成上传", Config.get("mteam_username"))
                 time.sleep(10000)
+
+    def init(self):
+        self.cache.set("mt_up", 0)
+        self.cache.set("mt_down", 0)
+
+    def check_not_store(self):
+        # backup current configuration
+        is_store = self.is_store
+        self.is_store = False
+        self.check()
+        self.is_store = is_store
 
 
 class CandidateVote(NormalAlert):
