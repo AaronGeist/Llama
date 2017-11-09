@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import random
 import re
 
 import time
@@ -665,7 +666,6 @@ class UserCrawl(NormalAlert):
                 if create_since < 30 and user.ratio < 0.3 and warn_since in [0, 1]:
                     self.send_msg(user.id, self.msg_urgent_subject, self.msg_urgent_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
-                    time.sleep(20)
                     continue
 
                 # skip user who has registered for less than 2 days
@@ -678,7 +678,6 @@ class UserCrawl(NormalAlert):
                 if warn_since in [0, 3, 5]:
                     self.send_msg(user.id, self.msg_subject % (7 - warn_since), self.msg_body)
                     self.cache.set_add(self.warn_bucket_name, user.id)
-                    time.sleep(20)
 
     def order(self, limit=250):
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
@@ -720,6 +719,9 @@ class UserCrawl(NormalAlert):
 
         HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
         print(">>>>>>>>> Send msg to {0}, subject={1}, body={2} >>>>>>>>>>".format(user_id, subject, body))
+
+        # sleep 30 ~ 120 seconds before sending next message
+        time.sleep(round(30 + random.random() * 90))
 
 
 if __name__ == "__main__":
