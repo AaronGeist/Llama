@@ -477,6 +477,7 @@ class UserCrawl(NormalAlert):
     id_bucket_name = "mteam_user_id"
     name_bucket_name = "mteam_user_name"
     warn_bucket_name = "mteam_user_warn"
+    msg_bucket_name = "mteam_msg"
 
     min_id = 1
     max_id = 200000
@@ -707,6 +708,10 @@ class UserCrawl(NormalAlert):
             print("Cannot find user by name: " + user_name)
 
     def send_msg(self, user_id, subject, body):
+        if self.cache.get(self.msg_bucket_name + str(user_id)) is not None:
+            print("Skip sending msg, user in cache: " + str(user_id))
+            return
+
         self.login_if_not()
 
         url = "https://tp.m-team.cc/takemessage.php"
@@ -719,6 +724,8 @@ class UserCrawl(NormalAlert):
 
         HttpUtils.post(url=url, data=data, headers=self.site.login_headers)
         print(">>>>>>>>> Send msg to {0}, subject={1}, body={2} >>>>>>>>>>".format(user_id, subject, body))
+
+        self.cache.set_with_expire(self.msg_bucket_name + str(user_id), "", 86400)
 
         # sleep 30 ~ 120 seconds before sending next message
         time.sleep(round(30 + random.random() * 90))
