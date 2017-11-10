@@ -476,7 +476,6 @@ class UserCrawl(NormalAlert):
 
     id_bucket_name = "mteam_user_id"
     name_bucket_name = "mteam_user_name"
-    warn_bucket_name = "mteam_user_warn"
     msg_bucket_name = "mteam_msg"
 
     min_id = 1
@@ -666,7 +665,6 @@ class UserCrawl(NormalAlert):
                 # new user and ratio lower than 0.3 will be baned any time
                 if create_since < 30 and user.ratio < 0.3 and warn_since in [0, 1]:
                     self.send_msg(user.id, self.msg_urgent_subject, self.msg_urgent_body)
-                    self.cache.set_add(self.warn_bucket_name, user.id)
                     continue
 
                 # skip user who has registered for less than 2 days
@@ -678,7 +676,6 @@ class UserCrawl(NormalAlert):
 
                 if warn_since in [0, 3, 5]:
                     self.send_msg(user.id, self.msg_subject % (7 - warn_since), self.msg_body)
-                    self.cache.set_add(self.warn_bucket_name, user.id)
 
     def order(self, limit=250):
         user_ids = self.cache.hash_get_all_key(self.id_bucket_name)
