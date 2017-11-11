@@ -41,7 +41,7 @@ class HttpUtils:
                     try:
                         data = f.read()
                         if data != "":
-                            cls.session.cookies = requests.utils.cookiejar_from_dict(json.loads(f.read()),
+                            cls.session.cookies = requests.utils.cookiejar_from_dict(json.loads(data),
                                                                                      cookiejar=None,
                                                                                      overwrite=True)
                     except Exception as e:
@@ -55,6 +55,9 @@ class HttpUtils:
 
     @classmethod
     def clear_cookie(cls):
+        if cls.session is not None:
+            cls.session.cookies.clear()
+
         with open(Config.get(cls.KEY_COOKIE_LOCATION), "w") as f:
             f.write("")
 
@@ -86,9 +89,7 @@ class HttpUtils:
     def post(cls, url, session=None, data=None, headers=None, proxy=None, returnRaw=False):
         if session is not None:
             cls.session = session
-        elif cls.session is None:
-            print("create session")
-            cls.session = cls.create_session()
+        cls.create_session_if_absent()
 
         try:
             response = cls.session.post(url, headers=headers, proxies=proxy, verify=False, data=data)
