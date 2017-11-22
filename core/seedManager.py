@@ -3,7 +3,7 @@ import os
 import time
 
 from core.emailSender import EmailSender
-from model.seed import TransmissionSeed
+from model.seed import TransmissionSeed, SeedInfo
 from util.config import Config
 from util.utils import HttpUtils
 
@@ -51,17 +51,17 @@ class SeedManager:
 
     @classmethod
     def add_seed(cls, seed, location=None):
-        torrent_file = "%s.torrent" % seed.id
-        if not os.path.exists(torrent_file):
-            print("Add seed fail, cannot find seed file: " + str(seed))
-            return
-        if location is None:
-            os.popen("transmission-remote -a %s" % torrent_file)
-        else:
-            os.popen("transmission-remote -a %s -w %s" % (torrent_file, location))
-        time.sleep(2)
-        os.popen("rm %s" % torrent_file)
-        print("Add seed to transmission: " + str(seed))
+        # torrent_file = "%s.torrent" % seed.id
+        # if not os.path.exists(torrent_file):
+        #     print("Add seed fail, cannot find seed file: " + str(seed))
+        #     return
+        # if location is None:
+        #     os.popen("transmission-remote -a %s" % torrent_file)
+        # else:
+        #     os.popen("transmission-remote -a %s -w %s" % (torrent_file, location))
+        # time.sleep(2)
+        # os.popen("rm %s" % torrent_file)
+        print("Add seed to transmission: %s @ %s" % (str(seed), location))
 
     @classmethod
     def load_avg_speed(cls):
@@ -189,7 +189,9 @@ class SeedManager:
                 if target_disk is not None:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
-                            cls.remove_seed(seed.id)
+                            # TODO
+                            # cls.remove_seed(seed.id)
+                            pass
 
                     target_location = None
                     for disk_location in disk_path_reverse_map:
@@ -318,3 +320,11 @@ class SeedManager:
             print("bad seed: " + str(seed))
 
         return total_bad_seed_size, bad_seeds
+
+if __name__ =="__main__":
+    seed = SeedInfo()
+    seed.size = 10240
+    seed.title = "just for test"
+
+    seeds = {seed}
+    SeedManager.try_add_seeds_v2(seeds)
