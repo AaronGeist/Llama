@@ -276,7 +276,7 @@ class NormalAlert(Login):
         for seed in candidate_seeds:
             self.download_seed_file(seed.id)
 
-        success_seeds, fail_seeds = SeedManager.try_add_seeds(candidate_seeds)
+        success_seeds, fail_seeds = SeedManager.try_add_seeds_v2(candidate_seeds)
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)

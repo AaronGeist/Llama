@@ -51,16 +51,16 @@ class SeedManager:
 
     @classmethod
     def add_seed(cls, seed, location=None):
-        # torrent_file = "%s.torrent" % seed.id
-        # if not os.path.exists(torrent_file):
-        #     print("Add seed fail, cannot find seed file: " + str(seed))
-        #     return
-        # if location is None:
-        #     os.popen("transmission-remote -a %s" % torrent_file)
-        # else:
-        #     os.popen("transmission-remote -a %s -w %s" % (torrent_file, location))
-        # time.sleep(2)
-        # os.popen("rm %s" % torrent_file)
+        torrent_file = "%s.torrent" % seed.id
+        if not os.path.exists(torrent_file):
+            print("Add seed fail, cannot find seed file: " + str(seed))
+            return
+        if location is None:
+            os.popen("transmission-remote -a %s" % torrent_file)
+        else:
+            os.popen("transmission-remote -a %s -w %s" % (torrent_file, location))
+        time.sleep(2)
+        os.popen("rm %s" % torrent_file)
         print("Add seed to transmission: %s @ %s" % (str(seed), location))
 
     @classmethod
@@ -194,8 +194,7 @@ class SeedManager:
                 if target_disk is not None:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
-                            # TODO
-                            # cls.remove_seed(seed.id)
+                            cls.remove_seed(seed.id)
                             print("removing seed " + str(seed.id))
                             pass
 
@@ -327,15 +326,3 @@ class SeedManager:
 
         return total_bad_seed_size, bad_seeds
 
-    @classmethod
-    def test(cls):
-        seed = SeedInfo()
-        seed.size = 10240
-        seed.title = "just for test"
-
-        seed2 = SeedInfo()
-        seed2.size = 20240
-        seed2.title = "just for test 2"
-
-        seeds = {seed, seed2}
-        cls.try_add_seeds_v2(seeds)
