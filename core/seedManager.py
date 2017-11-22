@@ -157,8 +157,8 @@ class SeedManager:
         max_retry = 1
 
         disk_path_reverse_map = Config.get("disk_map")
+        disk_space_map = cls.check_disks_space()
         for new_seed in new_seeds:
-            disk_space_map = cls.check_disks_space()
             retry = 0
             while retry < max_retry:
                 target_disk = None
@@ -333,5 +333,9 @@ class SeedManager:
         seed.size = 10240
         seed.title = "just for test"
 
-        seeds = {seed}
+        seed2 = SeedInfo()
+        seed2.size = 20240
+        seed2.title = "just for test 2"
+
+        seeds = {seed, seed2}
         cls.try_add_seeds_v2(seeds)
