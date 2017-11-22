@@ -114,6 +114,7 @@ class NormalAlert(Login):
 
             seeds.append(seed)
 
+        print("Crawl: " + str(len(seeds)))
         return seeds
 
     def parse_size(self, soup_obj):
