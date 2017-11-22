@@ -163,12 +163,13 @@ class SeedManager:
             while retry < max_retry:
                 target_disk = None
                 for disk_name in disk_space_map.keys():
-                    space_in_mb = round(disk_space_map[disk_name] - new_seed.size, 1)
-                    print("%s space left: %sMB" % (disk_name, str(space_in_mb)))
+                    disk_space_map[disk_name] -= new_seed.size
+                    print("%s space left: %sMB" % (disk_name, str(disk_space_map[disk_name])))
 
-                    if space_in_mb > 100:
+                    if disk_space_map[disk_name] > 100:
                         target_disk = disk_name
                         print("find disk without removing seed: " + target_disk)
+                        break
 
                 removal_list = dict()
                 if target_disk is None:
