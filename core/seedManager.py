@@ -28,6 +28,15 @@ class SeedManager:
         return space_in_mb
 
     @classmethod
+    def check_disks_space(cls):
+        spaces_in_mb = dict()
+        for info in os.popen("df -lm|grep \"/dev/v\"|awk '{print $1,$4}'").read().split("\n"):
+            if info != "":
+                data = info.split(' ')
+                spaces_in_mb[data[0]] = float(data[1])
+        return spaces_in_mb
+
+    @classmethod
     def check_bandwidth(cls):
         resp = os.popen(
             "curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
@@ -41,12 +50,15 @@ class SeedManager:
         return current_bandwidth_gb, allowed_bandwidth_gb
 
     @classmethod
-    def add_seed(cls, seed):
+    def add_seed(cls, seed, location=None):
         torrent_file = "%s.torrent" % seed.id
         if not os.path.exists(torrent_file):
             print("Add seed fail, cannot find seed file: " + str(seed))
             return
-        os.popen("transmission-remote -a %s" % torrent_file)
+        if location is None:
+            os.popen("transmission-remote -a %s" % torrent_file)
+        else:
+            os.popen("transmission-remote -a %s -w %s" % (torrent_file, location))
         time.sleep(2)
         os.popen("rm %s" % torrent_file)
         print("Add seed to transmission: " + str(seed))
@@ -123,7 +135,8 @@ class SeedManager:
                 elif detail.startswith("  Downloaded: "):
                     seed.done_size = HttpUtils.pretty_format(
                         detail.replace("  Downloaded: ", ""), "KB")
-
+                elif detail.startswith("  Location: "):
+                    seed.location = detail.replace("  Location: ", "")
         return seeds
 
     @classmethod
@@ -136,6 +149,66 @@ class SeedManager:
                 continue
             total_size += seed.size
         return total_size
+
+    @classmethod
+    def try_add_seeds_v2(cls, new_seeds):
+        success_seeds = []
+        fail_seeds = []
+        max_retry = 1
+
+        disk_path_reverse_map = json.loads(Config.get("disk_map"))
+        for new_seed in new_seeds:
+            disk_space_map = cls.check_disks_space()
+            retry = 0
+            while retry < max_retry:
+                target_disk = None
+                for disk_name in disk_space_map.keys():
+                    space_in_mb = round(disk_space_map[disk_name] - new_seed.size, 1)
+                    print("%s space left: %sMB" % (disk_name, str(space_in_mb)))
+
+                    if space_in_mb > 100:
+                        target_disk = disk_name
+
+                removal_list = dict()
+                if target_disk is None:
+                    # try to remove seed
+                    total_size, bad_seeds = cls.find_bad_seeds()
+                    for bad_seed in bad_seeds:
+                        disk_name = disk_path_reverse_map[bad_seed.location]
+                        if disk_name not in removal_list:
+                            removal_list[disk_name] = list()
+                        removal_list[disk_name].append(bad_seed)
+                        disk_space_map[disk_name] += bad_seed.size
+                        if disk_space_map[disk_name] > 100:
+                            break
+
+                    for disk_name in disk_space_map.keys():
+                        if disk_space_map[disk_name] > 0:
+                            target_disk = disk_name
+
+                if target_disk is not None:
+                    if target_disk in removal_list:
+                        for seed in removal_list[target_disk]:
+                            cls.remove_seed(seed.id)
+
+                    target_location = None
+                    for disk_location in disk_path_reverse_map:
+                        if disk_path_reverse_map[disk_location] == target_disk:
+                            target_location = disk_location
+                    cls.add_seed(new_seed, target_location)
+                    success_seeds.append(new_seed)
+                    if Config.get("enable_email"):
+                        EmailSender.send(u"种子", str(new_seed))
+                    break
+
+                retry += 1
+                print("Try %d adding seed failed: %s" % (retry, str(new_seed)))
+                if retry == max_retry:
+                    fail_seeds.append(new_seed)
+                    if Config.get("enable_email"):
+                        EmailSender.send(u"添加失败", str(new_seed))
+
+        return success_seeds, fail_seeds
 
     @classmethod
     def try_add_seeds(cls, new_seeds):

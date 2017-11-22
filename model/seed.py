@@ -46,6 +46,7 @@ class TransmissionSeed:
     name = ""
     since = 0
     done_size = 0
+    location = ""
 
     def __str__(self):
         msg = list()
@@ -60,6 +61,7 @@ class TransmissionSeed:
         msg.append(str(self.name))
         msg.append(str(self.since))
         msg.append(str(self.done_size))
+        msg.append(str(self.location))
 
         return "|".join(msg)
 
