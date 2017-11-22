@@ -321,10 +321,11 @@ class SeedManager:
 
         return total_bad_seed_size, bad_seeds
 
-if __name__ =="__main__":
-    seed = SeedInfo()
-    seed.size = 10240
-    seed.title = "just for test"
+    @classmethod
+    def test(cls):
+        seed = SeedInfo()
+        seed.size = 10240
+        seed.title = "just for test"
 
-    seeds = {seed}
-    SeedManager.try_add_seeds_v2(seeds)
+        seeds = {seed}
+        cls.try_add_seeds_v2(seeds)
