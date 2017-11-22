@@ -156,7 +156,7 @@ class SeedManager:
         fail_seeds = []
         max_retry = 1
 
-        disk_path_reverse_map = json.loads(Config.get("disk_map"))
+        disk_path_reverse_map = Config.get("disk_map")
         for new_seed in new_seeds:
             disk_space_map = cls.check_disks_space()
             retry = 0
@@ -168,6 +168,7 @@ class SeedManager:
 
                     if space_in_mb > 100:
                         target_disk = disk_name
+                        print("find disk without removing seed: " + target_disk)
 
                 removal_list = dict()
                 if target_disk is None:
@@ -179,18 +180,22 @@ class SeedManager:
                             removal_list[disk_name] = list()
                         removal_list[disk_name].append(bad_seed)
                         disk_space_map[disk_name] += bad_seed.size
+                        print("remove seed %s @ %s, now space=%s" % (
+                            str(bad_seed.id), bad_seed.location, str(disk_space_map[disk_name])))
                         if disk_space_map[disk_name] > 100:
                             break
 
                     for disk_name in disk_space_map.keys():
                         if disk_space_map[disk_name] > 0:
                             target_disk = disk_name
+                            print("find disk with removing seed: " + target_disk)
 
                 if target_disk is not None:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
                             # TODO
                             # cls.remove_seed(seed.id)
+                            print("removing seed " + str(seed.id))
                             pass
 
                     target_location = None
