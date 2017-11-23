@@ -163,7 +163,7 @@ class SeedManager:
             while retry < max_retry:
                 target_disk = None
                 for disk_name in disk_space_map.keys():
-                    disk_space_map[disk_name] -= new_seed.size
+                    disk_space_map[disk_name] = round(disk_space_map[disk_name] - new_seed.size, 1)
                     print("%s space left: %sMB" % (disk_name, str(disk_space_map[disk_name])))
 
                     if disk_space_map[disk_name] > 100:
@@ -195,8 +195,6 @@ class SeedManager:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
                             cls.remove_seed(seed.id)
-                            print("removing seed " + str(seed.id))
-                            pass
 
                     target_location = None
                     for disk_location in disk_path_reverse_map:
@@ -325,4 +323,3 @@ class SeedManager:
             print("bad seed: " + str(seed))
 
         return total_bad_seed_size, bad_seeds
-

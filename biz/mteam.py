@@ -115,6 +115,9 @@ class NormalAlert(Login):
             seeds.append(seed)
 
         print("Crawl: " + str(len(seeds)))
+        if len(seeds) < 10:
+            EmailSender.send(u"无法解析页面", Config.get("mteam_username"))
+
         return seeds
 
     def parse_size(self, soup_obj):
