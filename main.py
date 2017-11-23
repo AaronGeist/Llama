@@ -57,6 +57,5 @@ if __name__ == "__main__":
             cmd_map[cmd](sys.argv[2])
         else:
             cmd_map[cmd]()
-        print("%s Processing %s done" % (now, cmd))
     else:
         usage()

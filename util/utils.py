@@ -26,7 +26,6 @@ class HttpUtils:
     def create_session_if_absent(cls):
         try:
             if cls.session is None:
-                print("create session")
                 cls.session = requests.Session()
         except Exception as e:
             print(e)

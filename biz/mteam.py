@@ -311,13 +311,13 @@ class NormalAlert(Login):
             print("Add seed: " + str(seed))
             Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
-    def add_seed(self, seed_id):
+    def add_seed(self, seed_id, location=None):
         self.login_if_not()
 
         self.download_seed_file(seed_id)
         seed = SeedInfo()
         seed.id = seed_id
-        SeedManager.add_seed(seed)
+        SeedManager.add_seed(seed, location)
         Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
     def init_setting(self):
