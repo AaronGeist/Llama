@@ -60,7 +60,7 @@ class SeedManager:
         else:
             os.popen("transmission-remote -a %s -w %s" % (torrent_file, location))
         time.sleep(2)
-        os.popen("rm %s" % torrent_file)
+        os.popen("rm -f %s" % torrent_file)
         print("Add seed to transmission: %s @ %s" % (str(seed), location))
 
     @classmethod

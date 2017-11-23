@@ -53,7 +53,9 @@ if __name__ == "__main__":
     if cmd in cmd_map.keys():
         now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         print("%s Processing %s" % (now, cmd))
-        if len(sys.argv) > 2:
+        if len(sys.argv) > 3:
+            cmd_map[cmd](sys.argv[2], sys.argv[3])
+        elif len(sys.argv) > 2:
             cmd_map[cmd](sys.argv[2])
         else:
             cmd_map[cmd]()
