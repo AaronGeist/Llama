@@ -4,7 +4,7 @@ import time
 
 from core.DiskManager import DiskManager
 from core.emailSender import EmailSender
-from model.seed import TransmissionSeed, SeedInfo
+from model.seed import TransmissionSeed
 from util.config import Config
 from util.utils import HttpUtils
 
@@ -30,12 +30,21 @@ class SeedManager:
 
     @classmethod
     def check_disks_space(cls):
-        spaces_in_mb = dict()
-        for info in os.popen("df -lm|grep \"/dev/v\"|awk '{print $1,$4}'").read().split("\n"):
-            if info != "":
-                data = info.split(' ')
-                spaces_in_mb[data[0]] = float(data[1])
-        return spaces_in_mb
+        disk_space_map = DiskManager.get_disk_space_left()
+        disk_name_map = DiskManager.disk_name_map
+        size_of_seeds = cls.load_seeds_total_size_per_location()
+        for disk_name in disk_space_map:
+            location = disk_name_map[disk_name]["location"]
+            if location in size_of_seeds:
+                # in some cases, seed just get started to download and disk space hasn't been allocated yet
+                # so need to fix it
+                disk_space_map[disk_name] = round(min(disk_space_map[disk_name],
+                                                      disk_name_map[disk_name]["size"] - size_of_seeds[location]),
+                                                  1)
+
+        print("space left: " + str(disk_space_map))
+
+        return disk_space_map
 
     @classmethod
     def check_bandwidth(cls):
