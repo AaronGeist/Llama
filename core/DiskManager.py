@@ -15,11 +15,25 @@ class DiskManager:
             for data in all_data:
                 cls.disk_name_map[data["name"]] = data
                 cls.download_folder_map[data["location"]] = data
-        print(cls.disk_name_map)
-        print(cls.download_folder_map)
 
     @classmethod
-    def get_unused_space_size(cls):
+    def name2location(cls):
+        cls.parse_info()
+        result = dict()
+        for disk_name in cls.disk_name_map:
+            result[disk_name] = cls.disk_name_map[disk_name]["location"]
+        return result
+
+    @classmethod
+    def location2name(cls):
+        cls.parse_info()
+        result = dict()
+        for folder in cls.download_folder_map:
+            result[folder] = cls.download_folder_map[folder]["name"]
+        return result
+
+    @classmethod
+    def get_disk_space_left(cls):
         cls.parse_info()
 
         disk_space_in_mb = dict()
@@ -32,10 +46,10 @@ class DiskManager:
                 download_folder = cls.disk_name_map[disk_name]["location"]
                 # in some cases, seed just get started to download and disk space hasn't been allocated yet
                 # so need to fix it
-                if disk_name in size_of_seeds:
+                if download_folder in size_of_seeds:
                     disk_size = min(disk_size, cls.disk_name_map[disk_name]["size"] - size_of_seeds[download_folder])
-                disk_space_in_mb[disk_name] = disk_size
+                disk_space_in_mb[disk_name] = round(disk_size, 1)
 
-        print(disk_space_in_mb)
+        print("space left: " + str(disk_space_in_mb))
 
         return disk_space_in_mb

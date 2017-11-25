@@ -2,6 +2,7 @@ import json
 import os
 import time
 
+from core.DiskManager import DiskManager
 from core.emailSender import EmailSender
 from model.seed import TransmissionSeed, SeedInfo
 from util.config import Config
@@ -169,9 +170,9 @@ class SeedManager:
         fail_seeds = []
         max_retry = 1
 
-        disk_path_reverse_map = Config.get("disk_map")
-        disk_space_map = cls.check_disks_space()
+        disk_location_to_name_map = DiskManager.location2name()
         for new_seed in new_seeds:
+            disk_space_map = DiskManager.get_disk_space_left()
             retry = 0
             while retry < max_retry:
                 target_disk = None
@@ -189,7 +190,7 @@ class SeedManager:
                     # try to remove seed
                     total_size, bad_seeds = cls.find_bad_seeds()
                     for bad_seed in bad_seeds:
-                        disk_name = disk_path_reverse_map[bad_seed.location]
+                        disk_name = disk_location_to_name_map[bad_seed.location]
                         if disk_name not in removal_list:
                             removal_list[disk_name] = list()
                         removal_list[disk_name].append(bad_seed)
@@ -210,8 +211,8 @@ class SeedManager:
                             cls.remove_seed(seed.id)
 
                     target_location = None
-                    for disk_location in disk_path_reverse_map:
-                        if disk_path_reverse_map[disk_location] == target_disk:
+                    for disk_location in disk_location_to_name_map:
+                        if disk_location_to_name_map[disk_location] == target_disk:
                             target_location = disk_location
                     cls.add_seed(new_seed, target_location)
                     success_seeds.append(new_seed)

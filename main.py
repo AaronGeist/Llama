@@ -33,8 +33,7 @@ cmd_map = {
     "mt_name": UserCrawl().load_by_name,
     "mt_msg": UserCrawl().send_msg,
     "mt_order": UserCrawl().order,
-    "mt_vote": CandidateVote().check,
-    "test": DiskManager.get_unused_space_size
+    "mt_vote": CandidateVote().check
 }
 
 
