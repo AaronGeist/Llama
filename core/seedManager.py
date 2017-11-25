@@ -151,6 +151,19 @@ class SeedManager:
         return total_size
 
     @classmethod
+    def load_seeds_total_size_per_location(cls):
+        seeds = cls.parse_current_seeds()
+        total_size = dict()
+        for seed in seeds:
+            if seed.status == "Stopped":
+                cls.remove_seed(seed.id)
+                continue
+            if seed.location not in total_size:
+                total_size[seed.location] = 0
+            total_size[seed.location] += seed.size
+        return total_size
+
+    @classmethod
     def try_add_seeds_v2(cls, new_seeds):
         success_seeds = []
         fail_seeds = []

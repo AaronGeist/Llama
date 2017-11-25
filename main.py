@@ -6,7 +6,7 @@ from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
 from biz.weather import WeatherReport
-from core.seedManager import SeedManager
+from core.DiskManager import DiskManager
 from core.tts import TextToSpeech
 
 cmd_map = {
@@ -33,7 +33,8 @@ cmd_map = {
     "mt_name": UserCrawl().load_by_name,
     "mt_msg": UserCrawl().send_msg,
     "mt_order": UserCrawl().order,
-    "mt_vote": CandidateVote().check
+    "mt_vote": CandidateVote().check,
+    "test": DiskManager.get_unused_space_size
 }
 
 
