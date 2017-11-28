@@ -180,16 +180,19 @@ class SeedManager:
         max_retry = 1
 
         disk_location_to_name_map = DiskManager.location2name()
+        disk_space_map = cls.check_disks_space()
+
         for new_seed in new_seeds:
-            disk_space_map = DiskManager.get_disk_space_left()
+            disk_space_map_temp = disk_space_map.copy()
             retry = 0
             while retry < max_retry:
                 target_disk = None
-                for disk_name in disk_space_map.keys():
-                    disk_space_map[disk_name] = round(disk_space_map[disk_name] - new_seed.size, 1)
-                    print("%s space left: %sMB" % (disk_name, str(disk_space_map[disk_name])))
+                for disk_name in disk_space_map_temp.keys():
+                    disk_space_map_temp[disk_name] = round(disk_space_map_temp[disk_name] - new_seed.size, 1)
+                    print(
+                        "%s space left after adding new seed: %sMB" % (disk_name, str(disk_space_map_temp[disk_name])))
 
-                    if disk_space_map[disk_name] > 100:
+                    if disk_space_map_temp[disk_name] > 100:
                         target_disk = disk_name
                         print("find disk without removing seed: " + target_disk)
                         break
@@ -203,14 +206,14 @@ class SeedManager:
                         if disk_name not in removal_list:
                             removal_list[disk_name] = list()
                         removal_list[disk_name].append(bad_seed)
-                        disk_space_map[disk_name] += bad_seed.size
-                        print("remove seed %s @ %s, now space=%s" % (
-                            str(bad_seed.id), bad_seed.location, str(disk_space_map[disk_name])))
-                        if disk_space_map[disk_name] > 100:
+                        disk_space_map_temp[disk_name] += bad_seed.size
+                        print("if remove seed %s @ %s, then space=%s" % (
+                            str(bad_seed.id), bad_seed.location, str(disk_space_map_temp[disk_name])))
+                        if disk_space_map_temp[disk_name] > 100:
                             break
 
-                    for disk_name in disk_space_map.keys():
-                        if disk_space_map[disk_name] > 0:
+                    for disk_name in disk_space_map_temp.keys():
+                        if disk_space_map_temp[disk_name] > 0:
                             target_disk = disk_name
                             print("find disk with removing seed: " + target_disk)
 
@@ -218,6 +221,9 @@ class SeedManager:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
                             cls.remove_seed(seed.id)
+
+                    # only the disk to add new seed should be updated
+                    disk_space_map[target_disk] = disk_space_map_temp[target_disk]
 
                     target_location = None
                     for disk_location in disk_location_to_name_map:
