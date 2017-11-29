@@ -23,7 +23,7 @@ class SeedManager:
 
     @classmethod
     def check_disks_space(cls):
-        cls.clean_up()
+        cls.seed_file_clean_up()
         disk_space_map = DiskManager.get_disk_space_left()
         print("original space left: " + str(disk_space_map))
         disk_name_map = DiskManager.disk_name_map
@@ -42,7 +42,7 @@ class SeedManager:
         return disk_space_map
 
     @classmethod
-    def clean_up(cls):
+    def seed_file_clean_up(cls):
         files = DiskManager.find_all_files()
         seeds = cls.parse_current_seeds(True)
 
@@ -170,9 +170,6 @@ class SeedManager:
         seeds = cls.parse_current_seeds()
         total_size = dict()
         for seed in seeds:
-            if seed.status == "Stopped":
-                cls.remove_seed(seed.id)
-                continue
             if seed.location not in total_size:
                 total_size[seed.location] = 0
             total_size[seed.location] += seed.size
@@ -183,6 +180,8 @@ class SeedManager:
         success_seeds = []
         fail_seeds = []
         max_retry = 1
+
+        cls.fast_remove_bad_seeds()
 
         disk_location_to_name_map = DiskManager.location2name()
         disk_space_map = cls.check_disks_space()
@@ -248,6 +247,18 @@ class SeedManager:
                         EmailSender.send(u"添加失败", str(new_seed))
 
         return success_seeds, fail_seeds
+
+    @classmethod
+    def fast_remove_bad_seeds(cls):
+        seeds = cls.parse_current_seeds(False)
+        for seed in seeds:
+            if seed.status == "Stopped":
+                print("Fast remove stopped: " + str(seed))
+                cls.remove_seed(seed.id)
+                continue
+            if seed.status == "Idle" and seed.since > 600 and seed.done == 0.0:
+                print("Fast remove new idle: " + str(seed))
+                cls.remove_seed(seed.id)
 
     @classmethod
     def remove_seed(cls, seed_id):
