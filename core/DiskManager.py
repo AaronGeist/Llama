@@ -44,3 +44,16 @@ class DiskManager:
                 disk_space_in_mb[disk_name] = round(disk_size, 1)
 
         return disk_space_in_mb
+
+    @classmethod
+    def find_all_files(cls):
+        cls.parse_info()
+
+        files = list()
+        for folder in cls.download_folder_map:
+            for file in os.popen("ls {0}".format(folder)).read().split("\n"):
+                if file != "":
+                    files.append(folder + file)
+
+        print("files: " + str(files))
+        return files

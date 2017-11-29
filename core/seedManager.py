@@ -30,6 +30,7 @@ class SeedManager:
 
     @classmethod
     def check_disks_space(cls):
+        cls.clean_up()
         disk_space_map = DiskManager.get_disk_space_left()
         print("original space left: " + str(disk_space_map))
         disk_name_map = DiskManager.disk_name_map
@@ -46,6 +47,19 @@ class SeedManager:
         print("fixed space left: " + str(disk_space_map))
 
         return disk_space_map
+
+    @classmethod
+    def clean_up(cls):
+        files = DiskManager.find_all_files()
+        seeds = cls.parse_current_seeds()
+
+        seeds_path = list()
+        for seed in seeds:
+            seeds_path.append(seed.location + seed.file)
+
+        for file in files:
+            if file not in seeds_path:
+                print("file to be removed: " + file)
 
     @classmethod
     def check_bandwidth(cls):
@@ -149,10 +163,9 @@ class SeedManager:
                 elif detail.startswith("  Location: "):
                     seed.location = detail.replace("  Location: ", "")
 
-            cmd_result = os.popen(
-                "transmission-remote -t {0} -if |tail -n 1 | awk '{print $7}' | awk -F/ '{print $1}'".format(
-                    seed.id)).read()
-            seed.file = cmd_result
+            cmd = "transmission-remote -t {0} -if".format(seed.id)
+            cmd += " | tail -n 1 | awk '{print $7}' | awk -F/ '{print $1}'"
+            seed.file = os.popen(cmd).read().replace("\n", "")
         return seeds
 
     @classmethod
