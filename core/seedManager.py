@@ -22,13 +22,6 @@ class SeedManager:
     init_disk_space = 23 * 1024
 
     @classmethod
-    def check_disk_space(cls):
-        space_in_mb = float(os.popen("df -lm|grep vda1|awk '{print $4}'").read())
-        space_in_mb = min(space_in_mb, cls.init_disk_space - cls.total_size())
-        print("disk_space=%sMB" % str(space_in_mb))
-        return space_in_mb
-
-    @classmethod
     def check_disks_space(cls):
         cls.clean_up()
         disk_space_map = DiskManager.get_disk_space_left()
@@ -51,7 +44,7 @@ class SeedManager:
     @classmethod
     def clean_up(cls):
         files = DiskManager.find_all_files()
-        seeds = cls.parse_current_seeds()
+        seeds = cls.parse_current_seeds(True)
 
         seeds_path = list(map(lambda seed: DiskManager.append_delimiter_if_miss(seed.location) + seed.file, seeds))
 
@@ -92,12 +85,12 @@ class SeedManager:
 
     @classmethod
     def load_avg_speed(cls):
-        times = 60
+        times = 30
         interval = 1
 
         statistics = {}
         for i in range(times):
-            seeds = cls.parse_current_seeds()
+            seeds = cls.parse_current_seeds(False)
             for seed in seeds:
                 if seed.id not in statistics.keys():
                     statistics[seed.id] = seed
@@ -111,13 +104,10 @@ class SeedManager:
             statistics[key].up = round(statistics[key].up / times, 2)
             statistics[key].down = round(statistics[key].down / times, 2)
 
-        for seed in statistics.values():
-            print(seed)
-
         return statistics.values()
 
     @classmethod
-    def parse_current_seeds(cls):
+    def parse_current_seeds(cls, print_log=True):
         seeds = []
         cmd_result = os.popen("transmission-remote -l").read()
         lines = cmd_result.split("\n")[1: -2]  # remove first and last line
@@ -168,18 +158,12 @@ class SeedManager:
             cmd = "transmission-remote -t {0} -if".format(seed.id)
             cmd += " | tail -n 1 | awk '{print $7}' | awk -F/ '{print $1}'"
             seed.file = os.popen(cmd).read().replace("\n", "")
-        return seeds
 
-    @classmethod
-    def total_size(cls):
-        seeds = cls.parse_current_seeds()
-        total_size = 0
-        for seed in seeds:
-            if seed.status == "Stopped":
-                cls.remove_seed(seed.id)
-                continue
-            total_size += seed.size
-        return total_size
+        if print_log:
+            for seed in seeds:
+                print(seed)
+
+        return seeds
 
     @classmethod
     def load_seeds_total_size_per_location(cls):
@@ -191,7 +175,6 @@ class SeedManager:
                 continue
             if seed.location not in total_size:
                 total_size[seed.location] = 0
-            print(str(seed))
             total_size[seed.location] += seed.size
         return total_size
 
@@ -253,52 +236,6 @@ class SeedManager:
                             target_location = disk_location
                     cls.add_seed(new_seed, target_location)
                     success_seeds.append(new_seed)
-                    if Config.get("enable_email"):
-                        EmailSender.send(u"种子", str(new_seed))
-                    break
-
-                retry += 1
-                print("Try %d adding seed failed: %s" % (retry, str(new_seed)))
-                if retry == max_retry:
-                    fail_seeds.append(new_seed)
-                    if Config.get("enable_email"):
-                        EmailSender.send(u"添加失败", str(new_seed))
-
-        return success_seeds, fail_seeds
-
-    @classmethod
-    def try_add_seeds(cls, new_seeds):
-        success_seeds = []
-        fail_seeds = []
-        max_retry = 1
-
-        init_disk_space = cls.check_disk_space()
-        new_added_space_in_mb = 0
-        for new_seed in new_seeds:
-            retry = 0
-            while retry < max_retry:
-                space_in_mb = round(init_disk_space - new_added_space_in_mb - new_seed.size, 1)
-                print("disk space left: %sMB" % str(space_in_mb))
-
-                remove_list = []
-                # not enough space left, try to remove existing bad seeds
-                if space_in_mb <= 0:
-                    total_size, bad_seeds = cls.find_bad_seeds()
-
-                    for bad_seed in bad_seeds:
-                        remove_list.append(bad_seed)
-                        space_in_mb += bad_seed.size
-                        if space_in_mb > 100:
-                            break
-
-                if space_in_mb > 0:
-                    for seed in remove_list:
-                        cls.remove_seed(seed.id)
-                        print("remove bad seed and space left: %sMB" % str(space_in_mb))
-
-                    cls.add_seed(new_seed)
-                    success_seeds.append(new_seed)
-                    new_added_space_in_mb += new_seed.size
                     if Config.get("enable_email"):
                         EmailSender.send(u"种子", str(new_seed))
                     break

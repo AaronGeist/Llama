@@ -151,7 +151,7 @@ class FreeFeedAlert(Login):
             EmailSender.send(u"种子", str(seed))
             Cache().set_with_expire(seed.id, str(seed), 864000)
 
-        SeedManager.try_add_seeds(data)
+        SeedManager.try_add_seeds_v2(data)
 
     def check(self):
         data = self.crawl()
