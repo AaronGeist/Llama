@@ -34,7 +34,8 @@ cmd_map = {
     "mt_msg": UserCrawl().send_msg,
     "mt_order": UserCrawl().order,
     "mt_vote": CandidateVote().check,
-    "test": SeedManager.check_disks_space
+    "mt_clean": SeedManager.clean_up,
+    "mt_ls": SeedManager.parse_current_seeds
 }
 
 

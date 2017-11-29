@@ -53,13 +53,15 @@ class SeedManager:
         files = DiskManager.find_all_files()
         seeds = cls.parse_current_seeds()
 
-        seeds_path = list()
-        for seed in seeds:
-            seeds_path.append(DiskManager.append_delimiter_if_miss(seed.location) + seed.file)
+        seeds_path = list(map(lambda seed: DiskManager.append_delimiter_if_miss(seed.location) + seed.file, seeds))
 
-        for file in files:
-            if file not in seeds_path:
-                print("file to be removed: " + file)
+        file_to_be_removed = list(
+            filter(lambda file: len(list(filter(lambda seed_path: file.startswith(seed_path), seeds_path))) == 0,
+                   files))
+
+        print("remove " + str(file_to_be_removed))
+        for file in file_to_be_removed:
+            os.popen("rm -rf {0}".format(file))
 
     @classmethod
     def check_bandwidth(cls):
@@ -372,3 +374,14 @@ class SeedManager:
             print("bad seed: " + str(seed))
 
         return total_bad_seed_size, bad_seeds
+
+
+if __name__ == "__main__":
+    a = [1, 2, 9, 4, 5]
+    for i in a:
+        print(i)
+        if i == 2 or i == 4:
+            a.remove(i)
+            print("remove " + str(i))
+
+    print(a)
