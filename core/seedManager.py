@@ -55,7 +55,7 @@ class SeedManager:
 
         seeds_path = list()
         for seed in seeds:
-            seeds_path.append(seed.location + seed.file)
+            seeds_path.append(DiskManager.append_delimiter_if_miss(seed.location) + seed.file)
 
         for file in files:
             if file not in seeds_path:

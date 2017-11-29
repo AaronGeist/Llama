@@ -53,7 +53,13 @@ class DiskManager:
         for folder in cls.download_folder_map:
             for file in os.popen("ls {0}".format(folder)).read().split("\n"):
                 if file != "":
-                    files.append(folder + file)
+                    files.append(cls.append_delimiter_if_miss(folder) + file)
 
         print("files: " + str(files))
         return files
+
+    @classmethod
+    def append_delimiter_if_miss(cls, folder):
+        if not folder.endswith("/"):
+            folder += "/"
+        return folder
