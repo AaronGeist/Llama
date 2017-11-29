@@ -31,6 +31,7 @@ class SeedManager:
     @classmethod
     def check_disks_space(cls):
         disk_space_map = DiskManager.get_disk_space_left()
+        print("original space left: " + str(disk_space_map))
         disk_name_map = DiskManager.disk_name_map
         size_of_seeds = cls.load_seeds_total_size_per_location()
         for disk_name in disk_space_map:
@@ -42,7 +43,7 @@ class SeedManager:
                                                       disk_name_map[disk_name]["size"] - size_of_seeds[location]),
                                                   1)
 
-        print("space left: " + str(disk_space_map))
+        print("fixed space left: " + str(disk_space_map))
 
         return disk_space_map
 
@@ -147,6 +148,11 @@ class SeedManager:
                         detail.replace("  Downloaded: ", ""), "KB")
                 elif detail.startswith("  Location: "):
                     seed.location = detail.replace("  Location: ", "")
+
+            cmd_result = os.popen(
+                "transmission-remote -t {0} -if |tail -n 1 | awk '{print $7}' | awk -F/ '{print $1}'".format(
+                    seed.id)).read()
+            seed.file = cmd_result
         return seeds
 
     @classmethod
@@ -170,6 +176,7 @@ class SeedManager:
                 continue
             if seed.location not in total_size:
                 total_size[seed.location] = 0
+            print(str(seed))
             total_size[seed.location] += seed.size
         return total_size
 

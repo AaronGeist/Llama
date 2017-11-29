@@ -47,6 +47,7 @@ class TransmissionSeed:
     since = 0
     done_size = 0
     location = ""
+    file = ""
 
     def __str__(self):
         msg = list()
@@ -62,6 +63,7 @@ class TransmissionSeed:
         msg.append(str(self.since))
         msg.append(str(self.done_size))
         msg.append(str(self.location))
+        msg.append(str(self.file))
 
         return "|".join(msg)
 
