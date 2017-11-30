@@ -279,7 +279,7 @@ class NormalAlert(Login):
         for seed in candidate_seeds:
             self.download_seed_file(seed.id)
 
-        success_seeds, fail_seeds = SeedManager.try_add_seeds_v2(candidate_seeds)
+        success_seeds, fail_seeds = SeedManager.try_add_seeds(candidate_seeds)
 
         for success_seed in success_seeds:
             Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
@@ -301,26 +301,26 @@ class NormalAlert(Login):
         # enable adult torrent and close pic
         self.init_setting()
 
-        # crawl and add to cache
-        seeds = self.crawl()
+        # # crawl and add to cache
+        # seeds = self.crawl()
+        #
+        # # common strategy
+        # # 1. hasn't been found before
+        # # 2. not exceed max size
+        # max_size = Config.get("seed_max_size_mb")
+        # seeds = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, seeds))
+        #
+        # for seed in seeds:
+        #     print("Add seed: " + str(seed))
+        #     Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
-        # common strategy
-        # 1. hasn't been found before
-        # 2. not exceed max size
-        max_size = Config.get("seed_max_size_mb")
-        seeds = list(filter(lambda x: x.size < max_size and Cache().get(x.id) is None, seeds))
-
-        for seed in seeds:
-            print("Add seed: " + str(seed))
-            Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
-
-    def add_seed(self, seed_id, location=None):
+    def add_seed(self, seed_id):
         self.login_if_not()
 
         self.download_seed_file(seed_id)
         seed = SeedInfo()
         seed.id = seed_id
-        SeedManager.add_seed(seed, location)
+        SeedManager.try_add_seeds([seed])
         Cache().set_with_expire(seed.id, str(seed), 5 * 864000)
 
     def init_setting(self):

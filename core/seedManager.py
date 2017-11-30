@@ -176,7 +176,7 @@ class SeedManager:
         return total_size
 
     @classmethod
-    def try_add_seeds_v2(cls, new_seeds):
+    def try_add_seeds(cls, new_seeds):
         success_seeds = []
         fail_seeds = []
         max_retry = 1
