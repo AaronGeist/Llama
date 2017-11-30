@@ -828,7 +828,9 @@ class MessageReader(NormalAlert):
 
         tr_list = soup_obj.select("#outer table:nth-of-type(3) tr:nth-of-type(3)")
 
-        print(len(tr_list))
+        assert len(tr_list) == 1
+
+        print(HttpUtils.get_content(tr_list[0], "td"))
 
     def mark_read(self):
         self.login_if_not()
