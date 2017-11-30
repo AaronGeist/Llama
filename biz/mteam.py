@@ -745,6 +745,8 @@ class UserCrawl(NormalAlert):
 class MessageReader(NormalAlert):
     url = "https://tp.m-team.cc/messages.php?action=viewmailbox&box="
 
+    detail_url = "https://tp.m-team.cc/messages.php?action=viewmessage&id="
+
     box = [
         "0",  # inbox
         "-1",  # send box
@@ -773,12 +775,12 @@ class MessageReader(NormalAlert):
                 messages = self.read_msg(self.box[index])
             elif curr_step == 2:
                 index = min(max(int(cmd) - 1, 0), len(messages))
-                self.read_msg_content(index)
+                self.read_msg_content(messages[index])
 
             cmd = input("What's next?\n1. keep it\n2. go back\n3. go forward\n")
-            if cmd == 2:
+            if cmd == "2":
                 curr_step -= 1
-            elif cmd == 3:
+            elif cmd == "3":
                 curr_step += 1
                 curr_step = min(len(self.step) - 1, curr_step)
 
@@ -808,15 +810,25 @@ class MessageReader(NormalAlert):
             msg.read = len(td_list[0].select("img[alt=\"Read\"]")) > 0
             msg.title = HttpUtils.get_content(td_list[1], "a")
             msg.from_user = HttpUtils.get_content(td_list[2], "span a b")
+            if msg.from_user is None:
+                # for ad.
+                msg.from_user = td_list[2].contents[0]
             msg.since = HttpUtils.get_content(td_list[3], "span")
+            link = HttpUtils.get_attr(td_list[1], "a", "href")
+            msg.id = link.split("id=")[1]
 
             print(str(msg))
             messages.append(msg)
 
         return messages
 
-    def read_msg_content(self, index):
-        print(index)
+    def read_msg_content(self, msg):
+        soup_obj = HttpUtils.get(self.detail_url + msg.id, headers=self.site.login_headers)
+        assert soup_obj is not None
+
+        tr_list = soup_obj.select("#outer table:nth-of-type(3) tr:nth-of-type(3)")
+
+        print(len(tr_list))
 
     def mark_read(self):
         self.login_if_not()
