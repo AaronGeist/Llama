@@ -758,8 +758,6 @@ class MessageReader(NormalAlert):
                     "***** Choose a message box, from 1 to 3 *****\n1: in box\n2: send box\n3: system box\n",
                     "***** Choose a message to read: *****\n"]
 
-    default_message = "##### F to forward, B to back, Q to quit ######\n"
-
     def get_cmd(self):
         curr_step = 1
         messages = []
@@ -768,7 +766,7 @@ class MessageReader(NormalAlert):
                 print("Quit now!")
                 break
 
-            cmd = input(self.show_message[curr_step] + self.default_message)
+            cmd = input(self.show_message[curr_step])
             if cmd.upper() == "Q":
                 curr_step = 0
                 continue
@@ -834,10 +832,10 @@ class MessageReader(NormalAlert):
         soup_obj = HttpUtils.get(self.detail_url + msg.id, headers=self.site.login_headers)
         assert soup_obj is not None
 
-        tr_list = soup_obj.select("#outer table:nth-of-type(3) tr:nth-of-type(3)")
+        td_list = soup_obj.select("#outer table:nth-of-type(2) tr:nth-of-type(3) td:nth-of-type(1)")
 
         print("--------------------------------------")
-        print(tr_list[0].select("td")[0].text)
+        print(td_list[0].text)
         print("--------------------------------------")
 
     def mark_read(self):
