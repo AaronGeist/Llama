@@ -774,8 +774,10 @@ class MessageReader(NormalAlert):
             elif cmd.upper() == "F":
                 curr_step += 1
                 curr_step = min(len(self.step) - 1, curr_step)
+                continue
             elif cmd.upper() == "B":
                 curr_step -= 1
+                continue
 
             if curr_step == 1:
                 index = min(max(int(cmd) - 1, 0), len(self.box))
