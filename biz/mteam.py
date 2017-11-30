@@ -756,7 +756,7 @@ class MessageReader(NormalAlert):
                     "Choose a message to read:\n"]
 
     def get_cmd(self):
-        curr_step = self.step[1]
+        curr_step = 1
         messages = []
         while True:
             if curr_step <= 0:
@@ -775,9 +775,12 @@ class MessageReader(NormalAlert):
                 index = min(max(int(cmd) - 1, 0), len(messages))
                 self.read_msg_content(index)
 
-            cmd = input("Wanna go back? y or n\n")
-            if cmd.upper() == "Y":
+            cmd = input("What's next?\n1. keep it\n2. go back\n3. go forward\n")
+            if cmd == 2:
                 curr_step -= 1
+            elif cmd == 3:
+                curr_step += 1
+                curr_step = min(len(self.step) - 1, curr_step)
 
     def read_msg(self, index):
         self.login_if_not()
