@@ -15,6 +15,7 @@ class SeedInfo:
 
     def __str__(self):
         msg = list()
+        msg.append(str(self.id))
         if self.free:
             msg.append("Y")
         else:

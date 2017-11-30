@@ -318,11 +318,11 @@ class NormalAlert(Login):
         self.login_if_not()
 
         self.download_seed_file(seed_id)
-        seed = list(filter(lambda seed: seed.id == seed_id, self.crawl()))
-        assert len(seed) == 0
+        seeds = list(filter(lambda x: x.id == seed_id, self.crawl()))
+        assert len(seeds) == 1
 
-        SeedManager.try_add_seeds(seed)
-        Cache().set_with_expire(seed[0].id, str(seed[0]), 5 * 864000)
+        SeedManager.try_add_seeds(seeds)
+        Cache().set_with_expire(seeds[0].id, str(seeds[0]), 5 * 864000)
 
     def init_setting(self):
         self.login_if_not()
