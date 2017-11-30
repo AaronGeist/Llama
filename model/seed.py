@@ -12,6 +12,8 @@ class SeedInfo:
     discount = 100
     discount_ttl = ""
     since = ""
+    done = ""
+    working = ""
 
     def __str__(self):
         msg = list()
@@ -31,6 +33,8 @@ class SeedInfo:
         msg.append(self.title[0: 25])
         msg.append(self.since)
         msg.append(str(int(self.size / 1024)))
+        msg.append(str(self.done))
+        msg.append(str(self.working))
 
         return "|".join(msg)
 

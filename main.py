@@ -35,7 +35,8 @@ cmd_map = {
     "mt_order": UserCrawl().order,
     "mt_vote": CandidateVote().check,
     "mt_clean": SeedManager.seed_file_clean_up,
-    "mt_ls": SeedManager.parse_current_seeds
+    "mt_seed_ls": SeedManager.parse_current_seeds,
+    "mt_page_ls": AdultAlert().crawl
 }
 
 

@@ -65,11 +65,17 @@ class NormalAlert(Login):
 
         return data
 
-    def crawl(self):
+    def crawl(self, print_log=True):
         self.login_if_not()
 
         soup_obj = HttpUtils.get(self.site.home_page, headers=self.site.login_headers)
-        return self.parse(soup_obj)
+        seeds = self.parse(soup_obj)
+
+        if print_log:
+            for seed in seeds:
+                print(seed)
+
+        return seeds
 
     def parse(self, soup_obj):
         assert soup_obj is not None
@@ -95,6 +101,8 @@ class NormalAlert(Login):
             seed.upload_num = int(self.clean_tag(td_list[4]))
             seed.download_num = int(self.clean_tag(td_list[5]))
             seed.finish_num = int(self.clean_tag(td_list[6]))
+            seed.done = self.clean_tag(td_list[7])
+            seed.working = str(td_list[7]['class'])
 
             td_title = tr.select("td.torrenttr tr td")
             seed.sticky = len(td_title[0].select("img[alt=\"Sticky\"]")) > 0
@@ -295,7 +303,7 @@ class NormalAlert(Login):
             Cache().set_with_expire(fail_seed.id, str(fail_seed), cool_down_time)
 
     def check(self):
-        self.action(self.filter(self.crawl()))
+        self.action(self.filter(self.crawl(False)))
 
     def init(self):
         # enable adult torrent and close pic
@@ -318,7 +326,7 @@ class NormalAlert(Login):
         self.login_if_not()
 
         self.download_seed_file(seed_id)
-        seeds = list(filter(lambda x: x.id == seed_id, self.crawl()))
+        seeds = list(filter(lambda x: x.id == seed_id, self.crawl(False)))
         assert len(seeds) == 1
 
         SeedManager.try_add_seeds(seeds)
