@@ -19,22 +19,25 @@ class SeedInfo:
         msg = list()
         msg.append(str(self.id))
         if self.free:
-            msg.append("free")
+            msg.append("f")
         else:
-            msg.append("----")
+            msg.append("-")
         if self.sticky:
-            msg.append("sticky")
+            msg.append("s")
         else:
-            msg.append("------")
+            msg.append("-")
 
-        msg.append(str(self.discount) + "%")
-        msg.append(str(self.upload_num))
-        msg.append(str(self.download_num))
-        msg.append(self.title[0: 15])
-        msg.append(self.since)
-        msg.append(str(int(self.size / 1024)) + "GB")
-        msg.append(str(self.done))
-        msg.append(str(self.working))
+        msg.append("{:>3}%".format(self.discount))
+        msg.append("{:>3}".format(self.upload_num))
+        msg.append("{:>3}".format(self.download_num))
+        msg.append("{:>3}".format(self.since))
+        msg.append("{:>3}GB".format(int(self.size / 1024)))
+        msg.append("{:->4}".format(self.done))
+        if self.working:
+            msg.append("working")
+        else:
+            msg.append("-------")
+        msg.append("{:<15}".format(self.title[0: 15]))
 
         return "|".join(msg)
 
