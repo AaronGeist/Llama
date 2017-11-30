@@ -741,6 +741,48 @@ class UserCrawl(NormalAlert):
         time.sleep(round(30 + random.random() * 90))
 
 
+class Message(NormalAlert):
+    url = "https://tp.m-team.cc/messages.php?action=viewmailbox&box="
+    inbox = "0"
+    send_box = "-1"
+    system_box = "-2"
+
+    def read_msg(self, url):
+        self.login_if_not()
+
+        soup_obj = HttpUtils.get(url, headers=self.site.login_headers)
+        assert soup_obj is not None
+
+        tr_list = soup_obj.select("#outer form table tr")
+
+        seeds = []
+        cnt = 0
+        for tr in tr_list:
+            cnt += 1
+            if cnt == 1:
+                # skip the caption tr
+                continue
+
+            td_list = tr.select("td.rowfollow")
+
+            read = len(td_list[0].select("img[alt=\"Read\"]")) > 0
+            title = HttpUtils.get_content(td_list[1], "a")
+            user = HttpUtils.get_content(td_list[2], "span a b")
+            since = HttpUtils.get_content(td_list[3], "span")
+
+            print("read: {} title: {} user: {} since: {}".format(read, title, user, since))
+
+    def read(self):
+        self.read_msg(self.url + self.send_box)
+
+    def mark_read(self):
+        self.login_if_not()
+
+    def clean_up(self):
+        self.login_if_not()
+        pass
+
+
 if __name__ == "__main__":
     # NormalAlert().check()
     # NormalAlert().download_seed("209094")

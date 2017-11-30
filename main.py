@@ -1,7 +1,7 @@
 import sys
 import time
 
-from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote
+from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, Message
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
@@ -36,7 +36,8 @@ cmd_map = {
     "mt_vote": CandidateVote().check,
     "mt_clean": SeedManager.seed_file_clean_up,
     "mt_seed_ls": SeedManager.parse_current_seeds,
-    "mt_page_ls": AdultAlert().crawl
+    "mt_page_ls": AdultAlert().crawl,
+    "test": Message().read
 }
 
 
