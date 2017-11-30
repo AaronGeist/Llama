@@ -757,6 +757,8 @@ class MessageReader(NormalAlert):
     show_message = ["Quit Now!", "Choose a message box, from 1 to 3\n1: in box\n2: send box\n3: system box\n",
                     "Choose a message to read:\n"]
 
+    default_message = "\nF to forward, B to back, Q to quit\n"
+
     def get_cmd(self):
         curr_step = 1
         messages = []
@@ -765,10 +767,15 @@ class MessageReader(NormalAlert):
                 print("Quit now!")
                 break
 
-            cmd = input(self.show_message[curr_step])
+            cmd = input(self.show_message[curr_step] + self.default_message)
             if cmd.upper() == "Q":
                 curr_step = 0
                 continue
+            elif cmd.upper() == "F":
+                curr_step += 1
+                curr_step = min(len(self.step) - 1, curr_step)
+            elif cmd.upper() == "B":
+                curr_step -= 1
 
             if curr_step == 1:
                 index = min(max(int(cmd) - 1, 0), len(self.box))
@@ -776,13 +783,6 @@ class MessageReader(NormalAlert):
             elif curr_step == 2:
                 index = min(max(int(cmd) - 1, 0), len(messages))
                 self.read_msg_content(messages[index])
-
-            cmd = input("What's next?\n1. keep it\n2. go back\n3. go forward\n")
-            if cmd == "2":
-                curr_step -= 1
-            elif cmd == "3":
-                curr_step += 1
-                curr_step = min(len(self.step) - 1, curr_step)
 
     def read_msg(self, index):
         self.login_if_not()
