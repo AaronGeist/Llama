@@ -754,10 +754,11 @@ class MessageReader(NormalAlert):
     ]
 
     step = ["quit", "choose", "read"]
-    show_message = ["Quit Now!", "Choose a message box, from 1 to 3\n1: in box\n2: send box\n3: system box\n",
-                    "Choose a message to read:\n"]
+    show_message = ["***** Quit Now! *****",
+                    "***** Choose a message box, from 1 to 3 *****\n1: in box\n2: send box\n3: system box\n",
+                    "***** Choose a message to read: *****\n"]
 
-    default_message = "\nF to forward, B to back, Q to quit\n"
+    default_message = "##### F to forward, B to back, Q to quit ######\n"
 
     def get_cmd(self):
         curr_step = 1
@@ -818,9 +819,13 @@ class MessageReader(NormalAlert):
             msg.since = HttpUtils.get_content(td_list[3], "span")
             link = HttpUtils.get_attr(td_list[1], "a", "href")
             msg.id = link.split("id=")[1]
-
-            print(str(msg))
             messages.append(msg)
+
+        print("--------------------------------------")
+        index = 1
+        for msg in messages:
+            print("{:<2}|".format(index) + str(msg))
+        print("--------------------------------------")
 
         return messages
 
@@ -830,9 +835,9 @@ class MessageReader(NormalAlert):
 
         tr_list = soup_obj.select("#outer table:nth-of-type(3) tr:nth-of-type(3)")
 
-        assert len(tr_list) == 1
-
-        print(HttpUtils.get_content(tr_list[0], "td"))
+        print("--------------------------------------")
+        print(tr_list[0].select("td")[0].text)
+        print("--------------------------------------")
 
     def mark_read(self):
         self.login_if_not()
