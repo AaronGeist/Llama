@@ -741,11 +741,19 @@ class UserCrawl(NormalAlert):
         time.sleep(round(30 + random.random() * 90))
 
 
-class Message(NormalAlert):
+class MessageReader(NormalAlert):
     url = "https://tp.m-team.cc/messages.php?action=viewmailbox&box="
-    inbox = "0"
-    send_box = "-1"
-    system_box = "-2"
+
+    box = [
+        "0",  # inbox
+        "-1",  # send box
+        "-2"  # system box
+    ]
+
+    def get_cmd(self):
+        cmd = input("choose a box, 1-3")
+        print(cmd)
+        self.read_msg(self.url + self.box[cmd])
 
     def read_msg(self, url):
         self.login_if_not()
@@ -765,15 +773,16 @@ class Message(NormalAlert):
 
             td_list = tr.select("td.rowfollow")
 
+            if len(td_list) < 4:
+                # skip footer
+                continue
+
             read = len(td_list[0].select("img[alt=\"Read\"]")) > 0
             title = HttpUtils.get_content(td_list[1], "a")
             user = HttpUtils.get_content(td_list[2], "span a b")
             since = HttpUtils.get_content(td_list[3], "span")
 
             print("read: {} title: {} user: {} since: {}".format(read, title, user, since))
-
-    def read(self):
-        self.read_msg(self.url + self.send_box)
 
     def mark_read(self):
         self.login_if_not()
