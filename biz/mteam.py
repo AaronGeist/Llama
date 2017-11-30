@@ -825,6 +825,7 @@ class MessageReader(NormalAlert):
         index = 1
         for msg in messages:
             print("{:<2}|".format(index) + str(msg))
+            index += 1
         print("--------------------------------------")
 
         return messages
