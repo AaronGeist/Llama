@@ -14,7 +14,7 @@ class SeedManager:
     up_speed_threshold = [0, 0, 0, 100, 100, 300, 300, 400, 400, 400, 400]
 
     # index indicates the size in GB, 0 -> 0GB
-    size_factor = [1, 1, 1.1, 1.2, 1.3, 1.3, 1.4, 1.6, 2, 2, 2, 2.5, 2.5, 2.5]
+    size_factor = [1, 1, 1.1, 1.2, 1.3, 1.3, 1.4, 1.6, 2, 2, 2, 2.5, 2.5, 2.5, 2.5, 3.0, 3.0, 3.0, 3.0]
 
     # index indicates the percentage of download, 0 -> 0%, 1 -> 10%
     down_avg_speed_threshold = [0, 100, 200, 300, 400, 500, 500, 500, 500, 500, 500]
@@ -273,7 +273,8 @@ class SeedManager:
         bad_seeds = []
         total_bad_seed_size = 0
         for seed in seeds:
-            if str(seed.status).upper() == "IDLE" or str(seed.status).upper() == "STOPPED":
+            if (str(seed.status).upper() == "IDLE" and seed.done > 0 and seed.since > 600) or str(
+                    seed.status).upper() == "STOPPED":
                 print("IDLE|STOP: >>>>>>>>> " + str(seed))
                 total_bad_seed_size += seed.size
                 bad_seeds.append(seed)
