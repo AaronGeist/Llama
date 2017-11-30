@@ -19,20 +19,20 @@ class SeedInfo:
         msg = list()
         msg.append(str(self.id))
         if self.free:
-            msg.append("Y")
+            msg.append("free")
         else:
-            msg.append("N")
+            msg.append("----")
         if self.sticky:
-            msg.append("Y")
+            msg.append("sticky")
         else:
-            msg.append("N")
+            msg.append("------")
 
-        msg.append(str(self.discount))
+        msg.append(str(self.discount) + "%")
         msg.append(str(self.upload_num))
         msg.append(str(self.download_num))
-        msg.append(self.title[0: 25])
+        msg.append(self.title[0: 15])
         msg.append(self.since)
-        msg.append(str(int(self.size / 1024)))
+        msg.append(str(int(self.size / 1024)) + "GB")
         msg.append(str(self.done))
         msg.append(str(self.working))
 
