@@ -105,7 +105,7 @@ class NormalAlert(Login):
             seed.working = "peer-active" in td_list[7]['class']
 
             td_title = tr.select("td.torrenttr tr td")
-            seed.sticky = len(td_title[0].select("img[alt=\"Sticky\"]")) > 0
+            seed.sticky = len(td_title[0].select("img[alt=\"Sticky\"]"))
             seed.title = td_title[0].select("a")[0]["title"]
             seed.url = td_title[0].select("a")[0]['href']
             seed.free = len(td_title[0].select("img[alt=\"Free\"]")) > 0

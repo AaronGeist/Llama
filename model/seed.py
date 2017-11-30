@@ -8,7 +8,7 @@ class SeedInfo:
     finish_num = 0
     hot = False
     free = False
-    sticky = False
+    sticky = 0
     discount = 100
     discount_ttl = ""
     since = ""
@@ -19,13 +19,15 @@ class SeedInfo:
         msg = list()
         msg.append(str(self.id))
         if self.free:
-            msg.append("f")
+            msg.append("free")
         else:
-            msg.append("-")
-        if self.sticky:
-            msg.append("s")
+            msg.append("----")
+        if self.sticky == 1:
+            msg.append("sticky")
+        elif self.sticky == 2:
+            msg.append("double")
         else:
-            msg.append("-")
+            msg.append("------")
 
         msg.append("{:>3}%".format(self.discount))
         msg.append("{:>3}".format(self.upload_num))
