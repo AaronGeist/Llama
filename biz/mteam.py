@@ -9,6 +9,7 @@ from core.db import Cache
 from core.emailSender import EmailSender
 from core.login import Login
 from core.seedManager import SeedManager
+from model.message import Message
 from model.ptUser import User
 from model.seed import SeedInfo
 from model.site import Site
@@ -750,20 +751,43 @@ class MessageReader(NormalAlert):
         "-2"  # system box
     ]
 
-    def get_cmd(self):
-        cmd = input("choose a box, 1-3")
-        print(cmd)
-        self.read_msg(self.url + self.box[cmd])
+    step = ["quit", "choose", "read"]
+    show_message = ["Quit Now!", "Choose a message box, from 1 to 3\n1: in box\n2: send box\n3: system box\n",
+                    "Choose a message to read:\n"]
 
-    def read_msg(self, url):
+    def get_cmd(self):
+        curr_step = self.step[1]
+        messages = []
+        while True:
+            if curr_step <= 0:
+                print("Quit now!")
+                break
+
+            cmd = input(self.show_message[curr_step])
+            if cmd.upper() == "Q":
+                curr_step = 0
+                continue
+
+            if curr_step == 1:
+                index = min(max(int(cmd) - 1, 0), len(self.box))
+                messages = self.read_msg(self.box[index])
+            elif curr_step == 2:
+                index = min(max(int(cmd) - 1, 0), len(messages))
+                self.read_msg_content(index)
+
+            cmd = input("Wanna go back? y or n\n")
+            if cmd.upper() == "Y":
+                curr_step -= 1
+
+    def read_msg(self, index):
         self.login_if_not()
 
-        soup_obj = HttpUtils.get(url, headers=self.site.login_headers)
+        soup_obj = HttpUtils.get(self.url + index, headers=self.site.login_headers)
         assert soup_obj is not None
 
         tr_list = soup_obj.select("#outer form table tr")
 
-        seeds = []
+        messages = []
         cnt = 0
         for tr in tr_list:
             cnt += 1
@@ -777,12 +801,19 @@ class MessageReader(NormalAlert):
                 # skip footer
                 continue
 
-            read = len(td_list[0].select("img[alt=\"Read\"]")) > 0
-            title = HttpUtils.get_content(td_list[1], "a")
-            user = HttpUtils.get_content(td_list[2], "span a b")
-            since = HttpUtils.get_content(td_list[3], "span")
+            msg = Message()
+            msg.read = len(td_list[0].select("img[alt=\"Read\"]")) > 0
+            msg.title = HttpUtils.get_content(td_list[1], "a")
+            msg.from_user = HttpUtils.get_content(td_list[2], "span a b")
+            msg.since = HttpUtils.get_content(td_list[3], "span")
 
-            print("read: {} title: {} user: {} since: {}".format(read, title, user, since))
+            print(str(msg))
+            messages.append(msg)
+
+        return messages
+
+    def read_msg_content(self, index):
+        print(index)
 
     def mark_read(self):
         self.login_if_not()
