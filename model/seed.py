@@ -39,7 +39,7 @@ class SeedInfo:
             msg.append("working")
         else:
             msg.append("-------")
-        msg.append("{:<15}".format(self.title[0: 15]))
+        msg.append(self.title[0: 25])
 
         return "|".join(msg)
 
