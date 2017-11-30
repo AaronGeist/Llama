@@ -13,7 +13,7 @@ class SeedInfo:
     discount_ttl = ""
     since = ""
     done = ""
-    working = ""
+    working = False
 
     def __str__(self):
         msg = list()

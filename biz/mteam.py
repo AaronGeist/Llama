@@ -102,7 +102,7 @@ class NormalAlert(Login):
             seed.download_num = int(self.clean_tag(td_list[5]))
             seed.finish_num = int(self.clean_tag(td_list[6]))
             seed.done = self.clean_tag(td_list[7])
-            seed.working = str(td_list[7]['class'])
+            seed.working = "peer-active" in td_list[7]['class']
 
             td_title = tr.select("td.torrenttr tr td")
             seed.sticky = len(td_title[0].select("img[alt=\"Sticky\"]")) > 0
