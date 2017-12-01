@@ -1,7 +1,7 @@
 import sys
 import time
 
-from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader
+from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
@@ -22,6 +22,7 @@ cmd_map = {
     "second_reset": SecondHand.clean_up,
     "mt_adult": AdultAlert().check,
     "mt_adult_init": AdultAlert().init,
+    "mt_add_normal": NormalAlert().add_seed,
     "mt_add": AdultAlert().add_seed,
     "mt_up_init": UploadCheck().init,
     "mt_up_check": UploadCheck().check,
