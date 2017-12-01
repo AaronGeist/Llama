@@ -838,9 +838,6 @@ class MessageReader(NormalAlert):
         print(td_list[0].text)
         print("--------------------------------------")
 
-    def mark_read(self):
-        self.login_if_not()
-
     def clean_up(self):
         self.login_if_not()
         pass

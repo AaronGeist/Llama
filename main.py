@@ -37,7 +37,7 @@ cmd_map = {
     "mt_clean": SeedManager.seed_file_clean_up,
     "mt_seed_ls": SeedManager.parse_current_seeds,
     "mt_page_ls": AdultAlert().crawl,
-    "test": MessageReader().read
+    "test": MessageReader().get_cmd
 }
 
 

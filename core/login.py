@@ -27,7 +27,7 @@ class Login:
 
         content = HttpUtils.get_content(HttpUtils.get(site.home_page, headers=site.login_headers),
                                         site.login_verify_css_selector)
-        print("Find user name: " + str(content))
+        print("Current user is " + str(content))
         result = content is not None and content == site.login_verify_str
 
         if result:
