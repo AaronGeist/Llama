@@ -1,6 +1,7 @@
 import sys
 import time
 
+from biz.PTMaster import PTMaster
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
@@ -33,13 +34,13 @@ cmd_map = {
     "mt_user_warn": UserCrawl().warn,
     "mt_id": UserCrawl().load_by_id,
     "mt_name": UserCrawl().load_by_name,
-    "mt_msg": UserCrawl().send_msg,
     "mt_order": UserCrawl().order,
     "mt_vote": CandidateVote().check,
     "mt_clean": SeedManager.seed_file_clean_up,
     "mt_seed_ls": SeedManager.parse_current_seeds,
     "mt_page_ls": AdultAlert().crawl,
-    "test": MessageReader().get_cmd
+    "mt_msg": MessageReader().get_cmd,
+    "test": PTMaster().gogogo
 }
 
 
