@@ -286,7 +286,7 @@ class SeedManager:
 
             # check upload speed
             up_speed_threshold = cls.up_speed_threshold[round(seed.done / 10)] * cls.size_factor[
-                round(seed.size / 1024)]
+                min(round(seed.size / 1024), len(cls.size_factor) - 1)]
             print(
                 "check up speed up={0}, threshold={1}, factor={2}, final_threshold={3}".format(seed.up, str(
                     cls.up_speed_threshold[round(seed.done / 10)]),

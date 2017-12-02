@@ -20,6 +20,7 @@ cmd_map = {
     "tts": TextToSpeech.convert_and_play,
     "second": SecondHand.crawl,
     "second_reset": SecondHand.clean_up,
+    "mt_normal": NormalAlert().check,
     "mt_adult": AdultAlert().check,
     "mt_adult_init": AdultAlert().init,
     "mt_add_normal": NormalAlert().add_seed,
