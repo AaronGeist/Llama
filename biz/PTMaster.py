@@ -4,8 +4,8 @@ from util.config import Config
 
 class PTMaster:
     watch_list = [
-        NormalAlert(),  # mteam normal torrents
-        AdultAlert()  # mteam adult torrents
+        NormalAlert,  # mteam normal torrents
+        AdultAlert  # mteam adult torrents
     ]
 
     @classmethod
@@ -25,6 +25,7 @@ class PTMaster:
     def find_new_seeds(cls):
         seeds = list()
         for site in cls.watch_list:
+            site = site()
             seeds.extend(site.filter(site.crawl()))
 
         for seed in seeds:
