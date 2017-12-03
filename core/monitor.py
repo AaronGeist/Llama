@@ -35,7 +35,7 @@ class Monitor(object):
     def monitor(self):
         data = self.generate_data()
         now = datetime.datetime.now()
-        Cache().append(self.get_bucket(), now.strftime('%H:%M:%S') + self.DELIMITER + str(data))
+        Cache().append(self.get_bucket(), now.strftime('%y%m%d-%H:%M:%S') + self.DELIMITER + str(data))
 
         # if data is below/above threshold, send alert
         self.alert(data)

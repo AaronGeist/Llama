@@ -17,7 +17,7 @@ class SeedInfo:
 
     def __str__(self):
         msg = list()
-        msg.append(str(self.id))
+        msg.append("{:>6}".format(self.id))
         if self.free:
             msg.append("free")
         else:

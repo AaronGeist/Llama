@@ -3,6 +3,7 @@ import time
 
 from biz.PTMaster import PTMaster
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
+from biz.pt.PutaoWatchDog import PuTaoWatchDog, BbsMonitor
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
@@ -11,6 +12,8 @@ from core.seedManager import SeedManager
 from core.tts import TextToSpeech
 
 cmd_map = {
+    "seed_check": PuTaoWatchDog().check,
+    "bbs_monitor": BbsMonitor().check,
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,
     "mp_monitor": MagicPointChecker().monitor,
