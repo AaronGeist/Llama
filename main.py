@@ -12,8 +12,10 @@ from core.seedManager import SeedManager
 from core.tts import TextToSpeech
 
 cmd_map = {
+    "seed_ls": SeedManager.parse_current_seeds,
     "pt_seed_check": PuTaoWatchDog().check,
     "pt_seed_add": PuTaoWatchDog().manual_add_seed,
+    "pt_seed_ls": PuTaoWatchDog().crawl,
     "bbs_monitor": BbsMonitor().check,
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,
@@ -41,7 +43,6 @@ cmd_map = {
     "mt_order": UserCrawl().order,
     "mt_vote": CandidateVote().check,
     "mt_clean": SeedManager.seed_file_clean_up,
-    "mt_seed_ls": SeedManager.parse_current_seeds,
     "mt_page_ls": AdultAlert().crawl,
     "mt_msg": MessageReader().get_cmd,
     "test": PTMaster().gogogo
