@@ -12,7 +12,8 @@ from core.seedManager import SeedManager
 from core.tts import TextToSpeech
 
 cmd_map = {
-    "seed_check": PuTaoWatchDog().check,
+    "pt_seed_check": PuTaoWatchDog().check,
+    "pt_seed_add": PuTaoWatchDog().manual_add_seed,
     "bbs_monitor": BbsMonitor().check,
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,
