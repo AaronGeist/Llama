@@ -243,5 +243,5 @@ class BaseUploader(Login):
         seeds = list(filter(lambda x: x.id == seed_id, self.crawl(False)))
         assert len(seeds) == 1
 
-        # SeedManager.try_add_seeds(seeds)
+        SeedManager.try_add_seeds(seeds)
         Cache().set_with_expire(seeds[0].id, str(seeds[0]), 5 * 864000)
