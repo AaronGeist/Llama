@@ -13,6 +13,7 @@ class BaseUploader(Login):
     site = None
     size_factor = 1  # the shown size on web page is not accurate
     is_login = False
+    ttl = 60 * 86400
 
     @abc.abstractmethod
     def get_site_name(self):
@@ -221,7 +222,7 @@ class BaseUploader(Login):
         success_seeds, fail_seeds = SeedManager.try_add_seeds(candidate_seeds)
 
         for success_seed in success_seeds:
-            Cache().set_with_expire(success_seed.id, str(success_seed), 5 * 864000)
+            Cache().set_with_expire(success_seed.id, str(success_seed), self.ttl)
 
         # make the failed seed cool down for some time
         for fail_seed in fail_seeds:
@@ -244,4 +245,19 @@ class BaseUploader(Login):
         assert len(seeds) == 1
 
         SeedManager.try_add_seeds(seeds)
-        Cache().set_with_expire(seeds[0].id, str(seeds[0]), 5 * 864000)
+        Cache().set_with_expire(seeds[0].id, str(seeds[0]), self.ttl)
+
+    def ignore(self, seed_id=None):
+        if seed_id is None:
+            # ignore all seeds @ home page
+            seeds = self.crawl()
+
+            # skip if already in cache
+            seeds = list(filter(lambda x: Cache().get(x.id) is None, seeds))
+
+            for seed in seeds:
+                print("Ignore seed: " + str(seed))
+                Cache().set_with_expire(seed.id, str(seed), self.ttl)
+        else:
+            print("Ignore seed ID: " + str(seed_id))
+            Cache().set_with_expire(seed_id, "", self.ttl)

@@ -16,6 +16,7 @@ cmd_map = {
     "pt_seed_check": PuTaoWatchDog().check,
     "pt_seed_add": PuTaoWatchDog().manual_add_seed,
     "pt_seed_ls": PuTaoWatchDog().crawl,
+    "pt_seed_ignore": PuTaoWatchDog().ignore,
     "bbs_monitor": BbsMonitor().check,
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,

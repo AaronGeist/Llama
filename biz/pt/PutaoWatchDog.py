@@ -67,6 +67,14 @@ class PuTaoWatchDog(BaseUploader):
             seed.finish_num = int(self.clean_tag(td_list[7]))
             seed.id = self.parse_id(seed.url)
 
+            # parse discount
+            if len(td_list[1].select("table td font.halfdown")) > 0:
+                seed.discount = 50
+            elif len(td_list[1].select("table td font.d30down")) > 0:
+                seed.discount = 30
+            else:
+                seed.discount = 100
+
             seeds.append(seed)
 
         return seeds
@@ -81,6 +89,18 @@ class PuTaoWatchDog(BaseUploader):
                 f.write(res.content)
         except Exception as e:
             print("Cannot download seed file: " + seed_id, e)
+
+    def hell_strategy(self, data):
+        filtered_seeds = list(filter(
+            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 0.5) and
+                      (x.free or x.discount < 100),
+            data))
+
+        filtered_seeds = self.sort_seed(filtered_seeds)
+
+        final_seeds = self.limit_total_size(filtered_seeds, 15 * 1024)
+
+        return final_seeds
 
 
 class MagicPointChecker(PuTaoWatchDog, Monitor):
