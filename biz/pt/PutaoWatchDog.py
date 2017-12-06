@@ -30,6 +30,7 @@ class PuTaoWatchDog(BaseUploader):
         site.login_verify_str = Config.get(self.get_site_name() + "_username")
         site.login_username = site.login_verify_str
         site.login_password = Config.get(self.get_site_name() + "_password")
+        site.stat_page = "https://pt.sjtu.edu.cn/mybonus.php"
 
         self.site = site
 
@@ -165,11 +166,12 @@ class BbsMonitor(PuTaoWatchDog):
         for user in user_list:
             user_name = user.contents[0]
             cnt += 1
-            if cnt > 30 and user_name == "69589606feng":
+            if cnt > 32 and user_name == "69589606feng":
                 EmailSender.send(u"TTG邀请回帖啦", "")
 
 
 if __name__ == "__main__":
     # PuTaoWatchDog().check()
     # MagicPointChecker().monitor()
-    BbsMonitor().check()
+    # BbsMonitor().check()
+    PuTaoWatchDog().stat()

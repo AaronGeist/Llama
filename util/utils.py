@@ -184,6 +184,7 @@ class HttpUtils:
             return "NA.jpg"
 
     factor_map = {
+        "TB": 1 / (1024 * 1024),
         "GB": 1 / 1024,
         "MB": 1,
         "KB": 1024
@@ -194,7 +195,7 @@ class HttpUtils:
         assert data is not None
 
         factor = cls.factor_map[str(unit).upper()]
-        data = str(data).replace(" ", "").upper()
+        data = str(data).replace(" ", "").upper().strip()
 
         if data.endswith("TB"):
             res = float(data.replace("TB", "")) * (1024 * 1024 * factor)

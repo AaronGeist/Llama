@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import abc
 import re
+import time
 
 from core.db import Cache
 from core.login import Login
@@ -261,3 +262,51 @@ class BaseUploader(Login):
         else:
             print("Ignore seed ID: " + str(seed_id))
             Cache().set_with_expire(seed_id, "", self.ttl)
+
+    def stat(self, unit="GB", update_cache=True):
+        self.login_if_not()
+
+        soup_obj = HttpUtils.get(self.site.stat_page, headers=self.site.login_headers)
+        assert soup_obj is not None
+
+        div_list = soup_obj.select("table.mainouter tr td table tr td div[align='center']")
+        assert len(div_list) == 1
+
+        content = div_list[0].contents[0]
+        m = re.search(u"获取(\d+.\d+)个魔力", content)
+        assert m
+        mp = float(m.group(1))
+
+        span_list = soup_obj.select("#usermsglink span")
+        up = HttpUtils.pretty_format(span_list[1].contents[2], unit)
+        down = HttpUtils.pretty_format(span_list[1].contents[4], unit)
+
+        prev_up = Cache().get(self.get_site_name + "_up")
+        prev_down = Cache().get(self.get_site_name + "_down")
+
+        if prev_up is None:
+            prev_up = 0
+        else:
+            prev_up = float(prev_up.decode())
+
+        if prev_down is None:
+            prev_down = 0
+        else:
+            prev_down = float(prev_down.decode())
+
+        delta_up = round(up - prev_up, 2)
+        delta_down = round(down - prev_down, 2)
+        if delta_down == 0:
+            delta_ratio = "Inf"
+        else:
+            delta_ratio = round(delta_up / delta_down, 2)
+
+        current_upload = round(up - down, 2)
+        print("%s, mp=%s, up=%s, down=%s, current=%s, delta_up=%s, delta_down=%s, delta_ratio=%s" % (
+            str(time.strftime("%Y-%m-%d %H:%M:%S")), mp, up, down, current_upload, delta_up, delta_down, delta_ratio))
+
+        if update_cache:
+            Cache().set(self.get_site_name + "_up", up)
+            Cache().set(self.get_site_name + "_down", down)
+
+        return mp, up, down
