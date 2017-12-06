@@ -92,14 +92,16 @@ class PuTaoWatchDog(BaseUploader):
             print("Cannot download seed file: " + seed_id, e)
 
     def hell_strategy(self, data):
+        # 1. free
+        # 2. sticky
+        # 3. down/up > 5
         filtered_seeds = list(filter(
-            lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 0.5) and
-                      (x.free or x.discount < 100),
+            lambda x: (x.upload_num != 0 and (x.free or x.sticky or (round(x.download_num / x.upload_num, 1) >= 5))),
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 
-        final_seeds = self.limit_total_size(filtered_seeds, 15 * 1024)
+        final_seeds = self.limit_total_size(filtered_seeds, 20 * 1024)
 
         return final_seeds
 
@@ -171,7 +173,7 @@ class BbsMonitor(PuTaoWatchDog):
 
 
 if __name__ == "__main__":
-    # PuTaoWatchDog().check()
+    PuTaoWatchDog().check()
     # MagicPointChecker().monitor()
     # BbsMonitor().check()
-    PuTaoWatchDog().stat()
+    # PuTaoWatchDog().stat()
