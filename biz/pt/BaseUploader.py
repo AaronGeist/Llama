@@ -281,8 +281,8 @@ class BaseUploader(Login):
         up = HttpUtils.pretty_format(span_list[1].contents[2], unit)
         down = HttpUtils.pretty_format(span_list[1].contents[4], unit)
 
-        prev_up = Cache().get(self.get_site_name + "_up")
-        prev_down = Cache().get(self.get_site_name + "_down")
+        prev_up = Cache().get(self.get_site_name() + "_up")
+        prev_down = Cache().get(self.get_site_name() + "_down")
 
         if prev_up is None:
             prev_up = 0
@@ -306,7 +306,7 @@ class BaseUploader(Login):
             str(time.strftime("%Y-%m-%d %H:%M:%S")), mp, up, down, current_upload, delta_up, delta_down, delta_ratio))
 
         if update_cache:
-            Cache().set(self.get_site_name + "_up", up)
-            Cache().set(self.get_site_name + "_down", down)
+            Cache().set(self.get_site_name() + "_up", up)
+            Cache().set(self.get_site_name() + "_down", down)
 
         return mp, up, down
