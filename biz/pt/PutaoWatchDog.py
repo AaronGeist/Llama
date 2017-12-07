@@ -96,8 +96,8 @@ class PuTaoWatchDog(BaseUploader):
         # 2. sticky
         # 3. down/up > 5
         filtered_seeds = list(filter(
-            lambda x: (x.upload_num != 0 and (x.free or x.sticky or (round(x.download_num / x.upload_num, 1) >= 5))),
-            data))
+            lambda x: (x.upload_num != 0 and (
+            x.free or x.sticky or (x.discount < 100 and round(x.download_num / x.upload_num, 1) >= 5))), data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 
