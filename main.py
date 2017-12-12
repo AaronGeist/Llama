@@ -4,6 +4,7 @@ import time
 from biz.PTMaster import PTMaster
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
 from biz.pt.PutaoWatchDog import PuTaoWatchDog, BbsMonitor
+from biz.pt.TTGRSS import TTGRSS
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
@@ -18,7 +19,7 @@ cmd_map = {
     "pt_seed_ls": PuTaoWatchDog().crawl,
     "pt_seed_ignore": PuTaoWatchDog().ignore,
     "pt_stat": PuTaoWatchDog().stat,
-    "bbs_monitor": BbsMonitor().check,
+    "ttg_rss_check": TTGRSS().check,
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,
     "mp_monitor": MagicPointChecker().monitor,
