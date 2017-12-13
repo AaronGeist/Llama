@@ -29,17 +29,20 @@ class TTGRSS(BaseUploader):
 
         seeds = []
         for item in items:
-            info = HttpUtils.get_content(item, "title").split("[")
+            try:
+                info = HttpUtils.get_content(item, "title").split("[")
 
-            seed = SeedInfo()
+                seed = SeedInfo()
 
-            seed.title = info[0].strip()
-            seed.size = HttpUtils.pretty_format(info[1].split(" ")[-2] + info[1].split(" ")[-1], "MB")
-            # seed.url = HttpUtils.get_content(item, "link")
-            seed.url = item.contents[4]
-            seed.id = self.parse_id(seed.url)
+                seed.title = info[0].strip()
+                seed.size = HttpUtils.pretty_format(info[1].split(" ")[-2] + info[1].split(" ")[-1], "MB")
+                # seed.url = HttpUtils.get_content(item, "link")
+                seed.url = item.contents[4]
+                seed.id = self.parse_id(seed.url)
 
-            seeds.append(seed)
+                seeds.append(seed)
+            except Exception as e:
+                pass
 
         return seeds
 
