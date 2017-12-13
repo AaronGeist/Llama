@@ -53,8 +53,9 @@ class TTGRSS(BaseUploader):
         return m.group(1)
 
     def easy_strategy(self, data):
-        filtered_seeds = list(
-            filter(lambda x: (x.title.lower().endswith("wiki") or x.title.lower().endswith("ttg")), data))
+        group_name = ["wiki", "ttg", "ngb", "npuer"]
+
+        filtered_seeds = list(filter(lambda x: len(list(filter(lambda y: "-" + y in x.lower(), group_name))), data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 
