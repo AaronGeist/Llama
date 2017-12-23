@@ -281,7 +281,7 @@ class SeedManager:
                 continue
 
             # let new seed live for N minutes
-            if seed.done < 100 and seed.since <= 60 * 60:
+            if seed.done < 100 or seed.since <= 4 * 60 * 60:
                 continue
 
             # check upload speed
