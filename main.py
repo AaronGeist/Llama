@@ -1,7 +1,7 @@
 import sys
 import time
 
-from biz.PTMaster import PTMaster
+from biz.miui import Miui
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
 from biz.pt.PutaoWatchDog import PuTaoWatchDog, BbsMonitor
 from biz.pt.TTGRSS import TTGRSS
@@ -48,7 +48,7 @@ cmd_map = {
     "mt_clean": SeedManager.seed_file_clean_up,
     "mt_page_ls": AdultAlert().crawl,
     "mt_msg": MessageReader().get_cmd,
-    "test": PTMaster().gogogo
+    "miui": Miui().crawl
 }
 
 
