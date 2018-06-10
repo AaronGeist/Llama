@@ -48,7 +48,8 @@ cmd_map = {
     "mt_clean": SeedManager.seed_file_clean_up,
     "mt_page_ls": AdultAlert().crawl,
     "mt_msg": MessageReader().get_cmd,
-    "miui": Miui().crawl
+    "miui_keep_alive": Miui().check_in,
+    "miui_water": Miui().crawl
 }
 
 
