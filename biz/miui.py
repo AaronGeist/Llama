@@ -3,15 +3,9 @@ import json
 import re
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
 from random import random
 
-from core.db import Cache
-from core.emailSender import EmailSender
 from core.login import Login
-from core.monitor import Monitor
-from core.seedManager import SeedManager
-from model.seed import SeedInfo
 from model.site import Site
 from util.config import Config
 from util.utils import HttpUtils
@@ -71,63 +65,93 @@ class Miui(Login):
         page = 1
         cnt = 1
         max_cnt = 50
-        running_flag = True
         chinese_char = ["零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"]
 
-        while running_flag:
+        id_list = []
+        while True:
             soup_obj = HttpUtils.get(url_prefix + str(page))
             print("new page: " + str(page))
-            id_list = HttpUtils.get_attrs(soup_obj, "tbody", "id")
+            id_list.extend(HttpUtils.get_attrs(soup_obj, "tbody", "id"))
 
             page += 1
 
-            for id in id_list:
-                if not id.startswith("normalthread"):
-                    continue
+            if len(id_list) > max_cnt:
+                break
 
-                id = id[13:]
-                page_url = self.page_url_template.format(id)
+        id_list = id_list[:max_cnt]
+        for id in id_list:
+            if not id.startswith("normalthread"):
+                continue
 
-                page_soup_obj = HttpUtils.get(page_url)
-                assert page_soup_obj is not None
+            id = id[13:]
+            page_url = self.page_url_template.format(id)
 
-                i = str(cnt)
-                length = len(i)
-                num = ""
-                for index in range(length):
-                    num += chinese_char[int(i[index])]
+            page_soup_obj = HttpUtils.get(page_url)
+            assert page_soup_obj is not None
 
-                message = "现在时间是{0}，为了内测，为了积分，这是灌水机器人今天第{1}个回复".format(
-                    time.strftime("%b %d %Y %H:%M:%S", time.localtime()),
-                    num)
-                print(message)
+            i = str(cnt)
+            length = len(i)
+            num = ""
+            for index in range(length):
+                num += chinese_char[int(i[index])]
 
-                # form_hash = page_soup_obj.select("input[name='formhash']")[0]["value"]
-                form_hash = "c086a030"
-                form_hash_mirror = form_hash + ":" + form_hash[::-1]
-                post_data = dict()
-                post_data["posttime"] = str(int(time.time()))
-                post_data["formhash"] = form_hash_mirror
-                post_data["usesig"] = "1"
-                post_data["subject"] = "  "
-                post_data["message"] = message
+            id_num = ""
+            for index in range(len(id)):
+                id_num += chinese_char[int(id[index])]
 
-                form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid=5&tid={0}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
-                    id)
+            random_id = str(int(random() * 1000000000000000))
+            chinese_char = ["零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"]
 
-                # print(post_data)
+            random_id_num = ""
+            for index in range(len(random_id)):
+                random_id_num += chinese_char[int(random_id[index])]
 
-                post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
-                                             returnRaw=False)
-                assert post_result is not None
-                time.sleep(int(random() * 60))
-                cnt += 1
+            title = HttpUtils.get_content(page_soup_obj, "title").strip().replace("_灌者为王_MIUI论坛", "")
 
-                if cnt > max_cnt:
-                    running_flag = False
-                    break
+            message = "时间{0}，帖子ID{1}，标题\"{2}\"，随机数{3}，第{4}个积分，打扰".format(
+                time.strftime("%b %d %Y %H:%M:%S", time.localtime()), id_num, title, random_id_num,
+                num)
+            print(message)  # form_hash = page_soup_obj.select("input[name='formhash']")[0]["value"]
+            form_hash = "c086a030"
+            form_hash_mirror = form_hash + ":" + form_hash[::-1]
+            post_data = dict()
+            post_data["posttime"] = str(int(time.time()))
+            post_data["formhash"] = form_hash_mirror
+            post_data["usesig"] = "1"
+            post_data["subject"] = "  "
+            post_data["message"] = message
+
+            form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid=5&tid={0}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
+                id)
+
+            # print(post_data)
+
+            post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
+                                         returnRaw=False)
+            assert post_result is not None
+            time.sleep(int(random() * 60) + 90)
+            cnt += 1
+
+    def zz(self):
+        # self.check_in()
+
+        # get article of jd
+        soup = HttpUtils.get("http://jandan.net/")
+        article_urls = HttpUtils.get_attrs(soup, "#content div.post div.indexs h2 a", "href")
+        print(len(article_urls))
+
+        for article_url in article_urls:
+            # if Cache().get(article_url) is not None:
+            #     continue
+
+            article_soup = HttpUtils.get(article_url)
+            title = HttpUtils.get_content(article_soup, "title").strip()
+            # Cache().set(article_url, article_url)
+            break
+
+        print(article_urls[0])
 
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.crawl()
+    miui.water()
