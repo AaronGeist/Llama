@@ -132,6 +132,13 @@ class Miui(Login):
             time.sleep(int(random() * 60) + 90)
             cnt += 1
 
+    def sign(self):
+        self.check_in()
+
+        soup = HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers, return_raw=True)
+
+        assert soup is not None
+
     def zz(self):
         # self.check_in()
 
@@ -154,4 +161,4 @@ class Miui(Login):
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.water()
+    miui.sign()
