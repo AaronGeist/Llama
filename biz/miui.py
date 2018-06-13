@@ -144,63 +144,90 @@ class Miui(Login):
         assert soup is not None
 
     def zz(self):
-
+        source_url_template = "https://bh.sb/post/category/main/page/{0}/"
         post_url = "http://www.miui.com/forum.php?mod=post&action=newthread&fid=5&extra=&topicsubmit=yes"
+
         self.check_in()
 
-        # get article of bhsb
-        soup = HttpUtils.get("https://bh.sb/post/category/main/")
-        article_urls = HttpUtils.get_attrs(soup, "h2 a", "href")
-        print(len(article_urls))
+        max_cnt = 50
+        cnt = 0
+        page_num = 1
+        articles = list()
+        stop_flag = False
+        while not stop_flag:
+            # get article of bhsb
+            soup = HttpUtils.get(source_url_template.format(page_num))
+            article_urls = HttpUtils.get_attrs(soup, "h2 a", "href")
+            page_num += 1
 
-        first_article_url = article_urls[10]
-        if Cache().get(first_article_url) is not None:
-            return
-
-        article_soup = HttpUtils.get(first_article_url)
-        titles = HttpUtils.get_contents(article_soup, ".article-content p")
-
-        title_cnt = int(len(titles) / 2)
-
-        for index in range(0, title_cnt):
-            try:
-                title = "[一图一笑] " + titles[index * 2].split("】")[1]
-                image = titles[index * 2 + 1]
-
-                if type(image) != Tag:
+            for article_index in range(len(article_urls)):
+                article_url = article_urls[article_index]
+                if Cache().get(article_url) is not None:
                     continue
 
-                src = image.attrs["src"]
-                if src.endswith("jpg"):
-                    continue
+                article_soup = HttpUtils.get(article_url)
+                titles = HttpUtils.get_contents(article_soup, ".article-content p")
 
-                message = "[img]{0}[/img]".format(src)
+                title_cnt = int(len(titles) / 2)
 
-                form_hash = "c086a030"
-                form_hash_mirror = form_hash + ":" + form_hash[::-1]
-                post_data = dict()
-                post_data["posttime"] = str(int(time.time()))
-                post_data["formhash"] = form_hash_mirror
-                post_data["wysiwyg"] = "1"
-                post_data["typeid"] = "1631"
-                post_data["allownoticeauthor"] = "1"
-                post_data["addfeed"] = "1"
-                post_data["usesig"] = "1"
-                post_data["save"] = ""
-                post_data["uploadalbum"] = "-2"
-                post_data["newalbum"] = "请输入相册名称"
-                post_data["subject"] = title
-                post_data["message"] = message
+                for title_index in range(0, title_cnt):
+                    try:
+                        title = "[一图一笑] " + titles[title_index * 2].split("】")[1]
+                        image = titles[title_index * 2 + 1]
 
-                post_result = HttpUtils.post(post_url, headers=self.site.login_headers, data=post_data,
-                                             returnRaw=False)
-                assert post_result is not None
+                        if type(image) != Tag:
+                            continue
 
-                time.sleep(int(random() * 180) + 300)
-            except:
-                pass
+                        src = image.attrs["src"]
+                        if src.endswith("jpg"):
+                            continue
 
-        Cache().set(first_article_url, first_article_url)
+                        message = "[img]{0}[/img]".format(src)
+
+                        if Cache().get(title) is not None:
+                            continue
+                        Cache().set(title, message)
+
+                        articles.append((title, message))
+
+                        cnt += 1
+
+                        if cnt >= max_cnt:
+                            stop_flag = True
+                            break
+                    except:
+                        pass
+
+                if stop_flag:
+                    break
+
+                # only if all articles are included, then mark this url
+                Cache().set(article_url, article_url)
+
+        for (title, message) in articles:
+            print((title, message))
+
+            form_hash = "c086a030"
+            form_hash_mirror = form_hash + ":" + form_hash[::-1]
+            post_data = dict()
+            post_data["posttime"] = str(int(time.time()))
+            post_data["formhash"] = form_hash_mirror
+            post_data["wysiwyg"] = "1"
+            post_data["typeid"] = "1631"
+            post_data["allownoticeauthor"] = "1"
+            post_data["addfeed"] = "1"
+            post_data["usesig"] = "1"
+            post_data["save"] = ""
+            post_data["uploadalbum"] = "-2"
+            post_data["newalbum"] = "请输入相册名称"
+            post_data["subject"] = title
+            post_data["message"] = message
+
+            post_result = HttpUtils.post(post_url, headers=self.site.login_headers, data=post_data,
+                                         returnRaw=False)
+            assert post_result is not None
+
+            time.sleep(int(random() * 180) + 180)
 
 
 if __name__ == '__main__':
