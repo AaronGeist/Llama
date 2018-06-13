@@ -227,7 +227,8 @@ class Miui(Login):
                                          returnRaw=False)
             assert post_result is not None
 
-            time.sleep(int(random() * 180) + 180)
+            # 1小时只能发5篇
+            time.sleep(int(random() * 30) + 750)
 
 
 if __name__ == '__main__':
