@@ -5,6 +5,9 @@ import os
 import time
 from random import random
 
+from bs4 import Tag
+
+from core.db import Cache
 from core.login import Login
 from model.site import Site
 from util.config import Config
@@ -111,7 +114,7 @@ class Miui(Login):
             message = "时间{0}，帖子ID{1}，标题\"{2}\"，随机数{3}，第{4}个积分，打扰".format(
                 time.strftime("%b %d %Y %H:%M:%S", time.localtime()), id_num, title, random_id_num,
                 num)
-            print(message)  # form_hash = page_soup_obj.select("input[name='formhash']")[0]["value"]
+            # form_hash = page_soup_obj.select("input[name='formhash']")[0]["value"]
             form_hash = "c086a030"
             form_hash_mirror = form_hash + ":" + form_hash[::-1]
             post_data = dict()
@@ -135,30 +138,71 @@ class Miui(Login):
     def sign(self):
         self.check_in()
 
-        soup = HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers, return_raw=True)
+        soup = HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
+                             return_raw=True)
 
         assert soup is not None
 
     def zz(self):
-        # self.check_in()
 
-        # get article of jd
-        soup = HttpUtils.get("http://jandan.net/")
-        article_urls = HttpUtils.get_attrs(soup, "#content div.post div.indexs h2 a", "href")
+        post_url = "http://www.miui.com/forum.php?mod=post&action=newthread&fid=5&extra=&topicsubmit=yes"
+        self.check_in()
+
+        # get article of bhsb
+        soup = HttpUtils.get("https://bh.sb/post/category/main/")
+        article_urls = HttpUtils.get_attrs(soup, "h2 a", "href")
         print(len(article_urls))
 
-        for article_url in article_urls:
-            # if Cache().get(article_url) is not None:
-            #     continue
+        first_article_url = article_urls[10]
+        if Cache().get(first_article_url) is not None:
+            return
 
-            article_soup = HttpUtils.get(article_url)
-            title = HttpUtils.get_content(article_soup, "title").strip()
-            # Cache().set(article_url, article_url)
-            break
+        article_soup = HttpUtils.get(first_article_url)
+        titles = HttpUtils.get_contents(article_soup, ".article-content p")
 
-        print(article_urls[0])
+        title_cnt = int(len(titles) / 2)
+
+        for index in range(0, title_cnt):
+            try:
+                title = "[一图一笑] " + titles[index * 2].split("】")[1]
+                image = titles[index * 2 + 1]
+
+                if type(image) != Tag:
+                    continue
+
+                src = image.attrs["src"]
+                if src.endswith("jpg"):
+                    continue
+
+                message = "[img]{0}[/img]".format(src)
+
+                form_hash = "c086a030"
+                form_hash_mirror = form_hash + ":" + form_hash[::-1]
+                post_data = dict()
+                post_data["posttime"] = str(int(time.time()))
+                post_data["formhash"] = form_hash_mirror
+                post_data["wysiwyg"] = "1"
+                post_data["typeid"] = "1631"
+                post_data["allownoticeauthor"] = "1"
+                post_data["addfeed"] = "1"
+                post_data["usesig"] = "1"
+                post_data["save"] = ""
+                post_data["uploadalbum"] = "-2"
+                post_data["newalbum"] = "请输入相册名称"
+                post_data["subject"] = title
+                post_data["message"] = message
+
+                post_result = HttpUtils.post(post_url, headers=self.site.login_headers, data=post_data,
+                                             returnRaw=False)
+                assert post_result is not None
+
+                time.sleep(int(random() * 180) + 300)
+            except:
+                pass
+
+        Cache().set(first_article_url, first_article_url)
 
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.sign()
+    miui.zz()

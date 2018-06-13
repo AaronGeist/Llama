@@ -50,8 +50,8 @@ cmd_map = {
     "mt_msg": MessageReader().get_cmd,
     "miui_keep_alive": Miui().check_in,
     "miui_water": Miui().crawl,
+    "miui_zz": Miui().zz,
     "miui_sign": Miui().sign
-
 }
 
 
