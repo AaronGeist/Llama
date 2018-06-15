@@ -173,7 +173,7 @@ class Miui(Login):
                         if src.endswith("jpg"):
                             continue
 
-                        message = "好笑您就点个赞，不好笑也可以回复下给自己攒个积分哦\n"
+                        message = "好玩您就点个赞，不好笑请期待下一贴～\n"
                         message += "[img]{0}[/img]".format(src)
 
                         if Cache().get(title) is not None:
