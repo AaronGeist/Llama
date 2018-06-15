@@ -165,7 +165,7 @@ class Miui(Login):
 
                 for title_index in range(0, title_cnt):
                     try:
-                        title = "[一图一笑] " + titles[title_index * 2].split("】")[1]
+                        title = titles[title_index * 2].split("】")[1]
                         image = titles[title_index * 2 + 1]
 
                         if type(image) != Tag:
