@@ -32,37 +32,30 @@ class Miui(Login):
             "Host": "www.miui.com",
             "Upgrade-insecure-requests": "1",
             "Cache-control": "max-age=0",
-            "Cookie": "UM_distinctid=163dfb3e2ff73d-0a9bc0e1447ce4-336a7706-13c680-163dfb3e3005eb; CNZZDATA5677709=cnzz_eid%3D1297791920-1528461510-http%253A%252F%252Fwww.miui.com%252F%26ntime%3D1528477020; CNZZDATA1270690907=893238151-1528481971-https%253A%252F%252Fwww.baidu.com%252F%7C1528481971; __utmc=230417408; __utmz=230417408.1528538555.3.3.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; Hm_lvt_3c5ef0d4b3098aba138e8ff4e86f1329=1528511334,1528511372,1528511379,1528538555; PHPSESSID=vnc60biqa61d31ih5b930abm41; MIUI_2132_widthauto=-1; CNZZDATA2441309=cnzz_eid%3D1987410948-1528462183-null%26ntime%3D1528586803; CNZZDATA30049650=cnzz_eid%3D1453184979-1528466198-null%26ntime%3D1528585841; __utma=230417408.2038836981.1528511192.1528549122.1528589392.5; CNZZDATA5557939=cnzz_eid%3D1504230810-1528462019-null%26ntime%3D1528586646; MIUI_2132_saltkey=sF6wQsSz; MIUI_2132_lastvisit=1528586043; MIUI_2132_visitedfid=773; MIUI_2132_ulastactivity=426f3zvob00mxZWwQ8FWbaETgRqM07T%2FhlJ%2FdhF%2F34sFvhOFvrFk5fg; MIUI_2132_auth=443fj0wdiMkvdCfJKHGlfDsueGlS1sPWf%2BJ%2BQMa323mysEuk6RBvZHg; lastLoginTime=d9e2yZbafd8tt3%2BIQc55QkmXvFWlG588oMrLYGlAZoyMMlgcAOs7; MIUI_2132_forum_lastvisit=D_773_1528589818; MIUI_2132_noticeTitle=1; MIUI_2132_checkpm=1; MIUI_2132_lastact=1528590043%09home.php%09misc; MIUI_2132_sendmail=1; __utmb=230417408.13.10.1528589392; Hm_lpvt_3c5ef0d4b3098aba138e8ff4e86f1329=1528589985"
+            "Cookie": "UM_distinctid=163dfb3e2ff73d-0a9bc0e1447ce4-336a7706-13c680-163dfb3e3005eb; __utmc=230417408; __utmz=230417408.1528538555.3.3.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; Hm_lvt_3c5ef0d4b3098aba138e8ff4e86f1329=1528511334,1528511372,1528511379,1528538555; PHPSESSID=vnc60biqa61d31ih5b930abm41; MIUI_2132_widthauto=-1; CNZZDATA5677709=cnzz_eid%3D1297791920-1528461510-http%253A%252F%252Fwww.miui.com%252F%26ntime%3D1528801426; CNZZDATA1270690907=893238151-1528481971-https%253A%252F%252Fwww.baidu.com%252F%7C1528807405; CNZZDATA1270691464=1221855440-1528592121-%7C1528807818; __utma=230417408.2038836981.1528511192.1528948475.1529018798.24; MIUI_2132_saltkey=Dq25112M; MIUI_2132_lastvisit=1529015245; MIUI_2132_ulastactivity=ea4aWC6qjF726cp14stuTP38lm5%2Fz1U8KY4yFHUvbP24ahpFdgOCXE0; MIUI_2132_auth=4b02CoTQT5q2tpsUdjzpS9HF2DtTQnq6AMZYKCILTY8Y%2F%2F83kA39sQ; lastLoginTime=7acaYS1hE%2B2Q74w3%2BvqcMrmn0iQGS%2FnaSlI4t7NM0YtvqlbAQ70Q; MIUI_2132_noticeTitle=1; MIUI_2132_home_diymode=1; CNZZDATA30049650=cnzz_eid%3D1453184979-1528466198-null%26ntime%3D1529015956; MIUI_2132_nofavfid=1; CNZZDATA5557939=cnzz_eid%3D1504230810-1528462019-null%26ntime%3D1529017909; MIUI_2132_smile=3D1; MIUI_2132_viewid=tid_15212628; CNZZDATA2441309=cnzz_eid%3D1987410948-1528462183-null%26ntime%3D1529016417; MIUI_2132_forum_lastvisit=D_40_1529019167D_772_1529019395; MIUI_2132_clearUserdata=forum; MIUI_2132_seccodeS00=783dKdaY3bkLwO0BrfTvBubeflSwHQFV7Do%2F6GbCNTvNarru9KvxpguJH7TSapSAgQJUewp0BQbY; MIUI_2132_checkpm=1; MIUI_2132_sendmail=1; __utmt=1; MIUI_2132_visitedfid=3D37D772D48D773D40D5; MIUI_2132_lastact=1529019546%09forum.php%09; __utmb=230417408.49.10.1529018798; Hm_lpvt_3c5ef0d4b3098aba138e8ff4e86f1329=1529019509"
+            # "Cookie": "UM_distinctid=163dfb3e2ff73d-0a9bc0e1447ce4-336a7706-13c680-163dfb3e3005eb; CNZZDATA5677709=cnzz_eid%3D1297791920-1528461510-http%253A%252F%252Fwww.miui.com%252F%26ntime%3D1528477020; CNZZDATA1270690907=893238151-1528481971-https%253A%252F%252Fwww.baidu.com%252F%7C1528481971; __utmc=230417408; __utmz=230417408.1528538555.3.3.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; Hm_lvt_3c5ef0d4b3098aba138e8ff4e86f1329=1528511334,1528511372,1528511379,1528538555; PHPSESSID=vnc60biqa61d31ih5b930abm41; MIUI_2132_widthauto=-1; CNZZDATA2441309=cnzz_eid%3D1987410948-1528462183-null%26ntime%3D1528586803; CNZZDATA30049650=cnzz_eid%3D1453184979-1528466198-null%26ntime%3D1528585841; __utma=230417408.2038836981.1528511192.1528549122.1528589392.5; CNZZDATA5557939=cnzz_eid%3D1504230810-1528462019-null%26ntime%3D1528586646; MIUI_2132_saltkey=sF6wQsSz; MIUI_2132_lastvisit=1528586043; MIUI_2132_visitedfid=773; MIUI_2132_ulastactivity=426f3zvob00mxZWwQ8FWbaETgRqM07T%2FhlJ%2FdhF%2F34sFvhOFvrFk5fg; MIUI_2132_auth=443fj0wdiMkvdCfJKHGlfDsueGlS1sPWf%2BJ%2BQMa323mysEuk6RBvZHg; lastLoginTime=d9e2yZbafd8tt3%2BIQc55QkmXvFWlG588oMrLYGlAZoyMMlgcAOs7; MIUI_2132_forum_lastvisit=D_773_1528589818; MIUI_2132_noticeTitle=1; MIUI_2132_checkpm=1; MIUI_2132_lastact=1528590043%09home.php%09misc; MIUI_2132_sendmail=1; __utmb=230417408.13.10.1528589392; Hm_lpvt_3c5ef0d4b3098aba138e8ff4e86f1329=1528589985"
         }
 
         site.login_needed = True
         site.login_verify_css_selector = "#hd_u_name"
-        site.login_verify_str = "\n                            胡迪君                        "
-        site.login_username = Config.get("putao_username")
-        site.login_password = Config.get("putao_password")
+        site.login_verify_str = "\n                            薛定谔的小仓鼠                        "
 
         return site
-
-    def build_post_data(self, site):
-        data = dict()
-        data['username'] = site.login_username
-        data['password'] = site.login_password
-        data['checkcode'] = "XxXx"
-
-        return data
 
     def check_in(self):
         self.site = self.generate_site()
         assert self.login(self.site)
 
-        print("Login success!")
-
-    def crawl(self):
+    def get_score(self):
         self.check_in()
 
-        return self.water()
+        soup = HttpUtils.get("http://www.miui.com/space-uid-2248502469.html")
+        assert soup is not None
+        score = HttpUtils.get_content(soup, "#statistic_content li:nth-of-type(1) a")
+        return int(score)
 
     def water(self):
+        self.check_in()
 
         url_prefix = "http://www.miui.com/forum.php?mod=forumdisplay&fid=5&orderby=dateline&filter=author&orderby=dateline&page="
         page = 1
@@ -115,7 +108,7 @@ class Miui(Login):
                 time.strftime("%b %d %Y %H:%M:%S", time.localtime()), id_num, title, random_id_num,
                 num)
             # form_hash = page_soup_obj.select("input[name='formhash']")[0]["value"]
-            form_hash = "c086a030"
+            form_hash = "0d4c71ae"
             form_hash_mirror = form_hash + ":" + form_hash[::-1]
             post_data = dict()
             post_data["posttime"] = str(int(time.time()))
@@ -207,7 +200,7 @@ class Miui(Login):
         for (title, message) in articles:
             print((title, message))
 
-            form_hash = "c086a030"
+            form_hash = "0d4c71ae"
             form_hash_mirror = form_hash + ":" + form_hash[::-1]
             post_data = dict()
             post_data["posttime"] = str(int(time.time()))
@@ -230,7 +223,39 @@ class Miui(Login):
             # 1小时只能发5篇
             time.sleep(int(random() * 30) + 750)
 
+    def vote(self):
+        self.check_in()
+
+        source_list_url_template = "http://www.miui.com/home.php?mod=space&uid=133153462&do=thread&view=me&order=dateline&from=space&page={0}"
+        soup = HttpUtils.get(source_list_url_template.format(1), headers=self.site.login_headers)
+        assert soup is not None
+
+        article_urls = HttpUtils.get_attrs(soup, "div.tl th > a", "href")
+        for article_url in article_urls:
+            try:
+                article_url = "http://www.miui.com/" + article_url
+                article_soup = HttpUtils.get(article_url, headers=self.site.login_headers)
+                assert article_soup is not None
+                title = HttpUtils.get_content(article_soup, "title")
+                form = article_soup.select("#poll", limit=1)
+                option = article_soup.select("#option_1", limit=1)
+                if form is None or len(form) == 0:
+                    continue
+                if option is None or len(option) == 0:
+                    continue
+                print(title)
+            except:
+                pass
+
+
 
 if __name__ == '__main__':
     miui = Miui()
     miui.zz()
+
+
+# forum.php?mod=misc&action=votepoll&fid=464&tid=15078723&pollsubmit=yes&quickforward=yes
+#
+# 195826
+#
+# pollanswers[]: 195826
