@@ -17,6 +17,9 @@ from util.utils import HttpUtils
 class Miui(Login):
     page_url_template = "http://www.miui.com/thread-{0}-1-1.html"
 
+    form_hash = "0d4c71ae"
+    form_hash_mirror = form_hash + ":" + form_hash[::-1]
+
     def generate_site(self):
         site = Site()
 
@@ -108,11 +111,9 @@ class Miui(Login):
                 time.strftime("%b %d %Y %H:%M:%S", time.localtime()), id_num, title, random_id_num,
                 num)
             # form_hash = page_soup_obj.select("input[name='formhash']")[0]["value"]
-            form_hash = "0d4c71ae"
-            form_hash_mirror = form_hash + ":" + form_hash[::-1]
             post_data = dict()
             post_data["posttime"] = str(int(time.time()))
-            post_data["formhash"] = form_hash_mirror
+            post_data["formhash"] = self.form_hash_mirror
             post_data["usesig"] = "1"
             post_data["subject"] = "  "
             post_data["message"] = message
@@ -130,11 +131,8 @@ class Miui(Login):
 
     def sign(self):
         self.check_in()
-
-        soup = HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
-                             return_raw=True)
-
-        assert soup is not None
+        HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
+                      return_raw=True)
 
     def zz(self):
         source_url_template = "https://bh.sb/post/category/main/page/{0}/"
@@ -175,7 +173,8 @@ class Miui(Login):
                         if src.endswith("jpg"):
                             continue
 
-                        message = "[img]{0}[/img]".format(src)
+                        message = "好笑您就点个赞，不好笑也可以回复下给自己攒个积分哦\n"
+                        message += "[img]{0}[/img]".format(src)
 
                         if Cache().get(title) is not None:
                             continue
@@ -200,11 +199,9 @@ class Miui(Login):
         for (title, message) in articles:
             print((title, message))
 
-            form_hash = "0d4c71ae"
-            form_hash_mirror = form_hash + ":" + form_hash[::-1]
             post_data = dict()
             post_data["posttime"] = str(int(time.time()))
-            post_data["formhash"] = form_hash_mirror
+            post_data["formhash"] = self.form_hash_mirror
             post_data["wysiwyg"] = "1"
             post_data["typeid"] = "1631"
             post_data["allownoticeauthor"] = "1"
@@ -227,35 +224,59 @@ class Miui(Login):
         self.check_in()
 
         source_list_url_template = "http://www.miui.com/home.php?mod=space&uid=133153462&do=thread&view=me&order=dateline&from=space&page={0}"
-        soup = HttpUtils.get(source_list_url_template.format(1), headers=self.site.login_headers)
-        assert soup is not None
+        page_num = 1
+        max_cnt = 10
+        cnt = 0
+        stop_flag = False
+        while not stop_flag:
+            soup = HttpUtils.get(source_list_url_template.format(page_num), headers=self.site.login_headers)
+            assert soup is not None
 
-        article_urls = HttpUtils.get_attrs(soup, "div.tl th > a", "href")
-        for article_url in article_urls:
-            try:
-                article_url = "http://www.miui.com/" + article_url
-                article_soup = HttpUtils.get(article_url, headers=self.site.login_headers)
-                assert article_soup is not None
-                title = HttpUtils.get_content(article_soup, "title")
-                form = article_soup.select("#poll", limit=1)
-                option = article_soup.select("#option_1", limit=1)
-                if form is None or len(form) == 0:
-                    continue
-                if option is None or len(option) == 0:
-                    continue
-                print(title)
-            except:
-                pass
+            page_num += 1
 
+            current_score = self.get_score()
+            previous_score = current_score
+
+            article_urls = HttpUtils.get_attrs(soup, "div.tl th > a", "href")
+            for article_url in article_urls:
+                try:
+                    article_url = "http://www.miui.com/" + article_url
+                    article_soup = HttpUtils.get(article_url, headers=self.site.login_headers)
+                    assert article_soup is not None
+                    title = HttpUtils.get_content(article_soup, "title")
+                    form = article_soup.select("#poll", limit=1)
+                    option = article_soup.select("#option_1", limit=1)
+                    if form is None or len(form) == 0:
+                        continue
+                    if option is None or len(option) == 0:
+                        continue
+                    print(title)
+
+                    # do vote here
+                    post_url = "http://www.miui.com/" + HttpUtils.get_attr(article_soup, "#poll", "action") + "&inajax=1"
+
+                    post_data = dict()
+                    post_data["pollanswers[]"] = HttpUtils.get_attr(article_soup, "#option_1", "value")
+                    post_data["formhash"] = self.form_hash_mirror
+                    post_result = HttpUtils.post(post_url, headers=self.site.login_headers, data=post_data,
+                                                 returnRaw=False)
+                    assert post_result is not None
+
+                    current_score = self.get_score()
+                    print(previous_score)
+                    print(current_score)
+
+                    cnt += 1
+                    if cnt >= max_cnt or previous_score == current_score:
+                        stop_flag = True
+                        break
+
+                    previous_score = current_score
+                    time.sleep(60)
+                except:
+                    pass
 
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.zz()
-
-
-# forum.php?mod=misc&action=votepoll&fid=464&tid=15078723&pollsubmit=yes&quickforward=yes
-#
-# 195826
-#
-# pollanswers[]: 195826
+    miui.vote()
