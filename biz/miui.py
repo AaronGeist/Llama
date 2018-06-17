@@ -237,7 +237,7 @@ class Miui(Login):
             post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
                                          returnRaw=False)
             assert post_result is not None
-            Cache().set_with_expire(reply_list[thread_id], content, 86400 * 4)
+            Cache().set_with_expire(thread_id, content, 86400 * 4)
             time.sleep(int(random() * 60) + 90)
 
     def sign(self):
