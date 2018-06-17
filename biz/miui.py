@@ -16,7 +16,9 @@ from util.utils import HttpUtils
 
 class Miui(Login):
     page_url_template = "http://www.miui.com/thread-{0}-1-1.html"
+    page_url_template_copy = "http://www.miui.com/thread-{0}-{1}-1.html"
 
+    comments_black_list = ["积分", "经验", "点赞", "回帖", "内测"]
     form_hash = "0d4c71ae"
     form_hash_mirror = form_hash + ":" + form_hash[::-1]
 
@@ -128,6 +130,112 @@ class Miui(Login):
             assert post_result is not None
             time.sleep(int(random() * 60) + 90)
             cnt += 1
+
+    def water_copy(self):
+        self.check_in()
+
+        article_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid=772&orderby=replies&filter=reply&orderby=replies&page={0}"
+        page_num = 1
+        max_cnt = 50
+
+        reply_list = dict()
+        stop_flag = False
+        while not stop_flag:
+            soup_obj = HttpUtils.get(article_url_template.format(page_num))
+            print("current page: " + str(page_num))
+            page_num += 1
+
+            article_list = soup_obj.select("tbody")
+
+            for article in article_list:
+                id = article.attrs["id"]
+                if not id.startswith("normalthread"):
+                    continue
+
+                id = id[13:]
+
+                if Cache().get(id) is not None:
+                    print("Skip " + id)
+                    # has been replied within a few days, skip
+                    continue
+
+                title = HttpUtils.get_content(article, ".sub-tit > a:nth-of-type(1)")
+                # don't want to copy comments of author
+                author = HttpUtils.get_content(article, ".sub-infos a:nth-of-type(1)")
+                reply_num = HttpUtils.get_content(article, "span.number_d a:nth-of-type(1)")
+
+                total_thread_page_num = int(int(reply_num) / 10)
+                start_thread_page_num = int(total_thread_page_num / 3)
+                end_thread_page_num = start_thread_page_num * 2
+                current_thread_page_num = start_thread_page_num + int(random() * 3)
+
+                content_candidates = list()
+
+                while len(content_candidates) == 0 and current_thread_page_num <= end_thread_page_num:
+                    page_url = self.page_url_template_copy.format(id, current_thread_page_num)
+                    current_thread_page_num += 1
+                    page_soup_obj = HttpUtils.get(page_url)
+                    assert page_soup_obj is not None
+
+                    post_list = page_soup_obj.select("#postlist > div")
+                    for post in post_list:
+                        try:
+                            current_author = HttpUtils.get_content(post, ".authi a")
+                            if current_author == author:
+                                continue
+
+                            score = int(HttpUtils.get_content(post, ".pil dd a"))
+                            if score < 1500:
+                                continue
+
+                            content = HttpUtils.get_content(post, ".pct table tr td.t_f")
+                            if content is None or content.strip() == "" or len(content) < 10 or len(
+                                    content) > 50:
+                                continue
+
+                            contain_black_list = False
+                            for black_word in self.comments_black_list:
+                                if black_word in content:
+                                    contain_black_list = True
+                                    break
+
+                            if contain_black_list:
+                                continue
+
+                            content_candidates.append(content.strip())
+                        except:
+                            pass
+
+                print(title)
+                print(content_candidates)
+                if len(content_candidates) > 0:
+                    # randomly pick one
+                    reply_list[id] = content_candidates[int(random() * len(content_candidates)) - 1]
+                    print(id + " -- " + reply_list[id])
+
+                print("current reply=" + str(len(reply_list)))
+                if len(reply_list) > max_cnt:
+                    stop_flag = True
+                    break
+
+        # start reply
+        for (thread_id, content) in reply_list:
+            post_data = dict()
+            post_data["posttime"] = str(int(time.time()))
+            post_data["formhash"] = self.form_hash_mirror
+            post_data["usesig"] = "1"
+            post_data["subject"] = "  "
+            post_data["message"] = content
+
+            form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid=772&tid={0}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
+                thread_id)
+            # print(thread_id, content)
+
+            post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
+                                         returnRaw=False)
+            assert post_result is not None
+            Cache().set_with_expire(thread_id, content, 86400 * 4)
+            time.sleep(int(random() * 60) + 90)
 
     def sign(self):
         self.check_in()
@@ -253,7 +361,8 @@ class Miui(Login):
                     print(title)
 
                     # do vote here
-                    post_url = "http://www.miui.com/" + HttpUtils.get_attr(article_soup, "#poll", "action") + "&inajax=1"
+                    post_url = "http://www.miui.com/" + HttpUtils.get_attr(article_soup, "#poll",
+                                                                           "action") + "&inajax=1"
 
                     post_data = dict()
                     post_data["pollanswers[]"] = HttpUtils.get_attr(article_soup, "#option_1", "value")
@@ -279,4 +388,4 @@ class Miui(Login):
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.vote()
+    miui.water_copy()

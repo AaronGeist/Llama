@@ -49,7 +49,7 @@ cmd_map = {
     "mt_page_ls": AdultAlert().crawl,
     "mt_msg": MessageReader().get_cmd,
     "miui_keep_alive": Miui().check_in,
-    "miui_water": Miui().water,
+    "miui_water": Miui().water_copy,
     "miui_zz": Miui().zz,
     "miui_vote": Miui().vote,
     "miui_sign": Miui().sign
