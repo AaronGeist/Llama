@@ -223,21 +223,22 @@ class Miui(Login):
 
         # start reply
         for thread_id in reply_list:
+            message = reply_list[thread_id]
             post_data = dict()
             post_data["posttime"] = str(int(time.time()))
             post_data["formhash"] = self.form_hash_mirror
             post_data["usesig"] = "1"
             post_data["subject"] = "  "
-            post_data["message"] = content
+            post_data["message"] = message
 
             form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid=772&tid={0}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
                 thread_id)
-            print(thread_id, reply_list[thread_id])
+            print(thread_id, message)
 
             post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
                                          returnRaw=False)
             assert post_result is not None
-            Cache().set_with_expire(thread_id, content, 86400 * 4)
+            Cache().set_with_expire(thread_id, message, 86400 * 4)
             time.sleep(int(random() * 60) + 90)
 
     def sign(self):
