@@ -176,11 +176,11 @@ class Miui(Login):
                 while len(content_candidates) == 0 and current_thread_page_num <= end_thread_page_num:
                     page_url = self.page_url_template_copy.format(id, current_thread_page_num)
                     current_thread_page_num += 1
-                    page_soup_obj = HttpUtils.get(page_url)
+                    page_soup_obj = HttpUtils.get(page_url, headers=self.site.login_headers)
                     assert page_soup_obj is not None
 
                     # check if allow to reply
-                    edit_content = HttpUtils.get_content(article, "#fastposteditor")
+                    edit_content = HttpUtils.get_content(article, "#fastposteditor .pt")
                     if edit_content is not None and "您现在无权发帖" in str(edit_content):
                         Cache().set(id, "")
                         print(id + " not allowed to reply")
@@ -232,23 +232,26 @@ class Miui(Login):
 
         # start reply
         for thread_id in reply_list:
-            message = reply_list[thread_id]
-            post_data = dict()
-            post_data["posttime"] = str(int(time.time()))
-            post_data["formhash"] = self.form_hash_mirror
-            post_data["usesig"] = "1"
-            post_data["subject"] = "  "
-            post_data["message"] = message
+            try:
+                message = reply_list[thread_id]
+                post_data = dict()
+                post_data["posttime"] = str(int(time.time()))
+                post_data["formhash"] = self.form_hash_mirror
+                post_data["usesig"] = "1"
+                post_data["subject"] = "  "
+                post_data["message"] = message
 
-            form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid={0}&tid={1}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
-                forum_id, thread_id)
-            print(thread_id, message, self.get_score())
+                form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid={0}&tid={1}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
+                    forum_id, thread_id)
+                print(thread_id, message, self.get_score())
 
-            post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
-                                         returnRaw=False)
-            assert post_result is not None
-            Cache().set_with_expire(thread_id, message, 86400 * 4)
-            time.sleep(int(random() * 60) + 90)
+                post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
+                                             returnRaw=False)
+                assert post_result is not None
+                Cache().set_with_expire(thread_id, message, 86400 * 4)
+                time.sleep(int(random() * 60) + 90)
+            except:
+                pass
 
     def sign(self):
         self.check_in()
@@ -257,66 +260,106 @@ class Miui(Login):
 
     def zz_copy(self):
         source_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid=773&orderby=dateline&filter=author&orderby=dateline&page={0}"
-        max_page_num = 800
-        min_page_num = 100
+        thread_url_template = "http://www.miui.com/thread-{0}-1-1.html"
+        post_url = "http://www.miui.com/forum.php?mod=post&action=newthread&fid=773&extra=&topicsubmit=yes"
+        min_page_num = 300
 
         self.check_in()
 
         title_white_list = ["问题", "探索版", "怎么", "什么"]
-        title_black_list = ["内测", "发货", "积分"]
+        title_black_list = ["内测", "发货", "积分", "在线"]
 
-        page_num = max_page_num
+        page_num = min_page_num + int(random() * 700)
         max_cnt = 20
         article_candidates = dict()
         stop_flag = False
         while not stop_flag:
-            soup_obj = HttpUtils.get(source_url_template.format(page_num))
-            page_num -= 1
-            assert soup_obj is not None
-            print("current page: " + str(page_num))
+            try:
+                soup_obj = HttpUtils.get(source_url_template.format(page_num))
+                page_num -= 1
+                assert soup_obj is not None
+                print("current page: " + str(page_num))
 
-            article_list = soup_obj.select("tbody")
+                article_list = soup_obj.select("tbody")
 
-            for article in article_list:
-                id = article.attrs["id"]
-                if not id.startswith("normalthread"):
-                    continue
+                for article in article_list:
+                    id = article.attrs["id"]
+                    if not id.startswith("normalthread"):
+                        continue
 
-                id = id[13:]
+                    id = id[13:]
 
-                # if Cache().get("ZZ_" + id) is not None:
-                #     print("Skip " + id)
-                #     # has been ZZed within a few days, skip
-                #     continue
+                    if Cache().get("ZZ_" + id) is not None:
+                        print("Skip " + id)
+                        # has been ZZed within a few days, skip
+                        continue
 
-                title = HttpUtils.get_content(article, ".sub-tit > a:nth-of-type(1)")
-                reply_num = int(HttpUtils.get_content(article, "span.number_d a:nth-of-type(1)"))
+                    title = HttpUtils.get_content(article, ".sub-tit > a:nth-of-type(1)")
+                    reply_num = int(HttpUtils.get_content(article, "span.number_d a:nth-of-type(1)"))
 
-                if reply_num > 8:
-                    continue
+                    if reply_num > 8:
+                        continue
 
-                is_white_list = False
-                for white_list in title_white_list:
-                    if white_list in title:
-                        is_white_list = True
+                    is_white_list = False
+                    for white_list in title_white_list:
+                        if white_list in title:
+                            is_white_list = True
 
-                if not is_white_list:
-                    break
+                    if not is_white_list:
+                        break
 
-                is_black_list = False
-                for black_list in title_black_list:
-                    if black_list in title:
-                        is_black_list = True
+                    is_black_list = False
+                    for black_list in title_black_list:
+                        if black_list in title:
+                            is_black_list = True
 
-                if is_black_list:
-                    break
+                    if is_black_list:
+                        break
 
-                print(title)
+                    thread_soup_obj = HttpUtils.get(thread_url_template.format(id))
+                    assert thread_soup_obj is not None
+                    content = HttpUtils.get_content(thread_soup_obj, "#postlist > div .t_f")
 
-                article_candidates[id] = title
-                if len(article_candidates) >= max_cnt:
-                    stop_flag = True
-                    break
+                    if content is None or content.strip() == "":
+                        continue
+
+                    article_candidates[id] = (title, content.strip())
+
+                    if len(article_candidates) >= max_cnt:
+                        stop_flag = True
+                        break
+            except:
+                pass
+
+        for id in article_candidates:
+            try:
+                (title, message) = article_candidates[id]
+
+                post_data = dict()
+                post_data["posttime"] = str(int(time.time()))
+                post_data["formhash"] = self.form_hash_mirror
+                post_data["wysiwyg"] = "1"
+                post_data["typeid"] = "7562"
+                post_data["allownoticeauthor"] = "1"
+                post_data["addfeed"] = "1"
+                post_data["usesig"] = "1"
+                post_data["save"] = ""
+                post_data["uploadalbum"] = "-2"
+                post_data["newalbum"] = "请输入相册名称"
+                post_data["subject"] = title
+                post_data["message"] = message
+
+                print((title, message))
+
+                post_result = HttpUtils.post(post_url, headers=self.site.login_headers, data=post_data,
+                                             returnRaw=False)
+                assert post_result is not None
+
+                Cache().put("ZZ_" + id)
+
+                time.sleep(int(random() * 300) + 1800)
+            except:
+                pass
 
     def zz(self):
         source_url_template = "https://bh.sb/post/category/main/page/{0}/"

@@ -51,6 +51,7 @@ cmd_map = {
     "miui_keep_alive": Miui().check_in,
     "miui_water": Miui().water_copy,
     "miui_zz": Miui().zz,
+    "miui_zz_copy": Miui().zz_copy,
     "miui_vote": Miui().vote,
     "miui_sign": Miui().sign
 }
