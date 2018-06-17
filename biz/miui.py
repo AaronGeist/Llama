@@ -134,14 +134,16 @@ class Miui(Login):
     def water_copy(self):
         self.check_in()
 
-        article_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid=772&orderby=replies&filter=reply&orderby=replies&page={0}"
+        forum_id_list = ["772", "773"]
+        forum_id = forum_id_list[int(random() * len(forum_id_list)) - 1]
+        article_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid={0}&orderby=replies&filter=reply&orderby=replies&page={1}"
         page_num = 1
         max_cnt = 50
 
         reply_list = dict()
         stop_flag = False
         while not stop_flag:
-            soup_obj = HttpUtils.get(article_url_template.format(page_num))
+            soup_obj = HttpUtils.get(article_url_template.format(forum_id, page_num))
             print("current page: " + str(page_num))
             page_num += 1
 
@@ -179,7 +181,7 @@ class Miui(Login):
 
                     # check if allow to reply
                     edit_content = HttpUtils.get_content(article, "#fastposteditor")
-                    if "您现在无权发帖" in edit_content:
+                    if edit_content is not None and "您现在无权发帖" in str(edit_content):
                         Cache().set(id, "")
                         print(id + " not allowed to reply")
                         break
@@ -238,9 +240,9 @@ class Miui(Login):
             post_data["subject"] = "  "
             post_data["message"] = message
 
-            form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid=772&tid={0}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
-                thread_id)
-            print(thread_id, message)
+            form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid={0}&tid={1}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
+                forum_id, thread_id)
+            print(thread_id, message, self.get_score())
 
             post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
                                          returnRaw=False)
