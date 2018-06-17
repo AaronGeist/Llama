@@ -193,6 +193,9 @@ class Miui(Login):
                                     content) > 50:
                                 continue
 
+                            if author in content:
+                                continue
+
                             contain_black_list = False
                             for black_word in self.comments_black_list:
                                 if black_word in content:
@@ -214,7 +217,7 @@ class Miui(Login):
                     print(id + " -- " + reply_list[id])
 
                 print("current reply=" + str(len(reply_list)))
-                if len(reply_list) > max_cnt:
+                if len(reply_list) >= max_cnt:
                     stop_flag = True
                     break
 
@@ -229,7 +232,7 @@ class Miui(Login):
 
             form_submit_url = "http://www.miui.com/forum.php?mod=post&action=reply&fid=772&tid={0}&extra=page=1&replysubmit=yes&infloat=yes&handlekey=fastpost".format(
                 thread_id)
-            # print(thread_id, content)
+            print(thread_id, reply_list[thread_id])
 
             post_result = HttpUtils.post(form_submit_url, headers=self.site.login_headers, data=post_data,
                                          returnRaw=False)
