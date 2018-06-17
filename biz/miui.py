@@ -255,13 +255,76 @@ class Miui(Login):
         HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
                       return_raw=True)
 
+    def zz_copy(self):
+        source_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid=773&orderby=dateline&filter=author&orderby=dateline&page={0}"
+        max_page_num = 800
+        min_page_num = 100
+
+        self.check_in()
+
+        title_white_list = ["问题", "探索版", "怎么", "什么"]
+        title_black_list = ["内测", "发货", "积分"]
+
+        page_num = max_page_num
+        max_cnt = 20
+        article_candidates = dict()
+        stop_flag = False
+        while not stop_flag:
+            soup_obj = HttpUtils.get(source_url_template.format(page_num))
+            page_num -= 1
+            assert soup_obj is not None
+            print("current page: " + str(page_num))
+
+            article_list = soup_obj.select("tbody")
+
+            for article in article_list:
+                id = article.attrs["id"]
+                if not id.startswith("normalthread"):
+                    continue
+
+                id = id[13:]
+
+                # if Cache().get("ZZ_" + id) is not None:
+                #     print("Skip " + id)
+                #     # has been ZZed within a few days, skip
+                #     continue
+
+                title = HttpUtils.get_content(article, ".sub-tit > a:nth-of-type(1)")
+                reply_num = int(HttpUtils.get_content(article, "span.number_d a:nth-of-type(1)"))
+
+                if reply_num > 8:
+                    continue
+
+                is_white_list = False
+                for white_list in title_white_list:
+                    if white_list in title:
+                        is_white_list = True
+
+                if not is_white_list:
+                    break
+
+                is_black_list = False
+                for black_list in title_black_list:
+                    if black_list in title:
+                        is_black_list = True
+
+                if is_black_list:
+                    break
+
+                print(title)
+
+                article_candidates[id] = title
+                if len(article_candidates) >= max_cnt:
+                    stop_flag = True
+                    break
+
     def zz(self):
         source_url_template = "https://bh.sb/post/category/main/page/{0}/"
         post_url = "http://www.miui.com/forum.php?mod=post&action=newthread&fid=5&extra=&topicsubmit=yes"
 
         self.check_in()
 
-        max_cnt = 50
+        max_cnt = 5
         cnt = 0
         page_num = 1
         articles = list()
@@ -338,8 +401,7 @@ class Miui(Login):
                                          returnRaw=False)
             assert post_result is not None
 
-            # 1小时只能发5篇
-            time.sleep(int(random() * 30) + 750)
+            time.sleep(int(random() * 300) + 4800)
 
     def vote(self):
         self.check_in()
@@ -401,4 +463,4 @@ class Miui(Login):
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.water_copy()
+    miui.zz_copy()
