@@ -177,6 +177,13 @@ class Miui(Login):
                     page_soup_obj = HttpUtils.get(page_url)
                     assert page_soup_obj is not None
 
+                    # check if allow to reply
+                    edit_content = HttpUtils.get_content(article, "#fastposteditor")
+                    if "您现在无权发帖" in edit_content:
+                        Cache().set(id, "")
+                        print(id + " not allowed to reply")
+                        break
+
                     post_list = page_soup_obj.select("#postlist > div")
                     for post in post_list:
                         try:
