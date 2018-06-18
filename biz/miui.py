@@ -367,7 +367,7 @@ class Miui(Login):
 
         self.check_in()
 
-        max_cnt = 5
+        max_cnt = 10
         cnt = 0
         page_num = 1
         articles = list()
@@ -444,7 +444,7 @@ class Miui(Login):
                                          returnRaw=False)
             assert post_result is not None
 
-            time.sleep(int(random() * 300) + 4800)
+            time.sleep(int(random() * 300) + 2700)
 
     def vote(self):
         self.check_in()
