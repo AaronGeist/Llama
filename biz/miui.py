@@ -180,10 +180,17 @@ class Miui(Login):
                     assert page_soup_obj is not None
 
                     # check if allow to reply
-                    edit_content = HttpUtils.get_content(article, "#fastposteditor .pt")
+                    edit_content = HttpUtils.get_content(page_soup_obj, "#fastposteditor .pt")
                     if edit_content is not None and "您现在无权发帖" in str(edit_content):
                         Cache().set(id, "")
                         print(id + " not allowed to reply")
+                        break
+
+                    # skip vote(less score)
+                    form = page_soup_obj.select("#poll", limit=1)
+                    if form is not None:
+                        Cache().set(id, "")
+                        print(id + " skip vote")
                         break
 
                     post_list = page_soup_obj.select("#postlist > div")
@@ -506,4 +513,4 @@ class Miui(Login):
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.zz_copy()
+    miui.water_copy()
