@@ -430,6 +430,8 @@ class Miui(Login):
                 # only if all articles are included, then mark this url
                 Cache().set(article_url, article_url)
 
+        type_id_list = ["1629", "1631", "1633", "4481", "1641"]
+        type_index = 0
         for (title, message) in articles:
             print((title, message))
 
@@ -437,7 +439,7 @@ class Miui(Login):
             post_data["posttime"] = str(int(time.time()))
             post_data["formhash"] = self.form_hash_mirror
             post_data["wysiwyg"] = "1"
-            post_data["typeid"] = "1631"
+            post_data["typeid"] = type_id_list[type_index]
             post_data["allownoticeauthor"] = "1"
             post_data["addfeed"] = "1"
             post_data["usesig"] = "1"
@@ -450,7 +452,7 @@ class Miui(Login):
             post_result = HttpUtils.post(post_url, headers=self.site.login_headers, data=post_data,
                                          returnRaw=False)
             assert post_result is not None
-
+            type_index = (type_index + 1) % len(type_id_list)
             time.sleep(int(random() * 300) + 2700)
 
     def vote(self):
