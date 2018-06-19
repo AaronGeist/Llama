@@ -188,7 +188,7 @@ class Miui(Login):
 
                     # skip vote(less score)
                     form = page_soup_obj.select("#poll", limit=1)
-                    if form is not None:
+                    if form is not None and len(form) > 0:
                         Cache().set(id, "")
                         print(id + " skip vote")
                         break
