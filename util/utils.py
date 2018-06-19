@@ -135,7 +135,10 @@ class HttpUtils:
         if items is None or len(items) <= 0:
             return None
         else:
-            return items[0].contents[index]
+            if len(items[0].contents) > index:
+                return items[0].contents[index]
+            else:
+                return None
 
     @classmethod
     def get_contents(cls, soupObj, matchExp, index=0):
