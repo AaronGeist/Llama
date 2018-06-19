@@ -264,10 +264,12 @@ class Miui(Login):
         self.check_in()
 
         time_start = time.time()
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
         for i in range(1000):
             HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
                           return_raw=True)
         time_end = time.time()
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
         print('time cost', time_end - time_start, 's')
 
     def zz_copy(self):
@@ -520,4 +522,4 @@ class Miui(Login):
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.water_copy()
+    miui.sign()
