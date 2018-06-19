@@ -61,6 +61,21 @@ class HttpUtils:
             f.write("")
 
     @classmethod
+    def get_crazy(cls, url, session=None, headers=None, proxy=None, times=0):
+        if session is not None:
+            cls.session = session
+        cls.create_session_if_absent()
+
+        if headers is None:
+            headers = cls.DEFAULT_HEADER
+
+        for i in range(times):
+            try:
+                cls.session.get(url, timeout=1, headers=headers, proxies=proxy, verify=False)
+            except Exception as e:
+                pass
+
+    @classmethod
     def get(cls, url, session=None, headers=None, proxy=None, timeout=60, return_raw=False, allow_redirects=True):
         if session is not None:
             cls.session = session

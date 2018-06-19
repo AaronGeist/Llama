@@ -262,8 +262,11 @@ class Miui(Login):
 
     def sign(self):
         self.check_in()
-        HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
-                      return_raw=True)
+
+        time_start = time.time()
+        HttpUtils.get_crazy("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers, times=1000)
+        time_end = time.time()
+        print('time cost', time_end - time_start, 's')
 
     def zz_copy(self):
         source_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid=773&orderby=dateline&filter=author&orderby=dateline&page={0}"
