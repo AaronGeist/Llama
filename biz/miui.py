@@ -534,9 +534,9 @@ class Miui(Login):
 
         await asyncio.wait(tasks)
 
-    def asnc_sign(self):
+    def async_sign(self):
 
-        miui.check_in()
+        self.check_in()
 
         while True:
             t = time.strftime("%M:%S", time.localtime())
@@ -547,7 +547,7 @@ class Miui(Login):
 
         time_start = time.time()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(miui.run(1500))
+        loop.run_until_complete(self.run(1500))
         time_end = time.time()
         print('time cost', time_end - time_start, 's')
         print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
@@ -555,4 +555,4 @@ class Miui(Login):
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.asnc_sign()
+    miui.async_sign()
