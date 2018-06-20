@@ -4,6 +4,8 @@ import re
 import os
 import time
 from random import random
+import asyncio
+from aiohttp import ClientSession
 
 from bs4 import Tag
 
@@ -263,14 +265,14 @@ class Miui(Login):
     def sign(self):
         self.check_in()
 
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
         time_start = time.time()
-        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
-        for i in range(1000):
+        for i in range(100):
             HttpUtils.get("http://www.miui.com/extra.php?mod=sign/index&op=sign", headers=self.site.login_headers,
                           return_raw=True)
         time_end = time.time()
-        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
         print('time cost', time_end - time_start, 's')
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
     def zz_copy(self):
         source_url_template = "http://www.miui.com/forum.php?mod=forumdisplay&fid=773&orderby=dateline&filter=author&orderby=dateline&page={0}"
@@ -519,7 +521,38 @@ class Miui(Login):
                 except:
                     pass
 
+    async def fetch(self, url):
+        async with ClientSession() as session:
+            async with session.get(url, headers=self.site.login_headers) as response:
+                await response.read()
+
+    async def run(self, r):
+        url = "http://www.miui.com/extra.php?mod=sign/index&op=sign"
+        tasks = []
+        for i in range(r):
+            tasks.append(self.fetch(url))
+
+        await asyncio.wait(tasks)
+
+    def asnc_sign(self):
+
+        miui.check_in()
+
+        while True:
+            t = time.strftime("%M:%S", time.localtime())
+            if t.endswith("59"):
+                break
+            print("tick")
+            time.sleep(1)
+
+        time_start = time.time()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(miui.run(1500))
+        time_end = time.time()
+        print('time cost', time_end - time_start, 's')
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+
 
 if __name__ == '__main__':
     miui = Miui()
-    miui.sign()
+    miui.asnc_sign()

@@ -53,7 +53,7 @@ cmd_map = {
     "miui_zz": Miui().zz,
     "miui_zz_copy": Miui().zz_copy,
     "miui_vote": Miui().vote,
-    "miui_sign": Miui().sign
+    "miui_sign": Miui().asnc_sign
 }
 
 
