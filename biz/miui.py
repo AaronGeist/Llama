@@ -546,7 +546,7 @@ class Miui(Login):
         print(HttpUtils.get_time_stamp())
         while True:
             t = int(datetime.datetime.now().microsecond / 10000)
-            if t >= 90:
+            if t >= 80:
                 break
             time.sleep(0.001)
 
@@ -554,7 +554,7 @@ class Miui(Login):
         print("go go go!")
         while True:
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.run(200))
+            loop.run_until_complete(self.run(500))
             print(HttpUtils.get_time_stamp())
 
             t = int(datetime.datetime.now().microsecond / 10000)
