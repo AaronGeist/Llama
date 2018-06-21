@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import datetime
 import json
 import re
 import os
@@ -535,22 +536,32 @@ class Miui(Login):
         await asyncio.wait(tasks)
 
     def async_sign(self):
-
-        self.check_in()
-
+        self.site = self.generate_site()
         while True:
             t = time.strftime("%M:%S", time.localtime())
             if t.endswith("59"):
                 break
-            print("tick")
             time.sleep(1)
 
-        time_start = time.time()
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.run(1500))
-        time_end = time.time()
-        print('time cost', time_end - time_start, 's')
-        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        print(HttpUtils.get_time_stamp())
+        while True:
+            t = int(datetime.datetime.now().microsecond / 10000)
+            if t >= 90:
+                break
+            time.sleep(0.001)
+
+        print(HttpUtils.get_time_stamp())
+        print("go go go!")
+        while True:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.run(200))
+            print(HttpUtils.get_time_stamp())
+
+            t = int(datetime.datetime.now().microsecond / 10000)
+            print(t)
+            if t >= 30:
+                break
+            time.sleep(0.001)
 
 
 if __name__ == '__main__':
