@@ -1,8 +1,11 @@
+import datetime
 import json
 import os
 import re
 
 import requests
+import time
+
 from bs4 import BeautifulSoup
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -69,11 +72,14 @@ class HttpUtils:
         if headers is None:
             headers = cls.DEFAULT_HEADER
 
+        time_start = time.time()
         for i in range(times):
             try:
                 cls.session.get(url, timeout=1, headers=headers, proxies=proxy, verify=False)
             except Exception as e:
                 pass
+        time_end = time.time()
+        print('time cost', time_end - time_start, 's')
 
     @classmethod
     def get(cls, url, session=None, headers=None, proxy=None, timeout=60, return_raw=False, allow_redirects=True):
@@ -227,6 +233,15 @@ class HttpUtils:
             res = 0.001
 
         return res
+
+    @classmethod
+    def get_time_stamp(cls):
+        ct = time.time()
+        local_time = time.localtime(ct)
+        data_head = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
+        data_secs = datetime.datetime.now().microsecond / 1000
+        time_stamp = "%s.%03d" % (data_head, data_secs)
+        return time_stamp
 
 
 if __name__ == "__main__":
