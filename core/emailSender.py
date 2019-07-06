@@ -5,6 +5,7 @@ from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import parseaddr, formataddr
 
+from core.enigma import Enigma
 from model.email import Email
 from util.config import Config
 
@@ -29,7 +30,7 @@ class EmailSender:
         email = Email()
         email.from_addr = Config.get("email_from_addr")
         email.to_addr = Config.get("email_to_addr")
-        email.password = Config.get("email_password")
+        email.password = Enigma.decrypt(Config.get("email_password"))
         email.stmp_server = Config.get("email_stmp_server")
         email.stmp_port = Config.get("email_stmp_port")
         email.is_ssl = Config.get("email_is_ssl")
@@ -49,6 +50,7 @@ class EmailSender:
         server.login(email.from_addr, email.password)
         server.sendmail(email.from_addr, email.to_addr, msg.as_string())
         server.quit()
+
 
 if __name__ == "__main__":
     EmailSender.send("test", "test")

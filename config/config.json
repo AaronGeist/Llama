@@ -1,3 +1,11 @@
 {
-  "cookie_location": "cookie.txt"
+  "cookie_location": "/Users/shakazxx/cookie.txt",
+
+  "email_from_addr": "aarongeist@139.com",
+  "email_to_addr": "aarongeist@139.com",
+  "email_password": "F+9OoHctluHXbYmpMwl7wA==",
+  "email_stmp_server": "smtp.139.com",
+  "email_stmp_port": 465,
+  "email_is_ssl": true,
+  "enable_email": true
 }
