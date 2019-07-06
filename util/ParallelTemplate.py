@@ -7,10 +7,10 @@ class ParallelTemplate:
         super().__init__()
         self.workers = workers
 
-    def run(self, func, inputs, async=False):
+    def run(self, func, inputs, is_async=False):
         with ThreadPoolExecutor(max_workers=self.workers) as executor:
             future_items = {executor.submit(func, item): item for item in inputs}
-            if async:
+            if is_async:
                 print("finish")
                 return
 
