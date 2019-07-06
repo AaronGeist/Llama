@@ -2,20 +2,26 @@ import os
 
 from core.emailSender import EmailSender
 
-FILE = "/var/tmp/ip.txt"
-oldIp = ""
 
-if os.path.exists(FILE):
-    with open(FILE, "r") as fp:
-        oldIp = fp.readline().strip()
+class IpNotifier:
+    storage_file = "/var/tmp/ip.txt"
 
-output = os.popen("curl ip.sb")
-newIp = output.read().strip()
+    @classmethod
+    def check_change(cls):
+        previous_ip = ""
 
-if oldIp != newIp:
-    with open(FILE, "w") as fp:
-        fp.writelines(newIp)
-    print("old[%s], new[%s]" % (oldIp, newIp))
-    EmailSender.send(u"IP变更", "最新IP: " + str(newIp))
-else:
-    print("same ip[%s]" % oldIp)
+        if os.path.exists(cls.storage_file):
+            with open(cls.storage_file, "r") as fp:
+                previous_ip = fp.readline().strip()
+
+        output = os.popen("curl ip.sb")
+        current_ip = output.read().strip()
+
+        if previous_ip != current_ip:
+            with open(cls.storage_file, "w") as fp:
+                fp.writelines(current_ip)
+
+            print("old[%s], new[%s]" % (previous_ip, current_ip))
+            EmailSender.send(u"IP变更", "最新IP: " + str(current_ip))
+        else:
+            print("same ip[%s]" % previous_ip)

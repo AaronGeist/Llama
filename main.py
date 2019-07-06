@@ -1,9 +1,10 @@
 import sys
 import time
 
+from biz.IpNotifier import IpNotifier
 from biz.miui import Miui
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
-from biz.pt.PutaoWatchDog import PuTaoWatchDog, BbsMonitor
+from biz.pt.PutaoWatchDog import PuTaoWatchDog
 from biz.pt.TTGRSS import TTGRSS
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
@@ -53,7 +54,8 @@ cmd_map = {
     "miui_zz": Miui().zz,
     "miui_zz_copy": Miui().zz_copy,
     "miui_vote": Miui().vote,
-    "miui_sign": Miui().async_sign
+    "miui_sign": Miui().async_sign,
+    "ip_change_check": IpNotifier.check_change
 }
 
 
