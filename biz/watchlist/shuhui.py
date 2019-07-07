@@ -16,12 +16,12 @@ class ShuHuiWatchDog:
         previous_chapter_num = Cache().get(bucket_name)
         if previous_chapter_num is None:
             previous_chapter_num = -1
-        current_chapter_num = ShuHuiWatchDog.get_max_chapter_num(animation_id)
+        comic_name, current_chapter_num = ShuHuiWatchDog.get_max_chapter_num(animation_id)
 
         if current_chapter_num == ShuHuiWatchDog.INVALID_CHAPTER_NUM:
-            EmailSender.send("", "")
+            EmailSender.send("错误：鼠绘-" + comic_name, "无法抓取最新章节号")
         elif current_chapter_num > previous_chapter_num:
-            EmailSender.send("", "")
+            EmailSender.send("鼠绘-{0}更新啦".format(comic_name), "最新章节号是" + str(current_chapter_num))
             Cache().set(bucket_name, current_chapter_num)
 
     @staticmethod
@@ -38,7 +38,8 @@ class ShuHuiWatchDog:
         else:
             comic_data = json.loads(response.text)
             max_chapter_num = int(comic_data["data"]["comicsIndexes"]["1"]["maxNum"])
-            return max_chapter_num
+            comic_name = comic_data["data"]["name"]
+            return comic_name, max_chapter_num
 
 
 if __name__ == "__main__":
