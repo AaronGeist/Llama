@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from core.db import Cache
 from core.emailSender import EmailSender
+from core.enigma import Enigma
 from core.login import Login
 from core.monitor import Monitor
 from core.seedManager import SeedManager
@@ -32,7 +33,7 @@ class FreeFeedAlert(Login):
         site.login_verify_css_selector = "#userbar span.nobr a b"
         site.login_verify_str = Config.get("putao_username")
         site.login_username = Config.get("putao_username")
-        site.login_password = Config.get("putao_password")
+        site.login_password = Enigma.decrypt(Config.get("putao_password"))
 
         return site
 

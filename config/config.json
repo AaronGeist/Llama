@@ -1,5 +1,5 @@
 {
-  "cookie_location": "/Users/shakazxx/cookie.txt",
+  "cookie_location": "/home/shakazxx/cookie.txt",
 
   "email_from_addr": "aarongeist@139.com",
   "email_to_addr": "aarongeist@139.com",
@@ -7,5 +7,28 @@
   "email_stmp_server": "smtp.139.com",
   "email_stmp_port": 465,
   "email_is_ssl": true,
+
+  "putao_username": "shakazxx",
+  "putao_password": "bYz22ZloJsQr/kC9ALY2DA==",
+
+  "putao_mp_threshold": 20,
+  "putao_white_list": "Marvels Agents|Better Call Saul|The Big Bang Theory|Shingeki no Kyojin|Prison Break|Modern Family|Silicon Valley|Game of Thrones",
+  "cpu_temperature_threshold": 70,
+
+  "seed_max_size_mb": 10240,
+
+  "vultr_api_key": "o5b7EI/d7FXUI+vVCthz+p21bcX2/oPlMWo7VXDHDrLVgAI+jTU4fg==",
+
+  "shuhui_username": "shakazxx@163.com",
+  "shuhui_password": "BPyWUxOXSZxNjiqVd284KQ==",
+  "shuhui_nickname": "我是一只弱鸡",
+
+  "mteam_username": "",
+  "mteam_password": "",
+  "mteam_mp_threshold": 10,
+  "mteam_strategy": "easy",
+  "mteam_upload_target": 500,
+  "mt_warn_white_list": "",
+
   "enable_email": true
 }

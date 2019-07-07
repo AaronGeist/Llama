@@ -4,6 +4,7 @@ import time
 
 from core.DiskManager import DiskManager
 from core.emailSender import EmailSender
+from core.enigma import Enigma
 from model.seed import TransmissionSeed
 from util.config import Config
 from util.utils import HttpUtils
@@ -59,7 +60,7 @@ class SeedManager:
     @classmethod
     def check_bandwidth(cls):
         resp = os.popen(
-            "curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Config.get("vultr_api_key")).read()
+            "curl -H 'API-Key: %s' https://api.vultr.com/v1/server/list" % Enigma.decrypt(Config.get("vultr_api_key"))).read()
         json_data = json.loads(resp)
         info_dict = list(json_data.values())[0]
         current_bandwidth_gb = info_dict['current_bandwidth_gb']
