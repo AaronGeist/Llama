@@ -14,14 +14,12 @@ class Enigma:
     def encrypt(cls, data):
         d = cls.locker.encrypt(data)
         res = base64.b64encode(d)
-        print("Encrypted: %r" % res)
         return res.decode("UTF-8")
 
     @classmethod
     def decrypt(cls, data):
         d = base64.b64decode(data)
         res = cls.locker.decrypt(d)
-        print("Decrypted: %r" % res)
         return res.decode("UTF-8")
 
 

@@ -16,6 +16,8 @@ class ShuHuiWatchDog:
         previous_chapter_num = Cache().get(bucket_name)
         if previous_chapter_num is None:
             previous_chapter_num = -1
+        else:
+            previous_chapter_num = int(previous_chapter_num)
         comic_name, current_chapter_num = ShuHuiWatchDog.get_max_chapter_num(animation_id)
 
         if current_chapter_num == ShuHuiWatchDog.INVALID_CHAPTER_NUM:

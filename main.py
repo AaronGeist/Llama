@@ -9,6 +9,7 @@ from biz.pt.TTGRSS import TTGRSS
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.SecondHand import SecondHand
+from biz.watchlist.shuhui import ShuHuiWatchDog
 from biz.weather import WeatherReport
 from core.seedManager import SeedManager
 from core.tts import TextToSpeech
@@ -55,7 +56,8 @@ cmd_map = {
     "miui_zz_copy": Miui().zz_copy,
     "miui_vote": Miui().vote,
     "miui_sign": Miui().async_sign,
-    "ip_change_check": IpNotifier.check_change
+    "ip_change_check": IpNotifier.check_change,
+    "shu_hui_update_check": ShuHuiWatchDog.check_and_notify
 }
 
 
