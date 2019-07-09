@@ -175,8 +175,8 @@ class HttpUtils:
         return contents
 
     @classmethod
-    def download_file(cls, url, dest_path, headers=None):
-        if os.path.exists(dest_path):
+    def download_file(cls, url, dest_path, headers=None, over_write=False):
+        if os.path.exists(dest_path) and not over_write:
             print("Existing " + dest_path)
             return True
         res = cls.get(url, timeout=30, return_raw=True)

@@ -1,9 +1,8 @@
 # -*- coding:utf-8 -*-
-import json
 import re
-import os
 from concurrent.futures import ThreadPoolExecutor
 
+from biz.ocr.PuTaoCaptchaParser import PuTaoCaptchaParser
 from core.db import Cache
 from core.emailSender import EmailSender
 from core.enigma import Enigma
@@ -41,8 +40,7 @@ class FreeFeedAlert(Login):
         data = dict()
         data['username'] = site.login_username
         data['password'] = site.login_password
-        data['checkcode'] = "XxXx"
-
+        data['checkcode'] = site.check_code
         return data
 
     def crawl(self):
@@ -51,6 +49,25 @@ class FreeFeedAlert(Login):
 
         soup_obj = HttpUtils.get(site.home_page)
         return self.parse(soup_obj)
+
+    def login(self, site):
+        if not self.isLogin and site.login_needed and not self.check_login(site):
+
+            soup_obj = HttpUtils.get("https://pt.sjtu.edu.cn/login.php", headers=site.login_headers)
+
+            # parse captcha image and return result
+            image_url = "https://pt.sjtu.edu.cn/" + soup_obj.select("form img")[0]["src"]
+            HttpUtils.download_file(image_url, "/tmp/cap.png", over_write=True)
+            site.check_code = PuTaoCaptchaParser.analyze("/tmp/cap.png")
+
+            resp = HttpUtils.post(site.login_page, data=self.build_post_data(site),
+                                  headers=site.login_headers, returnRaw=True)
+
+            self.isLogin = self.check_login(site)
+            return self.isLogin
+        else:
+            self.isLogin = True
+            return True
 
     def parse(self, soup_obj):
         assert soup_obj is not None

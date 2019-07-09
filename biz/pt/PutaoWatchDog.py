@@ -2,6 +2,7 @@ import re
 
 from biz.pt.BaseUploader import BaseUploader
 from core.emailSender import EmailSender
+from core.enigma import Enigma
 from core.monitor import Monitor
 from model.seed import SeedInfo
 from model.site import Site
@@ -29,7 +30,7 @@ class PuTaoWatchDog(BaseUploader):
         site.login_verify_css_selector = "#userbar span.nobr a b"
         site.login_verify_str = Config.get(self.get_site_name() + "_username")
         site.login_username = site.login_verify_str
-        site.login_password = Config.get(self.get_site_name() + "_password")
+        site.login_password = Enigma.decrypt(Config.get(self.get_site_name() + "_password"))
         site.stat_page = "https://pt.sjtu.edu.cn/mybonus.php"
 
         self.site = site
@@ -173,7 +174,7 @@ class BbsMonitor(PuTaoWatchDog):
 
 
 if __name__ == "__main__":
-    PuTaoWatchDog().check()
+    # PuTaoWatchDog().check()
     # MagicPointChecker().monitor()
     # BbsMonitor().check()
-    # PuTaoWatchDog().stat()
+    PuTaoWatchDog().stat()
