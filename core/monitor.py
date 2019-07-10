@@ -1,7 +1,7 @@
 import abc
 import datetime
 
-from core.db import Cache
+from core.cache import Cache
 
 
 class Monitor(object):

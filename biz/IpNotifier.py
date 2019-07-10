@@ -1,6 +1,6 @@
 import os
 
-from core.emailSender import EmailSender
+from core.emailsender import EmailSender
 
 
 class IpNotifier:

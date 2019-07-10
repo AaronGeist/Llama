@@ -5,15 +5,15 @@ import re
 import time
 from datetime import datetime
 
-from core.db import Cache
-from core.emailSender import EmailSender
+from core.cache import Cache
+from core.emailsender import EmailSender
 from core.login import Login
-from core.seedManager import SeedManager
+from core.seedmanager import SeedManager
 from model.message import Message
-from model.ptUser import User
+from model.ptuser import User
 from model.seed import SeedInfo
 from model.site import Site
-from util.ParallelTemplate import ParallelTemplate
+from util.parallel_template import ParallelTemplate
 from util.config import Config
 from util.utils import HttpUtils
 

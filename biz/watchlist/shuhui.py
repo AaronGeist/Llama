@@ -1,7 +1,7 @@
 import json
 
-from core.db import Cache
-from core.emailSender import EmailSender
+from core.cache import Cache
+from core.emailsender import EmailSender
 from util.utils import HttpUtils
 
 

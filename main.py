@@ -4,14 +4,14 @@ import time
 from biz.IpNotifier import IpNotifier
 from biz.miui import Miui
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
-from biz.pt.PutaoWatchDog import PuTaoWatchDog
-from biz.pt.TTGRSS import TTGRSS
+from biz.pt.putao_watchdog import PuTaoWatchDog
+from biz.pt.ttg_rss import TTGRSS
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
-from biz.taobao.SecondHand import SecondHand
+from biz.taobao.secondhand import SecondHand
 from biz.watchlist.shuhui import ShuHuiWatchDog
 from biz.weather import WeatherReport
-from core.seedManager import SeedManager
+from core.seedmanager import SeedManager
 from core.tts import TextToSpeech
 
 cmd_map = {

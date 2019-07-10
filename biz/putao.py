@@ -2,13 +2,13 @@
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from biz.ocr.PuTaoCaptchaParser import PuTaoCaptchaParser
-from core.db import Cache
-from core.emailSender import EmailSender
+from biz.ocr.putao import PuTaoCaptchaParser
+from core.cache import Cache
+from core.emailsender import EmailSender
 from core.enigma import Enigma
 from core.login import Login
 from core.monitor import Monitor
-from core.seedManager import SeedManager
+from core.seedmanager import SeedManager
 from model.seed import SeedInfo
 from model.site import Site
 from util.config import Config

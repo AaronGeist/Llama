@@ -2,7 +2,7 @@
 
 import os
 
-from core.emailSender import EmailSender
+from core.emailsender import EmailSender
 from core.monitor import Monitor
 from util.config import Config
 

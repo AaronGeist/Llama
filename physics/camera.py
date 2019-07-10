@@ -8,7 +8,7 @@ from picamera import PiCamera
 import os
 # import cv2
 
-from core.db import Cache
+from core.cache import Cache
 
 
 class Camera:

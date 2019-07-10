@@ -2,8 +2,8 @@ import json
 import os
 import time
 
-from core.DiskManager import DiskManager
-from core.emailSender import EmailSender
+from core.diskmanager import DiskManager
+from core.emailsender import EmailSender
 from core.enigma import Enigma
 from model.seed import TransmissionSeed
 from util.config import Config

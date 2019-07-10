@@ -2,7 +2,7 @@ import requests
 
 from biz.Site1 import Site1
 from biz.Site2 import Site2
-from util.ParallelTemplate import ParallelTemplate
+from util.parallel_template import ParallelTemplate
 
 
 class PoolManager:

@@ -1,6 +1,6 @@
 import re
 
-from biz.pt.BaseUploader import BaseUploader
+from biz.pt.baseuploader import BaseUploader
 from model.seed import SeedInfo
 from model.site import Site
 from util.utils import HttpUtils
@@ -53,7 +53,7 @@ class TTGRSS(BaseUploader):
         return m.group(1)
 
     def easy_strategy(self, data):
-        group_name = ["wiki", "ttg", "ngb", "npuer", "avs", "arin", "dimension"]
+        group_name = ["wiki", "ttg", "ngb", "npuer", "avs", "dimension"]
 
         filtered_seeds = list(
             filter(lambda seed: len(list(filter(lambda name: "-" + name in seed.title.lower(), group_name))), data))

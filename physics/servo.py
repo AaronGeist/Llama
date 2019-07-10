@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-from core.db import Cache
+from core.cache import Cache
 
 
 class Servo:

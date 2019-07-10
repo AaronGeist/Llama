@@ -2,14 +2,14 @@
 import json
 import re
 
-from core.db import Cache
-from core.emailSender import EmailSender
+from core.cache import Cache
+from core.emailsender import EmailSender
 from core.login import Login
 from core.monitor import Monitor
-from core.seedManager import SeedManager
+from core.seedmanager import SeedManager
 from model.seed import SeedInfo
 from model.site import Site
-from util.ParallelTemplate import ParallelTemplate
+from util.parallel_template import ParallelTemplate
 from util.config import Config
 from util.utils import HttpUtils
 

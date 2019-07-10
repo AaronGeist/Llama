@@ -3,9 +3,9 @@ import abc
 import re
 import time
 
-from core.db import Cache
+from core.cache import Cache
 from core.login import Login
-from core.seedManager import SeedManager
+from core.seedmanager import SeedManager
 from util.config import Config
 from util.utils import HttpUtils
 

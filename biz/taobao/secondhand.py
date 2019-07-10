@@ -3,7 +3,7 @@ import json
 import re
 from time import sleep
 
-from core.db import Cache
+from core.cache import Cache
 from util.utils import HttpUtils
 
 

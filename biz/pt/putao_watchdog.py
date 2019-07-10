@@ -1,7 +1,7 @@
 import re
 
-from biz.pt.BaseUploader import BaseUploader
-from core.emailSender import EmailSender
+from biz.pt.baseuploader import BaseUploader
+from core.emailsender import EmailSender
 from core.enigma import Enigma
 from core.monitor import Monitor
 from model.seed import SeedInfo
