@@ -1,5 +1,6 @@
 import re
 
+from biz.ocr.putao import PuTaoCaptchaParser
 from biz.pt.baseuploader import BaseUploader
 from core.emailsender import EmailSender
 from core.enigma import Enigma
@@ -27,6 +28,7 @@ class PuTaoWatchDog(BaseUploader):
         }
 
         site.login_needed = True
+        site.need_captcha = True
         site.login_verify_css_selector = "#userbar span.nobr a b"
         site.login_verify_str = Config.get(self.get_site_name() + "_username")
         site.login_username = site.login_verify_str
@@ -35,9 +37,22 @@ class PuTaoWatchDog(BaseUploader):
 
         self.site = site
 
+    def parse_captcha(self, site):
+        soup_obj = HttpUtils.get("https://pt.sjtu.edu.cn/login.php", headers=site.login_headers)
+
+        captcha_image_list = soup_obj.select("form img")
+
+        # if captcha image exists, parse expression and return
+        if len(captcha_image_list) > 0:
+            image_url = "https://pt.sjtu.edu.cn/" + captcha_image_list[0]["src"]
+            HttpUtils.download_file(image_url, "/tmp/cap.png", over_write=True)
+            return PuTaoCaptchaParser.analyze("/tmp/cap.png")
+        else:
+            return "XxXx"
+
     def build_post_data(self, site):
         data = super().build_post_data(site)
-        data['checkcode'] = "XxXx"
+        data['checkcode'] = site.login_captcha_value
         return data
 
     def parse_page(self, soup_obj):
@@ -98,7 +113,7 @@ class PuTaoWatchDog(BaseUploader):
         # 3. down/up > 5
         filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and (
-            x.free or x.sticky or (x.discount < 100 and round(x.download_num / x.upload_num, 1) >= 5))), data))
+                x.free or x.sticky or (x.discount < 100 and round(x.download_num / x.upload_num, 1) >= 5))), data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
 

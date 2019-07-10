@@ -18,7 +18,7 @@ class BaseUploader(Login):
 
     @abc.abstractmethod
     def get_site_name(self):
-        return ""
+        pass
 
     def login_if_not(self):
         if not self.is_login:
