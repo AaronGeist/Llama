@@ -3,6 +3,10 @@
 from pyDes import *
 import base64
 
+'''
+This class provides functionality to encrypt/decrypt any string.
+'''
+
 
 class Enigma:
     key = "GoGenius"

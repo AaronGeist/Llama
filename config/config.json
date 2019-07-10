@@ -1,5 +1,5 @@
 {
-  "cookie_location": "/home/shakazxx/cookie.txt",
+  "cookie_location": "/var/tmp/cookie.txt",
 
   "email_from_addr": "aarongeist@139.com",
   "email_to_addr": "aarongeist@139.com",
@@ -21,7 +21,6 @@
 
   "shuhui_username": "shakazxx@163.com",
   "shuhui_password": "BPyWUxOXSZxNjiqVd284KQ==",
-  "shuhui_nickname": "我是一只弱鸡",
 
   "mteam_username": "",
   "mteam_password": "",
