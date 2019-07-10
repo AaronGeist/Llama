@@ -1,7 +1,7 @@
 import sys
 import time
 
-from biz.IpNotifier import IpNotifier
+from biz.ipnotifier import IpNotifier
 from biz.miui import Miui
 from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
 from biz.pt.putao_watchdog import PuTaoWatchDog
