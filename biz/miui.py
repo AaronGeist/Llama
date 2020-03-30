@@ -10,7 +10,7 @@ from aiohttp import ClientSession
 
 from bs4 import Tag
 
-from core.db import Cache
+from core.cache import Cache
 from core.login import Login
 from model.site import Site
 from util.config import Config
@@ -546,7 +546,7 @@ class Miui(Login):
         print(HttpUtils.get_time_stamp())
         while True:
             t = int(datetime.datetime.now().microsecond / 10000)
-            if t >= 80:
+            if t >= 90:
                 break
             time.sleep(0.001)
 

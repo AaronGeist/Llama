@@ -12,6 +12,7 @@ class Crawler:
     site = None
     cache = None
     users = {}
+    user_ids = []
 
     to_parse_queue = Queue()
 
@@ -20,6 +21,7 @@ class Crawler:
 
     @classmethod
     def init_cache(cls):
+        pass
         if cls.cache is None:
             pool = redis.ConnectionPool(host='127.0.0.1', port=6379)
             cls.cache = redis.StrictRedis(connection_pool=pool)
@@ -41,13 +43,14 @@ class Crawler:
         # 20 followers per page
         page_num = int(current_user.follower_cnt / 20) + 1
         for i in range(1, page_num + 1):
-            print("parsing user follower page " + str(i))
+            print("parsing user[%s] follower page %s" % (current_user.name, str(i)))
             page_url = "https://www.zhihu.com/people/%s/followers?page=%d" % (url_token, i)
             users = cls.parse_users(page_url)
             for user_dict in users.values():
                 user = cls.dict_to_user(user_dict)
                 cls.store_user(user)
                 cls.to_parse_queue.put(user)
+            time.sleep(2)
 
         for key in cls.users.keys():
             print(key)
@@ -90,21 +93,26 @@ class Crawler:
         user.headline = user_dict.get('headline')
         user.gender = user_dict.get('gender')
         user.url = user_dict.get('url')
-        user.locations = user_dict.get('locations')
-        user.educations = user_dict.get('educations')
-        user.employments = user_dict.get('employments')
+        # user.locations = user_dict.get('locations')
+        # user.educations = user_dict.get('educations')
+        # user.employments = user_dict.get('employments')
         user.url_token = user_dict.get('urlToken')
 
         return user
 
     @classmethod
     def store_user(cls, user):
-        if user.url_token in cls.users.keys():
+        if user.url_token in cls.user_ids:
             print("Duplicated " + user.name)
         else:
             print("Add user " + user.name)
             cls.users[user.url_token] = user
-            cls.cache.hset()
+            # cls.cache.hset()
+        if len(cls.users) > 10:
+            with open("zhihu_user.txt", "w") as fp:
+                for u in cls.users.values():
+                    fp.write(json.dump(u))
+
 
     @classmethod
     def is_parsed(cls, unique_key):

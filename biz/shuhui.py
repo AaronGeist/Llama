@@ -16,6 +16,12 @@ class Crawler(Login):
     process_thread = None
     book_id = 0
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 YaBrowser/19.12.0.769 Yowser/2.5 Safari/537.36",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-User": "?1"
+    }
+
     @classmethod
     def start(cls, book_id):
         cls.book_id = book_id
@@ -32,32 +38,22 @@ class Crawler(Login):
         if cls.book_id is None:
             return
 
-        soup_obj = HttpUtils.get("http://www.ishuhui.com/cartoon/book/%d" % cls.book_id)
-        sub_book_id = json.loads(soup_obj.select("meta[name='ver']")[0]['content'])['c']
-
-        resp = HttpUtils.get("http://api.ishuhui.com/cartoon/book_ish/ver/%s/id/%d.json" % (sub_book_id, cls.book_id),
+        resp = HttpUtils.get("https://api.ishuhui.shop/ver/4e198319/anime/detail?id=%d&type=comics&.json" % cls.book_id,
                              return_raw=True)
         assert resp is not None
 
         json_data = json.loads(resp.text)
-        cartoons = json_data["data"]["cartoon"]
+        cartoons = json_data["data"]["comicsIndexes"]["1"]["nums"]
 
         cls.init_thread()
 
         for type in cartoons.keys():
-            posts = cartoons[type]["posts"]
-            for post_id in posts.keys():
-                url = "http://api.ishuhui.com/cartoon/post/ver/%s/num/%d-%s-%s.json" % (sub_book_id,
-                                                                                        cls.book_id, type, post_id)
-                inner_content = HttpUtils.get(url, return_raw=True)
-                assert inner_content is not None
-                inner_json_data = json.loads(inner_content.text)
-                inner_url = inner_json_data["data"]["posts"][0]["url"]
-                m = re.search('id=(\d+)', inner_url)
-                if m:
-                    inner_id = m.group(1)
-                    final_url = "http://hhzapi.ishuhui.com/cartoon/post/ver/%s/id/%s.json" % (sub_book_id, inner_id)
-                    cls.parse_lvl_two(final_url)
+            posts = cartoons[type]
+            for index in posts.keys():
+                post_id = posts[index][0]["id"]
+
+                final_url = "https://prod-api.ishuhui.com/comics/detail?id=%s" % post_id
+                cls.parse_lvl_two(final_url)
         cls.process_thread.join()
 
         # code below should be useless if everything goes well
@@ -71,21 +67,29 @@ class Crawler(Login):
         content = HttpUtils.get(url, return_raw=True)
         assert content is not None
         json_data = json.loads(content.text)
-        book = json_data["data"]["book"]
+        book = json_data["data"]["animeName"]
         title = json_data["data"]["title"]
-        number = json_data["data"]["number"]
-        content_img = json_data["data"]["content_img"]
-        images = json.loads(content_img)
+        number = json_data["data"]["numberStart"]
+        images = json_data["data"]["contentImg"]
 
         # create folder once
+        '''
         folder_name = "%s/%03d_%s" % (book, int(number), title)
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
-        for image in images.keys():
-            image_file_name = image
-            image_url = "http://hhzapi.ishuhui.com%s" % images[image]
+        for image in images:
+            image_file_name = image["name"]
+            image_url = image["url"]
             file_path = "/".join([folder_name, image_file_name])
+            cls.task_pool.put([file_path, image_url, 0])
+        '''
+        folder_name = "%s/%03d_%s" % (book, int(number), title)
+
+        for image in images:
+            image_file_name = image["name"]
+            image_url = image["url"]
+            file_path = folder_name + image_file_name
             cls.task_pool.put([file_path, image_url, 0])
 
     @classmethod
@@ -154,5 +158,5 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start(56)
+    Crawler.start(50)
     # Crawler.try_login()
