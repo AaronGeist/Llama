@@ -1,10 +1,11 @@
 import os
 
 from core.emailsender import EmailSender
+from util.config import Config
 
 
 class IpNotifier:
-    storage_file = "/var/tmp/ip.txt"
+    storage_file = Config.get("ip_history_file")
 
     @classmethod
     def check_change(cls):

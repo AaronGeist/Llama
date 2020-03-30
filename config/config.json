@@ -32,5 +32,7 @@
   "mteam_upload_target": 500,
   "mt_warn_white_list": "",
 
+  "ip_history_file": "~/ip_hist.txt",
+
   "enable_email": true
 }

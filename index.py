@@ -1,9 +1,6 @@
-import time
 from flask import Flask, render_template, jsonify
-from flask import Response
-from flask import request
 
-from biz.putao import MagicPointChecker, UploadMonitor
+from biz.pt.putao import MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 #from physics.camera import Camera
 #from physics.servo import Servo
