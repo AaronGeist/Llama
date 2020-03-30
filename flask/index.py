@@ -1,9 +1,10 @@
 from flask import Flask, render_template, jsonify
 
 from biz.pt.putao import MagicPointChecker, UploadMonitor
-from biz.rpi import CpuTemperature, Memory
-#from physics.camera import Camera
-#from physics.servo import Servo
+from biz.rpi import CpuTemperature, Memory, Thread
+
+# from physics.camera import Camera
+# from physics.servo import Servo
 
 app = Flask(__name__)
 
@@ -26,6 +27,11 @@ def monitor():
 @app.route('/monitor/cpu/temperature/', methods=['GET', 'POST'])
 def monitor_cpu_temperature():
     return jsonify(CpuTemperature().history())
+
+
+@app.route('/monitor/cpu/thread/', methods=['GET', 'POST'])
+def monitor_cpu_thread():
+    return jsonify(Thread().history_db())
 
 
 @app.route('/monitor/cpu/temperature/1/', methods=['GET', 'POST'])
@@ -52,6 +58,7 @@ def monitor_magicpoint():
 def monitor_magicpoint_single():
     return jsonify(MagicPointChecker().latest())
 
+
 @app.route('/monitor/upload/', methods=['GET', 'POST'])
 def monitor_upload():
     return jsonify(UploadMonitor().history())
@@ -60,6 +67,7 @@ def monitor_upload():
 @app.route('/monitor/upload/1/', methods=['GET', 'POST'])
 def monitor_upload_single():
     return jsonify(UploadMonitor().latest())
+
 
 '''
 def gen(camera):

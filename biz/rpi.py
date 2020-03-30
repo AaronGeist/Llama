@@ -28,4 +28,12 @@ class Memory(Monitor):
         return "memory"
 
     def generate_data(self):
-        return os.popen("free -m | grep buffers/cache | awk '{print $3}'").read()
+        return os.popen("free -m | grep buffers/cache | awk '{print $3}'").read().strip()
+
+
+class Thread(Monitor):
+    def get_bucket(self):
+        return "thread"
+
+    def generate_data(self):
+        return os.popen("top|head -1|awk '{print $8}'").read().strip()

@@ -33,6 +33,7 @@
   "mt_warn_white_list": "",
 
   "ip_history_file": "~/ip_hist.txt",
+  "tts_path": "/tmp",
 
   "enable_email": true
 }

@@ -17,16 +17,14 @@ class TextToSpeech:
 
     @classmethod
     def convert_and_play(cls, text):
-        audio_file_path = os.path.join(Config.get("u_path"), "tts.mp3")
-        # remove existing file
-        if os.path.isfile(audio_file_path):
-            os.remove(audio_file_path)
+        audio_file_path = os.path.join(Config.get("tts_path"), "tts-%s.mp3" % hash(text))
 
-        # download
-        cls.convert(text, audio_file_path)
+        if not os.path.isfile(audio_file_path):
+            # if not exist, download
+            cls.convert(text, audio_file_path)
 
         # play
-        subprocess.call(["mplayer", audio_file_path])
+        subprocess.call(["mpv", audio_file_path])
 
 
 if __name__ == "__main__":

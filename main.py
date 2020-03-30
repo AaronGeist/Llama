@@ -1,7 +1,7 @@
 import sys
 import time
 
-from biz.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
+from biz.pt.mteam import AdultAlert, UploadCheck, UserCrawl, CandidateVote, MessageReader, NormalAlert
 
 from biz.ipnotifier import IpNotifier
 from biz.life.weather import WeatherReport
@@ -9,8 +9,7 @@ from biz.miui import Miui
 from biz.pt.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.pt.putao_watchdog import PuTaoWatchDog
 from biz.pt.ttg_rss import TTGRSS
-from biz.rpi import CpuTemperature, Memory
-from biz.taobao.secondhand import SecondHand
+from biz.rpi import CpuTemperature, Memory, Thread
 from biz.watchlist.ShuHuiWatchDog import ShuHuiWatchDog
 from core.seedmanager import SeedManager
 from core.tts import TextToSpeech
@@ -29,10 +28,9 @@ cmd_map = {
     "up_monitor": UploadMonitor().monitor,
     "cpu_temp_monitor": CpuTemperature().monitor,
     "memory_monitor": Memory().monitor,
+    "thread_monitor": Thread().monitor_db,
     "weather": WeatherReport.report_weather,
     "tts": TextToSpeech.convert_and_play,
-    "second": SecondHand.crawl,
-    "second_reset": SecondHand.clean_up,
     "mt_normal": NormalAlert().check,
     "mt_adult": AdultAlert().check,
     "mt_adult_init": AdultAlert().init,

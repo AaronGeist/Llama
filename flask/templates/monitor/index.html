@@ -57,13 +57,14 @@
     }
 
     $(document).ready(function() {
-        /*
         var cpuTempOp = genOptions("cpuTempContainer", "Cpu temperature", 40, "temperature(℃)", "time");
         createCharts("cpu/temperature", cpuTempOp, 60000);
 
         var memoryOp = genOptions("memoryContainer", "Memory Usage", 0, "memory(MB)", "time");
         createCharts("memory/usage", memoryOp, 60000);
-        */
+
+        var threadOp = genOptions("threadContainer", "Thread Usage", 0, "Number", "time");
+        createCharts("cpu/thread", threadOp, 600000);
 
         var mpOp = genOptions("mpContainer", "PuTao magic point", 0, "point", "time");
         createCharts("magicpoint", mpOp, 600000);
@@ -80,6 +81,7 @@
 {% block body_title %}
 {{ super() }}
 
+<div id="threadContainer"></div>
 <div id="cpuTempContainer"></div>
 <div id="memoryContainer"></div>
 <div id="mpContainer"></div>
