@@ -71,6 +71,8 @@ class Crawler(Login):
             os.makedirs(folder_name)
 
         m = re.search("image_list: \$\.evalJSON\(\'(.*)\'\),", content.text)
+        if not m or m.group(1) == "null":
+            m = re.search("image_list: (.*),", content.text)
         assert m
         json_data = json.loads(m.group(1))
 
@@ -151,5 +153,5 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start(3166)
+    Crawler.start(704)
     # Crawler.try_login()

@@ -170,7 +170,10 @@ class HttpUtils:
 
         contents = list()
         for item in items:
-            contents.append(item.contents[index])
+            if len(item.contents) > index:
+                contents.append(item.contents[index])
+            else:
+                contents.append(None)
 
         return contents
 

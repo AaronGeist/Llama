@@ -9,7 +9,7 @@ from biz.pt.ttg_rss import TTGRSS
 from biz.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.rpi import CpuTemperature, Memory
 from biz.taobao.secondhand import SecondHand
-from biz.watchlist.shuhui import ShuHuiWatchDog
+from biz.watchlist.ShuHuiWatchDog import ShuHuiWatchDog
 from biz.weather import WeatherReport
 from core.seedmanager import SeedManager
 from core.tts import TextToSpeech

@@ -12,7 +12,6 @@ class CpuTemperature(Monitor):
         return "cpu_temperature"
 
     def generate_data(self):
-        res = ""
         with open("/sys/class/thermal/thermal_zone0/temp") as tempFile:
             res = tempFile.read()
             res = float(res) / 1000
