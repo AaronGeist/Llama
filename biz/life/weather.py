@@ -35,7 +35,7 @@ class WeatherReport:
         html2 = html.replace("var cityDZ101020100 =", "").replace(";var alarmDZ101020100 ={\"w\":[]}", "")
         data2 = json.loads(html2).get("weatherinfo")
 
-        return "今天%s，最高气温%s，最低气温%s，%s%s, 当前气温%s，aqi指数%s，相对湿度%s" % (
+        return "今天%s，最高气温%s，最低气温%s，%s%s, 当前气温%s，空气质量指数%s，相对湿度%s" % (
             data2.get("weather"), data2.get("temp"), data2.get("tempn"), data2.get("wd"), data2.get("ws"),
             data.get("temp"), data.get("aqi"), data.get("sd"))
 

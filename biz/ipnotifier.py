@@ -24,3 +24,7 @@ class IpNotifier:
 
             print("old[%s], new[%s]" % (previous_ip, current_ip))
             EmailSender.send(u"IP变更", "最新IP: " + str(current_ip))
+
+
+if __name__ == "__main__":
+    IpNotifier.check_change()

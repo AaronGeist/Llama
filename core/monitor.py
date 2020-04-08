@@ -10,7 +10,7 @@ class Monitor(object):
     LIMIT = 200
     DELIMITER = "_"
 
-    db = InfluxdbClient("monitor")
+    db = InfluxdbClient()
 
     def history(self):
         res = dict()
