@@ -186,9 +186,6 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start("289bz")
+    Crawler.start("263bz")
 
     # 511bz 進擊的巨人  131话
-    # 92bz 人形之國APOSIMZ 27话
-    # 289bz  龍狼傳 129话
-    # 356bz 恐怖宠物店 10卷
