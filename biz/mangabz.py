@@ -78,6 +78,10 @@ class Crawler(Login):
             link = links[index].replace("/", "").replace("m", "")
             title = titles[index].strip()
             image_number = image_numbers[index]
+            if "卷" in title or int(image_number) > 100:
+                print("跳过 " + title)
+                # continue
+
             cls.parse_lvl_two((link, title, image_number))
         cls.process_thread.join()
 
@@ -95,6 +99,7 @@ class Crawler(Login):
 
         # create folder once
         folder_name = "output/" + cls.comic_name + "/" + title
+        # folder_name = "output/" + cls.comic_name + "/" + title + "_" + chapter_id
         if not os.path.exists(folder_name):
             os.makedirs(folder_name, exist_ok=True)
 
@@ -186,6 +191,12 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start("263bz")
+    Crawler.start("888bz")
 
     # 511bz 進擊的巨人  131话
+    # 157bz 黑执事
+    # 135bz 堀與宮村
+    # 577bz 电锯人
+    # 1631bz blame
+    # 992bz 暗杀教室
+    # 559bz 死亡笔记
