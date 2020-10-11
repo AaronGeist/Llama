@@ -7,6 +7,8 @@ import execjs
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue, Empty
 
+from biz.Image2pdf import Image2pdf
+from biz.reorg import Reorg
 from core.login import Login
 from util.utils import HttpUtils
 
@@ -17,6 +19,8 @@ class Crawler(Login):
     book_id = 0
     comic_id = "0"
     comic_name = ""
+    chapter_mode = 0  # 0 = all, 1 = chapter only, 2 = volume only
+    root_folder = ""
 
     root_url = "http://www.mangabz.com"
 
@@ -35,9 +39,10 @@ class Crawler(Login):
     }
 
     @classmethod
-    def start(cls, book_id):
+    def start(cls, book_id, chapter_mode=0):
         cls.book_id = book_id
         cls.comic_id = re.match("(\d+)", book_id).group(1)
+        cls.chapter_mode = chapter_mode
         cls.parse_lvl_one()
 
     @classmethod
@@ -49,20 +54,14 @@ class Crawler(Login):
     @classmethod
     def parse_lvl_one(cls):
         if cls.book_id is None:
+            print(">>>>> ERROR Cannot Parse Comic ID, QUIT! <<<<<")
             return
 
-        url = "http://www.mangabz.com/%s/" % cls.book_id
-        retry = 0
-        while True:
-            resp = HttpUtils.get(url, headers=cls.headers)
-            if resp is not None:
-                break
-            else:
-                retry += 1
-
-            assert retry < 5, "fail to query %s" % url
+        resp = HttpUtils.get_with_retry("%s/%s/" % (cls.root_url, cls.book_id), headers=cls.headers)
+        assert resp is not None
 
         cls.comic_name = HttpUtils.get_content(resp, ".detail-info-title").strip()
+        cls.root_folder = os.path.join("output", cls.comic_name)
         links = HttpUtils.get_attrs(resp, "div.detail-list-form-con a", "href")
 
         titles = HttpUtils.get_contents(resp, "div.detail-list-form-con a")
@@ -74,16 +73,21 @@ class Crawler(Login):
 
         cls.init_thread()
 
+        cnt = 0
         for index in range(len(titles)):
             link = links[index].replace("/", "").replace("m", "")
             title = titles[index].strip()
             image_number = image_numbers[index]
-            if "卷" in title or int(image_number) > 100:
-                print("跳过 " + title)
-                # continue
+            if "第" not in title or (cls.chapter_mode == 1 and "话" not in title and "話" not in title) or (
+                            cls.chapter_mode == 2 and "卷" not in title):
+                print("Skip " + title)
+                continue
 
-            cls.parse_lvl_two((link, title, image_number))
-        cls.process_thread.join()
+            if cls.parse_lvl_two((link, title, image_number)):
+                cnt += 1
+
+        if cnt > 0:
+            cls.process_thread.join()
 
         # code below should be useless if everything goes well
         while not cls.task_pool.empty():
@@ -98,18 +102,18 @@ class Crawler(Login):
         image_number = int(info[2])
 
         # create folder once
-        folder_name = "output/" + cls.comic_name + "/" + title
+        folder_name = os.path.join(cls.root_folder, title)
         # folder_name = "output/" + cls.comic_name + "/" + title + "_" + chapter_id
         if not os.path.exists(folder_name):
             os.makedirs(folder_name, exist_ok=True)
 
         path_file_number = len(glob.glob(pathname=folder_name + '/*'))
         if path_file_number == image_number:
-            print("下载完毕：" + title)
+            print("Downloaded：" + title)
             # already downloaded all
-            return
+            return False
 
-        print("开始下载: " + title)
+        print("Start downloading: " + title)
 
         first_url = "http://www.mangabz.com/m%s/" % chapter_id
 
@@ -121,17 +125,9 @@ class Crawler(Login):
         while index < image_number:
             index += 1
 
-            query_url = "http://www.mangabz.com/m%s/chapterimage.ashx?cid=%s&page=%d" % (chapter_id, chapter_id, index)
+            query_url = "%s/m%s/chapterimage.ashx?cid=%s&page=%d" % (cls.root_url, chapter_id, chapter_id, index)
 
-            retry = 0
-            while True:
-                content = HttpUtils.get(query_url, headers=headers, return_raw=True)
-                if content is not None:
-                    break
-                else:
-                    retry += 1
-
-                assert retry < 5, "fail to query %s" % query_url
+            content = HttpUtils.get_with_retry(query_url, headers=headers, return_raw=True)
 
             if content.text.strip() == "":
                 print("url: " + query_url)
@@ -156,10 +152,10 @@ class Crawler(Login):
 
                 # sort & find largest image number
                 image_keys.sort(key=lambda x: int(x.split("_")[0]))
-                print("find image keys: " + str(image_keys))
-
                 index = max(int(image_keys[-1].split("_")[0]), index)
                 print("now index[%d], total[%d]" % (index, image_number))
+
+        return True
 
     @classmethod
     def process(cls):
@@ -168,7 +164,7 @@ class Crawler(Login):
             while True:
                 try:
                     # queue timeout should be greater than the download timeout
-                    item = cls.task_pool.get(timeout=60)
+                    item = cls.task_pool.get(timeout=30)
                     executor.submit(cls.do_process, item)
                 except Empty as e:
                     print("#### queue timeout")
@@ -191,7 +187,20 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start("888bz")
+    Crawler.start("610bz", chapter_mode=1)
+    print("#########################################")
+    print("#### Finish download ####")
+    print("#########################################")
+
+    Reorg.process(Crawler.root_folder)
+    print("#########################################")
+    print("#### Finish reorganization ####")
+    print("#########################################")
+
+    Image2pdf.merge_all("archive/", reverse=True)
+    print("#########################################")
+    print("#### Finish PDF generation ####")
+    print("#########################################")
 
     # 511bz 進擊的巨人  131话
     # 157bz 黑执事
@@ -200,3 +209,8 @@ if __name__ == "__main__":
     # 1631bz blame
     # 992bz 暗杀教室
     # 559bz 死亡笔记
+    # 266bz 咒术回战
+    # 706bz 迷宫饭
+    # 188bz 月刊少女
+    # 9bz   家庭教师
+    # 610bz 龙珠超

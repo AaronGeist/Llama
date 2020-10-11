@@ -5,7 +5,7 @@ from PIL import Image
 from shutil import move
 
 
-class ImageSplitter:
+class Image2pdf:
     line_blank_rate = 0.99
 
     @classmethod
@@ -78,4 +78,4 @@ class ImageSplitter:
 
 
 if __name__ == "__main__":
-    ImageSplitter.merge_all("/Users/shakazxx/Downloads/COMICS/黑执事", reverse=True)
+    Image2pdf.merge_all("/Users/shakazxx/workspace/github/Llama/biz/archive", reverse=True)

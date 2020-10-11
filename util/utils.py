@@ -82,6 +82,22 @@ class HttpUtils:
         print('time cost', time_end - time_start, 's')
 
     @classmethod
+    def get_with_retry(cls, url, retry=5, session=None, headers=None, proxy=None, timeout=60, return_raw=False,
+                       allow_redirects=True):
+        retry_cnt = 0
+        while True:
+            resp = HttpUtils.get(url=url, session=session, headers=headers, proxy=proxy, timeout=timeout,
+                                 return_raw=return_raw, allow_redirects=allow_redirects)
+            if resp is not None:
+                break
+            else:
+                retry_cnt += 1
+
+            assert retry_cnt < retry, "fail to query %s" % url
+
+        return resp
+
+    @classmethod
     def get(cls, url, session=None, headers=None, proxy=None, timeout=60, return_raw=False, allow_redirects=True):
         if session is not None:
             cls.session = session
