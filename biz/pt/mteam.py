@@ -23,11 +23,11 @@ class NormalAlert(Login):
     size_factor = 1.074  # the shown size on web page is not accurate
     is_login = False
 
-    download_link = "https://tp.m-team.cc/download.php?id=%s&https=1"
+    download_link = "https://kp.m-team.cc/download.php?id=%s&https=1"
 
     def __init__(self):
-        self.site.home_page = "https://tp.m-team.cc/torrents.php"
-        self.site.login_page = "https://tp.m-team.cc/takelogin.php"
+        self.site.home_page = "https://kp.m-team.cc/torrents.php"
+        self.site.login_page = "https://kp.m-team.cc/takelogin.php"
         self.site.login_headers = {
             "User-Agent":
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
@@ -38,9 +38,9 @@ class NormalAlert(Login):
             "Connection": "keep-alive",
             "Content-Type": "application/x-www-form-urlencoded",
             "DNT": "1",
-            "Host": "tp.m-team.cc",
-            "Origin": "https://tp.m-team.cc",
-            "Referer": "https://tp.m-team.cc/login.php",
+            "Host": "kp.m-team.cc",
+            "Origin": "https://kp.m-team.cc",
+            "Referer": "https://kp.m-team.cc/login.php",
             "Upgrade-Insecure-Requests": "1",
         }
 
@@ -273,7 +273,7 @@ class NormalAlert(Login):
             "hidenotice": "1",
             "letmedown": "ratio"
         }
-        res = HttpUtils.post("https://tp.m-team.cc/downloadnotice.php?", data=data, headers=self.site.login_headers,
+        res = HttpUtils.post("https://kp.m-team.cc/downloadnotice.php?", data=data, headers=self.site.login_headers,
                              returnRaw=True)
         try:
             with open("%s.torrent" % seed_id, "wb") as f:
@@ -337,7 +337,7 @@ class NormalAlert(Login):
         self.login_if_not()
 
         # enable adult torrent
-        setting_url = "https://tp.m-team.cc/usercp.php"
+        setting_url = "https://kp.m-team.cc/usercp.php"
         lab_data = {
             "action": "laboratory",
             "type": "save",
@@ -374,7 +374,7 @@ class NormalAlert(Login):
 
 class AdultAlert(NormalAlert):
     def generate_site(self):
-        self.site.home_page = "https://tp.m-team.cc/adult.php"
+        self.site.home_page = "https://kp.m-team.cc/adult.php"
         return self.site
 
 
@@ -456,7 +456,7 @@ class UploadCheck(AdultAlert):
 
 class CandidateVote(NormalAlert):
     def generate_site(self):
-        self.site.home_page = "https://tp.m-team.cc/offers.php"
+        self.site.home_page = "https://kp.m-team.cc/offers.php"
         return self.site
 
     def parse(self, soup_obj):
@@ -473,7 +473,7 @@ class CandidateVote(NormalAlert):
         return data
 
     def action(self, data):
-        vote_url = "https://tp.m-team.cc/vote.php?tid=%s&type=1"
+        vote_url = "https://kp.m-team.cc/vote.php?tid=%s&type=1"
         success_cnt = 0
         for id in data:
             res_obj = HttpUtils.get(url=vote_url % id, headers=self.site.login_headers)
@@ -506,7 +506,7 @@ class UserCrawl(NormalAlert):
     msg_urgent_body = "如需快速增加上传，消除警告，请微信联系 helloword1984（用户名是薛定谔的小仓鼠）\n\n注1：本人非网站工作人员\n注2：如果打扰到了您，表示抱歉，请pm回复'谢谢勿扰'"
 
     def generate_site(self):
-        self.site.home_page = "https://tp.m-team.cc/userdetails.php?id=%s"
+        self.site.home_page = "https://kp.m-team.cc/userdetails.php?id=%s"
         return self.site
 
     def crawl_single(self, user_id):
@@ -725,7 +725,7 @@ class UserCrawl(NormalAlert):
 
         self.login_if_not()
 
-        url = "https://tp.m-team.cc/takemessage.php"
+        url = "https://kp.m-team.cc/takemessage.php"
         data = {
             "receiver": user_id,
             "subject": subject,
@@ -743,9 +743,9 @@ class UserCrawl(NormalAlert):
 
 
 class MessageReader(NormalAlert):
-    url = "https://tp.m-team.cc/messages.php?action=viewmailbox&box="
+    url = "https://kp.m-team.cc/messages.php?action=viewmailbox&box="
 
-    detail_url = "https://tp.m-team.cc/messages.php?action=viewmessage&id="
+    detail_url = "https://kp.m-team.cc/messages.php?action=viewmessage&id="
 
     box = [
         "0",  # inbox
