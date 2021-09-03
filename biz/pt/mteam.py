@@ -29,19 +29,20 @@ class NormalAlert(Login):
         self.site.home_page = "https://kp.m-team.cc/torrents.php"
         self.site.login_page = "https://kp.m-team.cc/takelogin.php"
         self.site.login_headers = {
-            "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.8,zh-CN;q=0.6,zh;q=0.4,zh-TW;q=0.2,ja;q=0.2",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Cache-Control": "max-age=0",
-            "Connection": "keep-alive",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "DNT": "1",
-            "Host": "kp.m-team.cc",
-            "Origin": "https://kp.m-team.cc",
-            "Referer": "https://kp.m-team.cc/login.php",
-            "Upgrade-Insecure-Requests": "1",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,ja;q=0.5",
+            "cookie": "c_lang_folder=cht; tp=ZTNiZTE4ZDYwYmZiOTI1ZjQzNGRmMDhlOTY4NTJmODExZjYwODIxZQ%3D%3D; cf_chl_prog=a9; cf_clearance=IMq1zdVD.N7tjymYWcRihWCPKFdgOpx65I4YP.VXmcI-1630648319-0-150",
+            "dnt": "1",
+            "referer": "https://kp.m-team.cc/index.php",
+            "sec-ch-ua": "\"Google Chrome\";v=\"93\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"93\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36"
         }
 
         self.site.login_needed = True
@@ -216,8 +217,8 @@ class NormalAlert(Login):
         filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 1.5) and
                       (x.free or x.sticky or (
-                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or (
-                           x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10)),
+                              x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or (
+                               x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10)),
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
@@ -230,8 +231,8 @@ class NormalAlert(Login):
         filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 2) and
                       (x.free or (x.sticky and x.discount <= 50) or (
-                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
-                          x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10))),
+                              x.discount <= 50 and round(x.download_num / x.upload_num) >= 2) or ((
+                              x.discount > 50 and round(x.download_num / x.upload_num) >= 3 and x.upload_num <= 10))),
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
@@ -254,7 +255,7 @@ class NormalAlert(Login):
         filtered_seeds = list(filter(
             lambda x: (x.upload_num != 0 and round(x.download_num / x.upload_num, 1) >= 3) and
                       (x.free or (x.sticky and x.discount <= 50) or (
-                          x.discount <= 50 and round(x.download_num / x.upload_num) >= 5)),
+                              x.discount <= 50 and round(x.download_num / x.upload_num) >= 5)),
             data))
 
         filtered_seeds = self.sort_seed(filtered_seeds)
@@ -427,11 +428,11 @@ class UploadCheck(AdultAlert):
         upload_target = Config.get("mteam_upload_target")
         current_upload = round(data[0] - data[1], 2)
         print(
-            "%s, upload=%s, download=%s, current=%s, delta_up=%s, delta_down=%s, delta_ratio=%s, target=%s" % (
-                str(time.strftime("%Y-%m-%d %H:%M:%S")),
-                data[0], data[1],
-                current_upload, delta_up, delta_down, delta_ratio,
-                upload_target))
+                "%s, upload=%s, download=%s, current=%s, delta_up=%s, delta_down=%s, delta_ratio=%s, target=%s" % (
+            str(time.strftime("%Y-%m-%d %H:%M:%S")),
+            data[0], data[1],
+            current_upload, delta_up, delta_down, delta_ratio,
+            upload_target))
 
         if self.is_store:
             self.cache.set("mt_up", data[0])
@@ -844,11 +845,11 @@ class MessageReader(NormalAlert):
 
 
 if __name__ == "__main__":
-    # NormalAlert().check()
+    NormalAlert().check()
     # NormalAlert().download_seed("209094")
     # AdultAlert().check()
     # UserCrawl().crawl([182533])
-    NormalAlert().init_setting()
+    # NormalAlert().init_setting()
     # UserCrawl().refresh()
     # UploadCheck().check()
     # CandidateVote().check()
