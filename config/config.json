@@ -39,11 +39,11 @@
 
   "disk_info": [
     {
-      "name": "/dev/vdb1",
+      "name": "/dev/vda1",
       "location": "/var/lib/transmission-daemon/downloads"
     },
     {
-      "name": "/dev/vda1",
+      "name": "/dev/vdb1",
       "location": "/mnt/bs"
     }
   ],
