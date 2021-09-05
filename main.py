@@ -9,6 +9,7 @@ from biz.miui import Miui
 from biz.pt.putao import FreeFeedAlert, MagicPointChecker, UploadMonitor
 from biz.pt.putao_watchdog import PuTaoWatchDog
 from biz.pt.ttg_rss import TTGRSS
+from biz.pt.mteam_rss import MT_RSS
 from biz.rpi import CpuTemperature, Memory, Thread
 from biz.watchlist.ShuHuiWatchDog import ShuHuiWatchDog
 from core.seedmanager import SeedManager
@@ -22,6 +23,7 @@ cmd_map = {
     "pt_seed_ignore": PuTaoWatchDog().ignore,
     "pt_stat": PuTaoWatchDog().stat,
     "ttg_rss_check": TTGRSS().check,
+    "mt_rss_check": MT_RSS().check(),
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,
     "mp_monitor": MagicPointChecker().monitor,

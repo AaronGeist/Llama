@@ -107,12 +107,14 @@ class BaseUploader(Login):
         final_seeds = strategy(data)
 
         # white list
-        white_lists = Config.get(self.get_site_name() + "_white_list").split("|")
-        for seed in data:
-            for white_list in white_lists:
-                if re.search(white_list, seed.title):
-                    final_seeds.append(seed)
-                    break
+        white_lists_str = Config.get(self.get_site_name() + "_white_list")
+        if white_lists_str is not None:
+            white_lists = white_lists_str.split("|")
+            for seed in data:
+                for white_list in white_lists:
+                    if re.search(white_list, seed.title):
+                        final_seeds.append(seed)
+                        break
 
         for seed in final_seeds:
             print("Find valuable seed: " + str(seed))

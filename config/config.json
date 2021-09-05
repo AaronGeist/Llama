@@ -18,7 +18,7 @@
   "putao_white_list": "Marvels Agents|Better Call Saul|The Big Bang Theory|Shingeki no Kyojin|Prison Break|Modern Family|Silicon Valley|Game of Thrones",
   "cpu_temperature_threshold": 70,
 
-  "seed_max_size_mb": 10240,
+  "seed_max_size_mb": 15360,
 
   "vultr_api_key": "o5b7EI/d7FXUI+vVCthz+p21bcX2/oPlMWo7VXDHDrLVgAI+jTU4fg==",
 
@@ -27,13 +27,25 @@
 
   "mteam_username": "",
   "mteam_password": "",
+  "mteam_passkey": "",
   "mteam_mp_threshold": 10,
   "mteam_strategy": "easy",
   "mteam_upload_target": 500,
+  "mteam_white_list": "",
   "mt_warn_white_list": "",
 
   "ip_history_file": "/tmp/ip_hist.txt",
   "tts_path": "/tmp",
 
+  "disk_info": [
+    {
+      "name": "/dev/vdb1",
+      "location": "/var/lib/transmission-daemon/downloads"
+    },
+    {
+      "name": "/dev/vda1",
+      "location": "/mnt/bs"
+    }
+  ],
   "enable_email": true
 }
