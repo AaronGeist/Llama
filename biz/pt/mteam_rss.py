@@ -43,8 +43,7 @@ class MT_RSS(BaseUploader):
 
                 seed.title = info[0].strip()
                 seed.size = HttpUtils.pretty_format(info[1].split("]")[0], "MB")
-                # seed.url = HttpUtils.get_content(item, "link")
-                seed.url = item.contents[4]
+                seed.url = HttpUtils.get_content(item, "link")
                 seed.id = self.parse_id(seed.url)
 
                 seeds.append(seed)
@@ -65,9 +64,21 @@ class MT_RSS(BaseUploader):
         filtered_seeds = list(
             filter(lambda seed: len(list(filter(lambda name: "-" + name in seed.title.lower(), group_name))), data))
 
+        filtered_seeds = list(
+            filter(lambda seed: seed.id <= "509337", data))
+
         filtered_seeds = self.sort_seed(filtered_seeds)
 
         return filtered_seeds
+
+    def sort_seed(self, seeds):
+        # sort seed by id, descend
+        seeds.sort(key=lambda x: x.id, reverse=True)
+
+        for seed in seeds:
+            print(seed.id)
+
+        return seeds
 
     def download_seed_file(self, seed_id):
 
