@@ -88,6 +88,7 @@ class SeedManager:
 
     @classmethod
     def load_avg_speed(cls):
+        print("Start load avg speed\n")
         times = 30
         interval = 1
 
@@ -107,6 +108,7 @@ class SeedManager:
             statistics[key].up = round(statistics[key].up / times, 2)
             statistics[key].down = round(statistics[key].down / times, 2)
 
+        print("Finish load avg speed\n")
         return statistics.values()
 
     @classmethod
@@ -179,9 +181,9 @@ class SeedManager:
             seed.name = "N/A"
             seed.status = data[8]
             seed.done = float(data[1].replace('%', ''))
-            seed.down = data[6]
-            seed.up = data[5]
-            seed.ratio = data[7]
+            seed.down = float(data[6])
+            seed.up = float(data[5])
+            seed.ratio = float(data[7])
 
         if print_log:
             for seed in seeds:
