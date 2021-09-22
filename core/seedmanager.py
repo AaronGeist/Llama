@@ -1,6 +1,8 @@
+import datetime
 import json
 import os
 import time
+from dateutil import parser
 
 from core.diskmanager import DiskManager
 from core.emailsender import EmailSender
@@ -113,6 +115,7 @@ class SeedManager:
         cmd_result = os.popen("transmission-remote -l").read()
         lines = cmd_result.split("\n")[1: -2]  # remove first and last line
 
+        now = datetime.datetime.now()
         for line in lines:
             seed = TransmissionSeed()
             seeds.append(seed)
@@ -146,10 +149,9 @@ class SeedManager:
                         seed.ratio = 0.0
                     else:
                         seed.ratio = float(ratio_str)
-                elif detail.startswith("  Downloading Time: "):
-                    seed.since = int(
-                        detail.replace("  Downloading Time: ", "").replace(" ", "").split("(")[1].split("sec")[
-                            0])
+                elif detail.startswith("  Date added: "):
+                    start_time = parser.parse(detail.replace("  Date added: ", "").replace(" ", ""))
+                    seed.since = (now - start_time).seconds
                 elif detail.startswith("  Downloaded: "):
                     seed.done_size = HttpUtils.pretty_format(
                         detail.replace("  Downloaded: ", ""), "KB")
