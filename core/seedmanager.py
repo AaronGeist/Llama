@@ -179,11 +179,18 @@ class SeedManager:
             data = line.split()
             seed.id = data[0].replace("*", "")
             seed.name = "N/A"
-            seed.status = data[8]
-            seed.done = float(data[1].replace('%', ''))
-            seed.down = float(data[6])
-            seed.up = float(data[5])
-            seed.ratio = float(data[7])
+            if data[2] == "None":
+                seed.status = "Idle"
+                seed.done = 0
+                seed.down = 0
+                seed.up = 0
+                seed.ratio = 0
+            else:
+                seed.status = data[8]
+                seed.done = float(data[1].replace('%', ''))
+                seed.down = float(data[6])
+                seed.up = float(data[5])
+                seed.ratio = float(data[7])
 
         if print_log:
             for seed in seeds:
@@ -304,6 +311,8 @@ class SeedManager:
     @classmethod
     def find_bad_seeds(cls):
         seeds = cls.load_avg_speed()
+        for seed in seeds:
+            print(seed)
 
         bad_seeds = []
         total_bad_seed_size = 0
