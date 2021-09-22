@@ -190,6 +190,7 @@ class SeedManager:
         disk_location_to_name_map = DiskManager.location2name()
         disk_space_map = cls.check_disks_space()
 
+        bad_seeds = None
         for new_seed in new_seeds:
             disk_space_map_temp = disk_space_map.copy()
             retry = 0
@@ -207,8 +208,9 @@ class SeedManager:
 
                 removal_list = dict()
                 if target_disk is None:
-                    # try to remove seed
-                    total_size, bad_seeds = cls.find_bad_seeds()
+                    if bad_seeds is None:
+                        # try to remove seed
+                        total_size, bad_seeds = cls.find_bad_seeds()
                     for bad_seed in bad_seeds:
                         disk_name = disk_location_to_name_map[bad_seed.location]
                         if disk_name not in removal_list:
@@ -229,6 +231,7 @@ class SeedManager:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
                             cls.remove_seed(seed)
+                            bad_seeds.remove(seed)
 
                     # only the disk to add new seed should be updated
                     disk_space_map[target_disk] = disk_space_map_temp[target_disk]
