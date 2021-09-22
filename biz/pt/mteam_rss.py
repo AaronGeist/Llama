@@ -2,6 +2,7 @@
 
 import re
 
+from core.cache import Cache
 from biz.pt.baseuploader import BaseUploader
 from model.seed import SeedInfo
 from model.site import Site
@@ -43,12 +44,13 @@ class MT_RSS(BaseUploader):
 
                 seed.title = info[0].strip()
                 seed.size = HttpUtils.pretty_format(info[1].split("]")[0], "MB")
-                seed.url = HttpUtils.get_content(item, "link")
+                seed.url = HttpUtils.get_attr(item, "enclosure", "url")
                 seed.id = self.parse_id(seed.url)
+                #Cache().set(seed.id, str(seed))
 
                 seeds.append(seed)
             except Exception as e:
-                pass
+                print(e.getMessage())
 
         return seeds
 

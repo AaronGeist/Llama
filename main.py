@@ -23,7 +23,7 @@ cmd_map = {
     "pt_seed_ignore": PuTaoWatchDog().ignore,
     "pt_stat": PuTaoWatchDog().stat,
     "ttg_rss_check": TTGRSS().check,
-    "mt_rss_check": MT_RSS().check(),
+    "mt_rss_check": MT_RSS().check,
     "feed_check": FreeFeedAlert().check,
     "mp_check": MagicPointChecker().check,
     "mp_monitor": MagicPointChecker().monitor,
