@@ -93,7 +93,7 @@ class SeedManager:
 
         statistics = {}
         for i in range(times):
-            seeds = cls.parse_current_seeds(False)
+            seeds = cls.fast_parse_current_seeds(False)
             for seed in seeds:
                 if seed.id not in statistics.keys():
                     statistics[seed.id] = seed
@@ -150,13 +150,38 @@ class SeedManager:
                     else:
                         seed.ratio = float(ratio_str)
                 elif detail.startswith("  Date added: "):
-                    start_time = parser.parse(detail.replace("  Date added: ", "").replace(" ", ""))
+                    start_time = parser.parse(detail.replace("  Date added: ", "").strip())
                     seed.since = (now - start_time).seconds
                 elif detail.startswith("  Downloaded: "):
                     seed.done_size = HttpUtils.pretty_format(
                         detail.replace("  Downloaded: ", ""), "KB")
                 elif detail.startswith("  Location: "):
                     seed.location = detail.replace("  Location: ", "")
+
+        if print_log:
+            for seed in seeds:
+                print(seed)
+
+        return seeds
+
+    @classmethod
+    def fast_parse_current_seeds(cls, print_log=True):
+        seeds = []
+        cmd_result = os.popen("transmission-remote -l").read()
+        lines = cmd_result.split("\n")[1: -2]  # remove first and last line
+
+        for line in lines:
+            seed = TransmissionSeed()
+            seeds.append(seed)
+
+            data = line.split()
+            seed.id = data[0].replace("*", "")
+            seed.name = "N/A"
+            seed.status = data[8]
+            seed.done = float(data[1].replace('%', ''))
+            seed.down = data[6]
+            seed.up = data[5]
+            seed.ratio = data[7]
 
         if print_log:
             for seed in seeds:
@@ -176,6 +201,9 @@ class SeedManager:
 
     @classmethod
     def try_add_seeds(cls, new_seeds):
+        print("-" * 20)
+        print("\nstart try add seeds\n")
+
         success_seeds = []
         fail_seeds = []
         max_retry = 1
@@ -249,6 +277,8 @@ class SeedManager:
 
     @classmethod
     def fast_remove_bad_seeds(cls):
+        print("Start fast remove bad seeds\n")
+
         seeds = cls.parse_current_seeds(False)
         for seed in seeds:
             if seed.status == "Stopped":
