@@ -47,7 +47,7 @@ class SeedManager:
         files = DiskManager.find_all_files()
         seeds = cls.parse_current_seeds(True)
 
-        seeds_path = list(map(lambda seed: DiskManager.append_delimiter_if_miss(seed.location) + seed.file, seeds))
+        seeds_path = list(map(lambda seed: DiskManager.append_delimiter_if_miss(seed.location) + seed.name, seeds))
 
         file_to_be_removed = list(
             filter(lambda file: len(list(filter(lambda seed_path: file.startswith(seed_path), seeds_path))) == 0,
@@ -55,7 +55,7 @@ class SeedManager:
 
         print("remove " + str(file_to_be_removed))
         for file in file_to_be_removed:
-            os.popen("rm -rf {0}".format(file))
+            os.popen("rm -rf '{0}'".format(file))
 
     @classmethod
     def check_bandwidth(cls):
@@ -156,10 +156,6 @@ class SeedManager:
                 elif detail.startswith("  Location: "):
                     seed.location = detail.replace("  Location: ", "")
 
-            cmd = "transmission-remote -t {0} -if".format(seed.id)
-            cmd += " | tail -n 1 | awk '{print $7}' | awk -F/ '{print $1}'"
-            seed.file = os.popen(cmd).read().replace("\n", "")
-
         if print_log:
             for seed in seeds:
                 print(seed)
@@ -225,7 +221,7 @@ class SeedManager:
                 if target_disk is not None:
                     if target_disk in removal_list:
                         for seed in removal_list[target_disk]:
-                            cls.remove_seed(seed.id)
+                            cls.remove_seed(seed)
 
                     # only the disk to add new seed should be updated
                     disk_space_map[target_disk] = disk_space_map_temp[target_disk]
@@ -255,17 +251,21 @@ class SeedManager:
         for seed in seeds:
             if seed.status == "Stopped":
                 print("Fast remove stopped: " + str(seed))
-                cls.remove_seed(seed.id)
+                cls.remove_seed(seed)
                 continue
             if seed.status == "Idle" and seed.since > 600 and seed.done == 0.0:
                 print("Fast remove new idle: " + str(seed))
-                cls.remove_seed(seed.id)
+                cls.remove_seed(seed)
 
     @classmethod
-    def remove_seed(cls, seed_id):
-        assert seed_id is not None
-        os.popen("transmission-remote -t %s -rad" % seed_id.strip())
-        print("Remove transmission seed: " + seed_id)
+    def remove_seed(cls, seed):
+        assert seed.id is not None
+        os.popen("transmission-remote -t %s -rad" % seed.id.strip())
+
+        # remove file if still exists
+        os.popen("rm -rf '" + DiskManager.append_delimiter_if_miss(seed.location) + seed.name + "'")
+
+        print("Remove transmission seed: " + seed.id)
 
     @classmethod
     def find_bad_seeds(cls):
