@@ -9,7 +9,7 @@ from shutil import copytree
 class Reorg:
     folder_size = 10
 
-    root_folder = "archive/"
+    root_folder = "archive_2/"
 
     @classmethod
     def process(cls, folder_path):
@@ -23,18 +23,29 @@ class Reorg:
             print("Total %d, skip re-organization!" % len(sub_folders))
             return
 
+        irregular_sub_folders = list()
         for sub_folder in sub_folders:
             if os.path.isdir(os.path.join(folder_path, sub_folder)):
                 # print(sub_folder)
-                id = re.search(".+?(\d*(.\d)*).+?", sub_folder).group(1)
-                if id == "":
-                    print(">>>>>>>>>>>>>>>>> cannot find id " + sub_folder)
-                    continue
-                else:
-                    id = int(id)
-                    id_map[id] = sub_folder
-                    new_id_map[id] = sub_folder.replace(str(id), str(id).zfill(3))
-                    id_list.append(id)
+                # id = re.search(".+?(\d*(.\d)*).+?", sub_folder).group(1)
+                try:
+                    id = re.search(".*?(\d+(.\d)*).*?", sub_folder).group(1)
+
+                    if id == "":
+                        print(">>>>>>>>>>>>>>>>> cannot find id " + sub_folder)
+                        irregular_sub_folders.append(sub_folder)
+                        continue
+                    elif "." in id:
+                        print(">>>>>>>>>>>>>>>>> not normal id " + sub_folder)
+                        irregular_sub_folders.append(sub_folder)
+                    else:
+                        id = int(id)
+                        id_map[id] = sub_folder
+                        new_id_map[id] = sub_folder.replace(str(id), str(id).zfill(3))
+                        id_list.append(id)
+                except Exception as e:
+                    print(">>>>>>>>>>>>>>>>> not normal id " + sub_folder)
+                    irregular_sub_folders.append(sub_folder)
 
         id_list.sort()
 
@@ -87,6 +98,14 @@ class Reorg:
             for inner_id in ids:
                 copytree(os.path.join(folder_path, id_map[inner_id]), os.path.join(folder, new_id_map[inner_id]))
 
+        if len(irregular_sub_folders) > 0:
+            for sub_folder in irregular_sub_folders:
+                folder = cls.root_folder + sub_folder
+
+                copytree(os.path.join(folder_path, sub_folder), folder)
+
+        return cls.root_folder
 
 if __name__ == "__main__":
-    Reorg.process("/Users/shakazxx/workspace/github/Llama/biz/output/龍珠超")
+    # Reorg.process("/Users/shakazxx/workspace/github/Llama/biz/archive_2")
+    Reorg.process("/Users/shakazxx/Downloads/COMICS/咒术回战")

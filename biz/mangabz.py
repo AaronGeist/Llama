@@ -1,8 +1,12 @@
+# -*- coding:utf-8 -*-
+
 import glob
 import os
+
 import re
 import threading
 import urllib
+
 import execjs
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue, Empty
@@ -21,6 +25,7 @@ class Crawler(Login):
     comic_name = ""
     chapter_mode = 0  # 0 = all, 1 = chapter only, 2 = volume only
     root_folder = ""
+    inclusion_list = None
 
     root_url = "http://www.mangabz.com"
 
@@ -39,11 +44,14 @@ class Crawler(Login):
     }
 
     @classmethod
-    def start(cls, book_id, chapter_mode=0):
+    def start(cls, book_id, chapter_mode=0, inclusion_list=None):
         cls.book_id = book_id
         cls.comic_id = re.match("(\d+)", book_id).group(1)
         cls.chapter_mode = chapter_mode
+        cls.inclusion_list = inclusion_list
         cls.parse_lvl_one()
+
+        return cls.root_folder
 
     @classmethod
     def init_thread(cls):
@@ -71,19 +79,26 @@ class Crawler(Login):
         assert len(titles) == len(image_numbers)
         assert len(titles) == len(links)
 
-        cls.init_thread()
-
         cnt = 0
         for index in range(len(titles)):
+            cls.init_thread()
+
             link = links[index].replace("/", "").replace("m", "")
             title = titles[index].strip()
             image_number = image_numbers[index]
-            if "第" not in title or (cls.chapter_mode == 1 and "话" not in title and "話" not in title) or (
-                            cls.chapter_mode == 2 and "卷" not in title):
+            if (cls.chapter_mode == 1 and "第" not in title and "话" not in title and "話" not in title) or (
+                                cls.chapter_mode == 2 and "卷" not in title and "第" not in title):
                 print("Skip " + title)
                 continue
 
-            if cls.parse_lvl_two((link, title, image_number)):
+            is_skip = False
+            if cls.inclusion_list is not None:
+                for inclusion in cls.inclusion_list:
+                    if inclusion not in title:
+                        is_skip = True
+                        break
+
+            if not is_skip and cls.parse_lvl_two((link, title, image_number)):
                 cnt += 1
 
         if cnt > 0:
@@ -134,7 +149,12 @@ class Crawler(Login):
                 print("get wrong data: \"" + content.text.strip() + "\"")
                 print("fail to parse image key, %s-%d" % (title, index))
             else:
-                image_url_list = execjs.eval(content.text)
+                try:
+                    image_url_list = execjs.eval(content.text)
+                except:
+                    print(">>>>>>>>>> fail to parse image: " + str(index))
+                    continue
+
                 assert len(image_url_list) > 0
 
                 image_keys = list()
@@ -187,30 +207,45 @@ class Crawler(Login):
 
 
 if __name__ == "__main__":
-    Crawler.start("610bz", chapter_mode=1)
+    is_re_org = False
+    is_pdf_gen = False
+    comic_id = "577bz"
+    chapter_mode = 0  # 0=所有，1=话，2=卷
+    is_reverse_split = True
+    root_folder = "archive/" + comic_id
+    inclusion_list = None
+
+    # pdf_root_folder = "/Users/shakazxx/workspace/github/Llama/biz/output/電鋸人/第88話 STAR CHAINSAW"
+    # inclusion_list = ["88"]
+
+    root_folder = Crawler.start(comic_id, chapter_mode=chapter_mode, inclusion_list=inclusion_list)
     print("#########################################")
     print("#### Finish download ####")
     print("#########################################")
 
-    Reorg.process(Crawler.root_folder)
-    print("#########################################")
-    print("#### Finish reorganization ####")
-    print("#########################################")
+    if is_re_org:
+        root_folder = Reorg.process(root_folder)
 
-    Image2pdf.merge_all("archive/", reverse=True)
-    print("#########################################")
-    print("#### Finish PDF generation ####")
-    print("#########################################")
+        print("#########################################")
+        print("#### Finish reorganization ####")
+        print("#########################################")
 
-    # 511bz 進擊的巨人  131话
-    # 157bz 黑执事
-    # 135bz 堀與宮村
-    # 577bz 电锯人
-    # 1631bz blame
-    # 992bz 暗杀教室
-    # 559bz 死亡笔记
-    # 266bz 咒术回战
-    # 706bz 迷宫饭
-    # 188bz 月刊少女
-    # 9bz   家庭教师
-    # 610bz 龙珠超
+    if is_pdf_gen:
+        Image2pdf.merge_all(folder_path=root_folder, reverse=is_reverse_split)
+        print("#########################################")
+        print("#### Finish PDF generation ####")
+        print("#########################################")
+
+        # 511bz 進擊的巨人  131话
+        # 157bz 黑执事
+        # 135bz 堀與宮村
+        # 577bz 电锯人
+        # 1631bz blame
+        # 992bz 暗杀教室
+        # 559bz 死亡笔记
+        # 266bz 咒术回战
+        # 706bz 迷宫饭
+        # 188bz 月刊少女
+        # 9bz   家庭教师
+        # 610bz 龙珠超
+        # 83bz 约定的梦幻岛

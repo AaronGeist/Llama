@@ -1,8 +1,14 @@
 import os
 
 import re
+from math import floor
+
 from PIL import Image
 from shutil import move
+
+from PIL import ImageFile
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class Image2pdf:
@@ -20,7 +26,7 @@ class Image2pdf:
             return int(c)
 
     @classmethod
-    def merge(cls, root_path, sub_folder, reverse=True):
+    def merge(cls, root_path, sub_folder, reverse=True, resize=1.0):
         folder_path = os.path.join(root_path, sub_folder)
 
         image_path_list = list()
@@ -60,6 +66,18 @@ class Image2pdf:
                 print(image_path)
                 print(e)
 
+        # compression required
+        if resize < 1.0:
+            new_image_list = list()
+            for image in image_list:
+                new_image_list.append(
+                    image.resize((floor(image.width * resize), floor(image.height * resize)), Image.ANTIALIAS))
+
+            image_list = new_image_list
+
+        if len(image_list) == 0:
+            print(folder_path)
+
         im1 = image_list[0]
         image_list.pop(0)
         im1.save(os.path.join(root_path, sub_folder + ".pdf"), "PDF", resolution=100.0, save_all=True,
@@ -67,15 +85,26 @@ class Image2pdf:
         print("finish " + sub_folder)
 
     @classmethod
-    def merge_all(cls, folder_path, reverse=True):
-        for sub_folder in os.listdir(folder_path):
-            if os.path.isdir(os.path.join(folder_path, sub_folder)):
-                print(sub_folder)
-                if os.path.exists(os.path.join(folder_path, sub_folder + ".pdf")):
-                    print("skip " + sub_folder)
-                    continue
-                cls.merge(folder_path, sub_folder, reverse)
+    def merge_all(cls, folder_path="archive", reverse=True, resize=1.0, split_output=True):
+        sub_folder_cnt = 0
+
+        if split_output:
+            for sub_folder in os.listdir(folder_path):
+                if os.path.isdir(os.path.join(folder_path, sub_folder)):
+                    sub_folder_cnt += 1
+                    print(sub_folder)
+                    if os.path.exists(os.path.join(folder_path, sub_folder + ".pdf")):
+                        print("skip " + sub_folder)
+                        continue
+                    cls.merge(folder_path, sub_folder, reverse, resize)
+
+        if sub_folder_cnt == 0:
+            pos = folder_path.rfind("/")
+            root = folder_path[:pos]
+            sub_folder = folder_path[pos + 1:]
+            cls.merge(root, sub_folder, reverse, resize)
 
 
 if __name__ == "__main__":
-    Image2pdf.merge_all("/Users/shakazxx/workspace/github/Llama/biz/archive", reverse=True)
+    Image2pdf.merge_all("/Users/shakazxx/Downloads/COMICS/电锯人/第96話 這個味道", reverse=True, split_output=False)
+    # Image2pdf.merge_all("archive_2", reverse=True)

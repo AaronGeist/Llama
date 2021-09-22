@@ -198,7 +198,7 @@ class HttpUtils:
         if os.path.exists(dest_path) and not over_write:
             print("Existing " + dest_path)
             return True
-        res = cls.get(url, timeout=30, return_raw=True)
+        res = cls.get(url, headers=headers, timeout=30, return_raw=True)
         if res is None:
             print("####### ERROR: empty content from: " + url)
             return False
