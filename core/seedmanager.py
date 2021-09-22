@@ -94,7 +94,7 @@ class SeedManager:
 
         statistics = {}
         for i in range(times):
-            seeds = cls.fast_parse_current_seeds(False)
+            seeds = cls.parse_current_seeds(False)
             for seed in seeds:
                 if seed.id not in statistics.keys():
                     statistics[seed.id] = seed
@@ -159,38 +159,6 @@ class SeedManager:
                         detail.replace("  Downloaded: ", ""), "KB")
                 elif detail.startswith("  Location: "):
                     seed.location = detail.replace("  Location: ", "")
-
-        if print_log:
-            for seed in seeds:
-                print(seed)
-
-        return seeds
-
-    @classmethod
-    def fast_parse_current_seeds(cls, print_log=True):
-        seeds = []
-        cmd_result = os.popen("transmission-remote -l").read()
-        lines = cmd_result.split("\n")[1: -2]  # remove first and last line
-
-        for line in lines:
-            seed = TransmissionSeed()
-            seeds.append(seed)
-
-            data = line.split()
-            seed.id = data[0].replace("*", "")
-            seed.name = "N/A"
-            if data[2] == "None":
-                seed.status = "Idle"
-                seed.done = 0
-                seed.down = 0
-                seed.up = 0
-                seed.ratio = 0
-            else:
-                seed.status = data[8]
-                seed.done = float(data[1].replace('%', ''))
-                seed.down = float(data[6])
-                seed.up = float(data[5])
-                seed.ratio = float(data[7])
 
         if print_log:
             for seed in seeds:
